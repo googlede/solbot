@@ -13,7 +13,7 @@ console.log('Environment PORT:', process.env.PORT);
 const app = express();
 const port = process.env.PORT || 3002;
 
-console.log('Starting server with port:', process.env.PORT);
+console.log('Starting server with port:', port);
 
 // 中间件
 app.use(helmet());
