@@ -25,7 +25,11 @@ console.log('Starting server with port:', port);
 app.use(helmet());  // 添加各种 HTTP 安全头
 app.use(cors());    // 允许跨域请求
 app.use(express.json());  // 解析 JSON 请求体
-app.use(morgan('combined', { stream: logger.stream }));  // 记录 HTTP 请求日志
+app.use(logger.logRequest);
+app.use(morgan('combined', { 
+  stream: logger.stream,
+  skip: (req) => req.url === '/api/health' // 跳过健康检查的日志
+}));
 
 // 注册 API 路由，所有 /api 开头的请求都会由 apiRoutes 处理
 app.use('/api', apiRoutes);
@@ -70,12 +74,20 @@ app.post('/api/batch/transactions', async (req, res) => {
 
 // 全局错误处理中间件 - 捕获所有未处理的错误
 app.use((err, req, res, next) => {
-    logger.error(err.stack);
-    res.status(500).json({ 
-        error: 'Internal Server Error',
-        // 只在开发环境返回详细错误信息
-        message: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
+  logger.error('Unhandled Error:', {
+    error: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    body: req.body,
+    query: req.query,
+    params: req.params
+  });
+  
+  res.status(500).json({ 
+    error: 'Internal Server Error',
+    message: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
 });
 
 // 启动服务器并监听指定端口
