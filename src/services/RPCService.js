@@ -6,15 +6,19 @@ const winston = require('winston');
 const fs = require('fs');
 const path = require('path');
 
+// RPC 服务类 - 处理与 Solana 区块链的所有交互
 class RPCService {
   constructor() {
-    this.cacheTimeout = 60000;
+    // 基础配置
+    this.cacheTimeout = 60000; // 缓存过期时间：1分钟
     
+    // 初始化 RPC 提供商
     this.providers = {
-      primary: this._initializeProvider(config.primary),
-      fallback: this._initializeProvider(config.fallback)
+      primary: this._initializeProvider(config.primary),    // 主要提供商
+      fallback: this._initializeProvider(config.fallback)   // 备用提供商
     };
     
+    // 提供商状态追踪
     this.currentProvider = 'primary';
     this.requestCounts = { primary: 0, fallback: 0 };
     this.lastRequestTime = { primary: 0, fallback: 0 };
@@ -22,10 +26,14 @@ class RPCService {
     
     // 启动健康检查
     this._startHealthCheck();
+
+    // 初始化 LRU 缓存
     this.cache = new LRU({
-      max: 500,
+      max: 500,        // 最大缓存条目数
       maxAge: this.cacheTimeout
     });
+
+    // 性能指标收集
     this.metrics = {
       requestCount: 0,
       errorCount: 0,
@@ -38,22 +46,28 @@ class RPCService {
       cacheMisses: 0                    // 缓存未命中次数
     };
     
-    // 添加请求队列
+    // 请求队列配置
     this.requestQueue = new PQueue({
       concurrency: 20,  // 最大并发请求数
-      interval: 1000,   // 时间窗口
-      intervalCap: 50   // 每个时间窗口内的最大请��数
+      interval: 1000,   // 时间窗口（毫秒）
+      intervalCap: 50   // 每个时间窗口内的最大请求数
     });
     
+    // 熔断器配置
     this.circuitBreaker = {
       failureThreshold: 5,     // 错误阈值
-      resetTimeout: 30000,     // 重置时间
+      resetTimeout: 30000,     // 重置时间（毫秒）
       lastFailureTime: 0,
       failureCount: 0,
       isOpen: false
     };
     
-    // 确保日志目录存在
+    // 初始化日志系统
+    this._initializeLogger();
+  }
+
+  // 初始化日志系统
+  _initializeLogger() {
     const logDir = path.join(__dirname, '../../logs');
     if (!fs.existsSync(logDir)) {
       fs.mkdirSync(logDir);
