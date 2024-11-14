@@ -39,7 +39,7 @@ app.use((req, res, next) => {
 
 // 静态文件服务
 app.use('/static', express.static(path.join(__dirname, 'public/static')));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/js', express.static(path.join(__dirname, 'public/js')));
 
 // 注册 API 路由
 app.use('/api', apiRoutes);
