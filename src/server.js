@@ -57,25 +57,37 @@ app.get('*', (req, res) => {
 
 // 全局错误处理中间件
 app.use((err, req, res, next) => {
-    logger.error('Unhandled Error:', {
+    if (err.code === 'ECONNREFUSED' && err.message.includes('Redis')) {
+        logger.warn('Redis connection failed, falling back to memory cache');
+        // 使用内存缓存作为后备方案
+        return next();
+    }
+    next(err);
+});
+
+// 在 app.listen 之前添加
+app.use((err, req, res, next) => {
+    logger.error('Server Error:', {
         error: err.message,
         stack: err.stack,
         url: req.url,
         method: req.method,
-        body: req.body,
-        query: req.query,
-        params: req.params
+        timestamp: new Date().toISOString()
     });
     
+    // 添加详细的错误响应
     res.status(500).json({ 
         error: 'Internal Server Error',
-        message: process.env.NODE_ENV === 'development' ? err.message : undefined
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Server Error',
+        timestamp: new Date().toISOString()
     });
 });
 
-// 启动服务器
-app.listen(port, () => {
-    logger.info(`Server running on port ${port}`);
+// 修改启动监听
+app.listen(port, '0.0.0.0', () => {
+    logger.info(`Server started at ${new Date().toISOString()}`);
+    logger.info(`Server listening on port ${port}`);
+    logger.info(`Environment: ${process.env.NODE_ENV}`);
 });
 
 // 处理未捕获的异常
