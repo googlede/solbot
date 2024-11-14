@@ -10,6 +10,7 @@ const RPCService = require('./services/RPCService');
 const logger = require('./utils/logger');
 const apiRoutes = require('./routes/api');
 const path = require('path');
+const redis = require('./config/redis');
 
 // 创建 Express 应用实例
 const app = express();
@@ -46,6 +47,49 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // 注册 API 路由
 app.use('/api', apiRoutes);
+
+// 添加 Redis 健康检查
+app.get('/api/health/redis', async (req, res) => {
+    try {
+        const pingResult = await redis.ping();
+        if (pingResult === 'PONG') {
+            res.json({ status: 'ok', redis: 'connected' });
+        } else {
+            res.status(500).json({ status: 'error', message: 'Redis not responding correctly' });
+        }
+    } catch (error) {
+        logger.error('Redis health check failed:', error);
+        res.status(500).json({ 
+            status: 'error', 
+            message: 'Redis connection failed',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
+
+// Redis 错误处理中间件
+app.use((err, req, res, next) => {
+    if (err.name === 'RedisError') {
+        logger.error('Redis Error:', {
+            error: err.message,
+            stack: err.stack,
+            timestamp: new Date().toISOString()
+        });
+        
+        // 尝试重连 Redis
+        redis.disconnect();
+        redis.connect().catch(error => {
+            logger.error('Redis reconnection failed:', error);
+        });
+        
+        // 使用备用存储或返回错误响应
+        return res.status(503).json({
+            error: 'Service temporarily unavailable',
+            message: 'Redis connection error'
+        });
+    }
+    next(err);
+});
 
 // 所有其他路由返回 index.html
 app.get('*', (req, res) => {
