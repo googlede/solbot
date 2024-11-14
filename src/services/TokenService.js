@@ -31,21 +31,34 @@ class TokenService {
       logger.info('Fetching tokens from Jupiter API...');
       const response = await this._retryRequest(() => {
         logger.info('Making request to https://token.jup.ag/all');
-        return axios.get('https://token.jup.ag/all');
+        return axios.get('https://token.jup.ag/all', {
+          timeout: 10000,  // 10秒超时
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'SolBot/1.0'
+          }
+        });
       });
       
-      logger.info(`Jupiter API response status: ${response.status}`);
-      logger.info(`Jupiter API response data length: ${response.data?.length || 0}`);
-      
+      logger.info('Jupiter API Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        dataLength: response.data?.length,
+        hasData: !!response.data
+      });
+
       if (!response.data || !Array.isArray(response.data)) {
-        logger.error('Invalid response format:', response.data);
-        throw new Error('Invalid response from Jupiter API');
+        throw new Error(`Invalid response from Jupiter API: ${JSON.stringify(response.data)}`);
       }
 
-      logger.info(`Received ${response.data.length} tokens from Jupiter`);
-
       const tokens = response.data
-        .filter(token => token.address && token.symbol)
+        .filter(token => {
+          const isValid = token.address && token.symbol;
+          if (!isValid) {
+            logger.warn('Invalid token data:', token);
+          }
+          return isValid;
+        })
         .map(token => ({
           symbol: token.symbol,
           name: token.name || token.symbol,
@@ -56,13 +69,23 @@ class TokenService {
         }))
         .slice(0, 100);
 
+      logger.info(`Filtered ${tokens.length} valid tokens`);
+
       const tokenAddresses = tokens.map(t => t.address).join(',');
-      logger.info('Fetching price data...');
+      logger.info(`Fetching price data for ${tokens.length} tokens`);
+      
       const priceResponse = await this._retryRequest(() =>
         axios.get(`${this.JUPITER_API_URL}/price`, {
-          params: { ids: tokenAddresses }
+          params: { ids: tokenAddresses },
+          timeout: 10000
         })
       );
+
+      logger.info('Price data response:', {
+        status: priceResponse.status,
+        hasData: !!priceResponse.data,
+        tokenCount: Object.keys(priceResponse.data?.data || {}).length
+      });
 
       const tokensWithPrice = tokens.map(token => ({
         ...token,
@@ -71,13 +94,16 @@ class TokenService {
       }));
 
       this.cache.set('top100', tokensWithPrice);
+      logger.info(`Successfully processed ${tokensWithPrice.length} tokens with prices`);
       
-      logger.info(`Successfully processed ${tokensWithPrice.length} tokens`);
       return tokensWithPrice;
 
     } catch (error) {
-      logger.error('Error in getTop100Tokens:', error);
-      logger.error('Error details:', error.response?.data || error.message);
+      logger.error('Error in getTop100Tokens:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response?.data
+      });
       
       const staleCache = this.cache.get('top100');
       if (staleCache) {
@@ -85,7 +111,7 @@ class TokenService {
         return staleCache;
       }
       
-      throw error;
+      throw new Error(`Failed to fetch tokens: ${error.message}`);
     }
   }
 
