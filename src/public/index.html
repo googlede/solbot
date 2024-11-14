@@ -1,82 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solana Smart Money Analysis</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
-    
-    <!-- CSS 文件 -->
-    <link rel="stylesheet" href="/static/css/style.css?v=1.0.1">
-    <link rel="stylesheet" href="/static/css/smart-money.css?v=1.0.1">
-    <link rel="stylesheet" href="/static/css/animations.css">
-    <link rel="stylesheet" href="/static/css/notifications.css">
-    <link rel="stylesheet" href="/static/css/mobile.css">
-
-    <!-- 第三方库 -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Solana 智能钱包分析</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 8px;
+        }
+    </style>
 </head>
 <body>
-    <div id="smartMoneyContainer" class="smart-money-dashboard">
-        <!-- 搜索和过滤区 -->
-        <div class="search-section">
-            <input type="text" id="tokenSearch" placeholder="输入代币地址..." />
-            <select id="timeFilter">
-                <option value="24h">24小时</option>
-                <option value="7d">7天</option>
-                <option value="30d">30天</option>
-            </select>
-            <button id="searchBtn" class="primary-btn">分析</button>
+    <div class="container">
+        <h1>Solana 智能钱包分析</h1>
+        
+        <div class="time-range">
+            <button onclick="updateTimeRange('24h')">24小时</button>
+            <button onclick="updateTimeRange('7d')">7天</button>
+            <button onclick="updateTimeRange('30d')">30天</button>
         </div>
 
-        <!-- 数据概览区 -->
-        <div class="overview-section">
-            <div class="metric-card">
-                <h3>智能钱包数量</h3>
-                <div id="walletCount" class="metric-value">-</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="wallet-count">-</div>
+                <div class="stat-label">智能钱包数量</div>
             </div>
-            <div class="metric-card">
-                <h3>平均收益率</h3>
-                <div id="avgProfit" class="metric-value">-</div>
+            <div class="stat-card">
+                <div class="stat-value" id="avg-return">-</div>
+                <div class="stat-label">平均收益率</div>
             </div>
-            <div class="metric-card">
-                <h3>总交易量</h3>
-                <div id="totalVolume" class="metric-value">-</div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-volume">-</div>
+                <div class="stat-label">总交易量</div>
             </div>
         </div>
 
-        <!-- 智能钱包列表 -->
-        <div class="wallet-list-section">
-            <h2>智能钱包排行</h2>
-            <div id="walletList" class="wallet-list"></div>
-        </div>
+        <h2>智能钱包排行</h2>
+        <div id="rankings"></div>
 
-        <!-- 图表区域 -->
-        <div class="charts-section">
-            <div class="chart-container">
-                <h3>收益分布</h3>
-                <canvas id="profitChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <h3>交易活动</h3>
-                <canvas id="activityChart"></canvas>
-            </div>
-        </div>
+        <h2>收益分布</h2>
+        <div id="distribution"></div>
+
+        <h2>交易活动</h2>
+        <div id="activities"></div>
     </div>
 
-    <!-- JavaScript 文件 -->
-    <script src="/static/js/theme.js"></script>
-    <script src="/static/js/charts.js"></script>
-    <script src="/static/js/activity.js"></script>
-    <script src="/js/views/ChartView.js"></script>
-    <script src="/js/views/SmartMoneyView.js"></script>
-    <script src="/js/views/WalletDetailView.js"></script>
-    <script src="/js/views/FilterView.js"></script>
-    <script src="/js/services/RealtimeService.js"></script>
-    <script src="/js/services/ExportService.js"></script>
-    <script src="/js/components/NotificationManager.js"></script>
+    <script>
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                updateUI(data);
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            }
+        }
+
+        function updateUI(data) {
+            document.getElementById('wallet-count').textContent = 
+                data.smartWallets?.count || '-';
+            document.getElementById('avg-return').textContent = 
+                data.smartWallets?.avgReturn ? `${data.smartWallets.avgReturn}%` : '-';
+            document.getElementById('total-volume').textContent = 
+                data.smartWallets?.totalVolume || '-';
+        }
+
+        function updateTimeRange(range) {
+            fetchStats();
+        }
+
+        // 初始加载
+        fetchStats();
+        // 每30秒更新一次
+        setInterval(fetchStats, 30000);
+    </script>
 </body>
 </html> 
