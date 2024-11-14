@@ -15,41 +15,23 @@ class TokenService {
   async getTop100Tokens() {
     try {
       console.log('Starting getTop100Tokens...');
-      const cacheKey = 'top100';
-      const cached = this.cache.get(cacheKey);
-      if (cached) {
-        console.log('Returning cached tokens:', cached.length);
-        return cached;
-      }
-
+      
       // 尝试从 Jupiter API 获取数据
       console.log('Fetching from Jupiter API...');
       const jupiterResponse = await axios.get('https://token.jup.ag/all');
       console.log('Jupiter API raw response:', jupiterResponse.data ? 'data received' : 'no data');
       
-      const jupiterTokens = await this.getJupiterTop100();
-      console.log('Jupiter API processed response:', jupiterTokens ? jupiterTokens.length : 'null');
-      
-      if (jupiterTokens && jupiterTokens.length > 0) {
-        console.log('Successfully got tokens from Jupiter:', jupiterTokens.length);
-        return jupiterTokens;
+      if (!jupiterResponse.data) {
+        throw new Error('Invalid response from Jupiter');
       }
 
-      // 如果 Jupiter API 失败，尝试 CoinGecko
-      console.log('Jupiter API failed, trying CoinGecko...');
-      const coingeckoResponse = await axios.get(
-        `${this.COINGECKO_API_URL}/coins/markets`, {
-        params: {
-          vs_currency: 'usd',
-          order: 'market_cap_desc',
-          per_page: 100,
-          platform: 'solana'
-        }
-      });
-      console.log('CoinGecko API raw response:', coingeckoResponse.data ? 'data received' : 'no data');
+      // 处理数据
+      const tokens = jupiterResponse.data
+        .filter(token => token.address && token.symbol)
+        .slice(0, 100);
       
-      const tokens = await this.getCoingeckoTop100();
-      console.log('CoinGecko response:', tokens ? tokens.length : 'null');
+      console.log(`Processing ${tokens.length} Jupiter tokens...`);
+
       return tokens;
     } catch (error) {
       console.error('Error in getTop100Tokens:', error);
