@@ -1,6 +1,8 @@
 const { Connection } = require('@solana/web3.js');
 const config = require('../config/api.config');
 const LRU = require('lru-cache');
+const PQueue = require('p-queue');
+const winston = require('winston');
 
 class RPCService {
   constructor() {
@@ -25,8 +27,41 @@ class RPCService {
     this.metrics = {
       requestCount: 0,
       errorCount: 0,
-      avgResponseTime: 0
+      avgResponseTime: 0,
+      responseTimeHistogram: new Map(),  // 响应时间分布
+      methodStats: new Map(),            // 各方法的统计信息
+      lastMinuteRequests: [],            // 最近一分钟的请求
+      circuitBreakerTrips: 0,           // 熔断器触发次数
+      cacheHits: 0,                     // 缓存命中次数
+      cacheMisses: 0                    // 缓存未命中次数
     };
+    
+    // 添加请求队列
+    this.requestQueue = new PQueue({
+      concurrency: 20,  // 最大并发请求数
+      interval: 1000,   // 时间窗口
+      intervalCap: 50   // 每个时间窗口内的最大请求数
+    });
+    
+    this.circuitBreaker = {
+      failureThreshold: 5,     // 错误阈值
+      resetTimeout: 30000,     // 重置时间
+      lastFailureTime: 0,
+      failureCount: 0,
+      isOpen: false
+    };
+    
+    this.logger = winston.createLogger({
+      level: 'info',
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json()
+      ),
+      transports: [
+        new winston.transports.File({ filename: 'error.log', level: 'error' }),
+        new winston.transports.File({ filename: 'combined.log' })
+      ]
+    });
   }
 
   _initializeProvider(providerConfig) {
@@ -76,22 +111,75 @@ class RPCService {
   }
 
   async executeRequest(method, ...args) {
-    const startTime = Date.now();
-    try {
-      const result = await super.executeRequest(method, ...args);
-      this._updateMetrics(Date.now() - startTime);
-      return result;
-    } catch (error) {
-      this.metrics.errorCount++;
-      throw error;
+    if (!await this._checkCircuitBreaker()) {
+      this.logger.error('Circuit breaker is open');
+      throw new Error('Circuit breaker is open');
     }
+
+    return this.requestQueue.add(async () => {
+      const startTime = Date.now();
+      const provider = await this._getOptimalProvider();
+      
+      try {
+        this.logger.info(`Executing ${method} request`, { args });
+        const result = await provider.connection[method](...args);
+        const duration = Date.now() - startTime;
+        this.logger.info(`${method} request completed`, { duration });
+        this._updateMetrics(method, duration);
+        provider.requestCount++;
+        return result;
+      } catch (error) {
+        this.logger.error(`Error executing ${method}`, { 
+          error: error.message,
+          args,
+          provider: this.currentProvider 
+        });
+        this.metrics.errorCount++;
+        this._updateCircuitBreaker(error);
+        throw error;
+      }
+    });
   }
 
-  _updateMetrics(responseTime) {
+  _updateMetrics(method, responseTime, isError = false) {
+    const now = Date.now();
+    
+    // 更新基本指标
     this.metrics.requestCount++;
+    if (isError) this.metrics.errorCount++;
+    
+    // 更新响应时间
     this.metrics.avgResponseTime = 
       (this.metrics.avgResponseTime * (this.metrics.requestCount - 1) + responseTime) 
       / this.metrics.requestCount;
+    
+    // 更新响应时间分布
+    const timeRange = Math.floor(responseTime / 100) * 100;
+    this.metrics.responseTimeHistogram.set(
+      timeRange, 
+      (this.metrics.responseTimeHistogram.get(timeRange) || 0) + 1
+    );
+    
+    // 更新方法统计
+    if (!this.metrics.methodStats.has(method)) {
+      this.metrics.methodStats.set(method, {
+        count: 0,
+        errors: 0,
+        avgTime: 0
+      });
+    }
+    const methodStats = this.metrics.methodStats.get(method);
+    methodStats.count++;
+    if (isError) methodStats.errors++;
+    methodStats.avgTime = 
+      (methodStats.avgTime * (methodStats.count - 1) + responseTime) 
+      / methodStats.count;
+    
+    // 更新最近一分钟请求
+    this.metrics.lastMinuteRequests = [
+      ...this.metrics.lastMinuteRequests.filter(req => now - req.time < 60000),
+      { time: now, method, responseTime, isError }
+    ];
   }
 
   getMetrics() {
@@ -111,12 +199,12 @@ class RPCService {
           this.failureCounts[name] = 0;
         } catch (error) {
           provider.isHealthy = false;
+          this.failureCounts[name]++;
         }
       }
     }, config.loadBalancing.healthCheck.interval);
   }
 
-  // 公共 API 方法
   async getBlock(slot) {
     const cacheKey = `block:${slot}`;
     const cached = await this._getCachedData(cacheKey);
@@ -132,13 +220,19 @@ class RPCService {
   }
 
   async getTransaction(signature) {
-    return this.executeRequest('getTransaction', signature, {
+    const cacheKey = `tx:${signature}`;
+    const cached = await this._getCachedData(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.executeRequestWithRetry('getTransaction', signature, {
       maxSupportedTransactionVersion: 0,
       commitment: 'confirmed'
     });
+
+    await this._setCacheData(cacheKey, result);
+    return result;
   }
 
-  // 在 RPCService 类中添加重试机制
   async executeRequestWithRetry(method, ...args) {
     const provider = await this._getOptimalProvider();
     const { maxRetries, initialDelay, maxDelay } = provider.config.options.retry;
@@ -146,7 +240,6 @@ class RPCService {
     let lastError;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        // 添加超时控制
         const timeoutPromise = new Promise((_, reject) => {
           setTimeout(() => reject(new Error('Request timeout')), 15000);
         });
@@ -156,11 +249,10 @@ class RPCService {
         lastError = error;
         if (attempt === maxRetries) break;
         
-        // 只有特定错误才重试
         if (!this._shouldRetry(error)) throw error;
         
         const delay = Math.min(initialDelay * Math.pow(2, attempt), maxDelay);
-        await new Promise(resolve => setTimeout(resolve, delay + Math.random() * 1000)); // 添加随机抖动
+        await new Promise(resolve => setTimeout(resolve, delay + Math.random() * 1000));
       }
     }
     throw lastError;
@@ -197,7 +289,6 @@ class RPCService {
         
         const batchResults = await Promise.all(batchPromises);
         
-        // 分离成功和失败的结果
         batchResults.forEach(result => {
           if (result.error) {
             errors.push(result);
@@ -228,6 +319,47 @@ class RPCService {
       errors,
       success: results.length,
       failed: errors.length
+    };
+  }
+
+  async _checkCircuitBreaker() {
+    if (!this.circuitBreaker.isOpen) {
+      return true;
+    }
+
+    const now = Date.now();
+    if (now - this.circuitBreaker.lastFailureTime > this.circuitBreaker.resetTimeout) {
+      this.circuitBreaker.isOpen = false;
+      this.circuitBreaker.failureCount = 0;
+      return true;
+    }
+    return false;
+  }
+
+  _updateCircuitBreaker(error) {
+    this.circuitBreaker.failureCount++;
+    this.circuitBreaker.lastFailureTime = Date.now();
+    
+    if (this.circuitBreaker.failureCount >= this.circuitBreaker.failureThreshold) {
+      this.circuitBreaker.isOpen = true;
+    }
+  }
+
+  getDetailedMetrics() {
+    const now = Date.now();
+    return {
+      ...this.metrics,
+      errorRate: this.metrics.errorCount / this.metrics.requestCount,
+      requestsPerMinute: this.metrics.lastMinuteRequests.length,
+      methodBreakdown: Object.fromEntries(this.metrics.methodStats),
+      responseTimeDistribution: Object.fromEntries(this.metrics.responseTimeHistogram),
+      cacheHitRate: this.metrics.cacheHits / (this.metrics.cacheHits + this.metrics.cacheMisses),
+      uptime: process.uptime(),
+      circuitBreakerStatus: {
+        isOpen: this.circuitBreaker.isOpen,
+        failureCount: this.circuitBreaker.failureCount,
+        tripCount: this.metrics.circuitBreakerTrips
+      }
     };
   }
 }

@@ -4,7 +4,7 @@ module.exports = {
   // Chainstack 主要供应商配置
   primary: {
     name: 'chainstack',
-    rpcEndpoint: process.env.CHAINSTACK_RPC_URL,
+    rpcEndpoint: 'https://api.mainnet-beta.solana.com',
     wsEndpoint: process.env.CHAINSTACK_WS_URL,
     apiKey: process.env.CHAINSTACK_API_KEY,
     options: {
@@ -13,8 +13,8 @@ module.exports = {
       encoding: 'jsonParsed',
       // 请求限制配置
       rateLimit: {
-        maxRequests: 50,  // 每秒最大请求数
-        interval: 1000,   // 时间窗口（毫秒）
+        maxRequests: 100,
+        interval: 10000
       },
       // 重试配置
       retry: {
@@ -27,7 +27,7 @@ module.exports = {
   // Helius 备用供应商配置
   fallback: {
     name: 'helius',
-    rpcEndpoint: process.env.HELIUS_RPC_URL,
+    rpcEndpoint: 'https://solana-api.projectserum.com',
     apiKey: process.env.HELIUS_API_KEY,
     options: {
       commitment: 'confirmed',
@@ -35,13 +35,13 @@ module.exports = {
       encoding: 'jsonParsed',
       // 请求限制配置
       rateLimit: {
-        maxRequests: 30,  // 较低的请求限制
-        interval: 1000,
+        maxRequests: 80,
+        interval: 10000
       },
       retry: {
-        maxRetries: 2,
+        maxRetries: 3,
         initialDelay: 1000,
-        maxDelay: 3000
+        maxDelay: 5000
       }
     }
   },
