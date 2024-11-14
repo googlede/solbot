@@ -1,8 +1,44 @@
 const { exec } = require('child_process');
 const logger = require('../utils/logger');
+const fs = require('fs');
+const path = require('path');
 
 async function deploy() {
     try {
+        // 检查是否是首次部署
+        const configPath = path.join(process.cwd(), 'ecosystem.config.js');
+        if (!fs.existsSync(configPath)) {
+            // 创建默认配置
+            const defaultConfig = `
+module.exports = {
+  apps: [{
+    name: 'solbot',
+    script: 'src/server.js',
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    env: {
+      NODE_ENV: 'development',
+      PORT: 3002
+    },
+    env_production: {
+      NODE_ENV: 'production',
+      PORT: 3002
+    },
+    error_file: 'logs/err.log',
+    out_file: 'logs/out.log',
+    log_file: 'logs/combined.log',
+    time: true,
+    log_date_format: 'YYYY-MM-DD HH:mm:ss',
+    merge_logs: true,
+    log_type: 'json'
+  }]
+};`;
+            fs.writeFileSync(configPath, defaultConfig);
+            logger.info('Created default ecosystem.config.js');
+        }
+
         // 1. 停止当前运行的服务
         logger.info('Stopping current service...');
         await executeCommand('pm2 stop solbot');
@@ -21,7 +57,7 @@ async function deploy() {
 
         // 5. 重启服务
         logger.info('Starting service...');
-        await executeCommand('pm2 start solbot');
+        await executeCommand('pm2 start ecosystem.config.js');
 
         logger.info('Deployment completed successfully');
     } catch (error) {
