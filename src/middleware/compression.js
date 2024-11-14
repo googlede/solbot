@@ -1,4 +1,4 @@
-const compression = require('compression');
+const compression = require('express-compression');
 const logger = require('../utils/logger');
 
 // 自定义压缩配置
@@ -15,14 +15,5 @@ module.exports = compression({
     },
     
     // 压缩级别 (0-9)
-    level: 6,
-    
-    // 记录压缩效果
-    onComplete: (stats) => {
-        logger.info('Response compressed', {
-            originalSize: stats.originalSize,
-            compressedSize: stats.compressedSize,
-            ratio: ((1 - stats.compressedSize / stats.originalSize) * 100).toFixed(2) + '%'
-        });
-    }
+    level: 6
 }); 
