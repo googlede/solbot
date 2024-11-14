@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const RPCService = require('./services/RPCService');
 const logger = require('./utils/logger');
+const apiRoutes = require('./routes/api');
 
 console.log('Environment PORT:', process.env.PORT);
 
@@ -70,6 +71,9 @@ app.post('/api/batch/transactions', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+// 添加 API 路由
+app.use('/api', apiRoutes);
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
