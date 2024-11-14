@@ -14,52 +14,24 @@ class TokenService {
 
   async getTop100Tokens() {
     try {
-      const cacheKey = 'top100';
-      const cached = this.cache.get(cacheKey);
-      if (cached) {
-        console.log('Returning cached tokens');
-        return cached;
+      console.log('Starting getTop100Tokens...');
+      
+      // 尝试从 Jupiter API 获取数据
+      console.log('Fetching from Jupiter API...');
+      const jupiterTokens = await this.getJupiterTop100();
+      if (jupiterTokens.length > 0) {
+        console.log('Successfully got tokens from Jupiter');
+        return jupiterTokens;
       }
 
-      console.log('Fetching from CoinGecko...');
-      const response = await axios.get(
-        `${this.COINGECKO_API_URL}/coins/markets`, {
-        params: {
-          vs_currency: 'usd',
-          order: 'market_cap_desc',
-          per_page: 100,
-          platform: 'solana'
-        }
-      });
-
-      console.log('CoinGecko response:', response.data);
-
-      if (!response.data || !Array.isArray(response.data)) {
-        throw new Error('Invalid response from CoinGecko');
-      }
-
-      const tokens = response.data.map(token => ({
-        symbol: token.symbol.toUpperCase(),
-        address: token.platforms?.solana || '',
-        price: token.current_price,
-        marketCap: token.market_cap,
-        volume24h: token.total_volume
-      }));
-
-      this.cache.set(cacheKey, tokens);
+      // 如果 Jupiter API 失败，尝试 CoinGecko
+      console.log('Jupiter API failed, trying CoinGecko...');
+      const tokens = await this.getCoingeckoTop100();
+      console.log('Got tokens from CoinGecko:', tokens.length);
       return tokens;
     } catch (error) {
-      console.error('Error fetching from CoinGecko:', error.message);
-      console.log('Falling back to Jupiter API...');
-      
-      try {
-        const jupiterTokens = await this.getJupiterTop100();
-        console.log('Jupiter tokens count:', jupiterTokens.length);
-        return jupiterTokens;
-      } catch (jupiterError) {
-        console.error('Jupiter API also failed:', jupiterError.message);
-        return [];
-      }
+      console.error('Error in getTop100Tokens:', error);
+      return [];
     }
   }
 
@@ -225,8 +197,11 @@ class TokenService {
         throw new Error('Invalid response from Jupiter');
       }
 
-      // 只取前 100 个代币
-      const tokens = response.data.slice(0, 100);
+      // 只取前 100 个代币，并按市值排序
+      const tokens = response.data
+        .filter(token => token.address && token.symbol) // 确保有必要的字段
+        .slice(0, 100);
+      
       console.log(`Processing ${tokens.length} Jupiter tokens...`);
 
       // 批量获取价格数据
@@ -244,10 +219,12 @@ class TokenService {
       // 格式化返回数据
       const formattedTokens = tokens.map(token => ({
         symbol: token.symbol,
-        name: token.name,
+        name: token.name || token.symbol,
         address: token.address,
+        decimals: token.decimals,
         price: priceData[token.address]?.price || 0,
-        volume24h: priceData[token.address]?.volume24h || 0
+        volume24h: priceData[token.address]?.volume24h || 0,
+        logoURI: token.logoURI || null
       }));
 
       // 缓存结果
@@ -256,6 +233,7 @@ class TokenService {
         timestamp: Date.now()
       });
 
+      console.log(`Successfully processed ${formattedTokens.length} tokens`);
       return formattedTokens;
     } catch (error) {
       console.error('Detailed Jupiter error:', error.message);
@@ -263,6 +241,49 @@ class TokenService {
         console.error('Jupiter API response:', error.response.data);
       }
       return [];
+    }
+  }
+
+  async getCoingeckoTop100() {
+    try {
+      console.log('Fetching from CoinGecko...');
+      const response = await axios.get(
+        `${this.COINGECKO_API_URL}/coins/markets`, {
+        params: {
+          vs_currency: 'usd',
+          order: 'market_cap_desc',
+          per_page: 100,
+          platform: 'solana'
+        }
+      });
+
+      if (!response.data || !Array.isArray(response.data)) {
+        throw new Error('Invalid response from CoinGecko');
+      }
+
+      // 格式化数据
+      const tokens = response.data.map(token => ({
+        symbol: token.symbol.toUpperCase(),
+        name: token.name,
+        address: token.platforms?.solana || '',
+        price: token.current_price,
+        marketCap: token.market_cap,
+        volume24h: token.total_volume,
+        priceChange24h: token.price_change_percentage_24h
+      }));
+
+      // 缓存结果
+      this.cache.set('top100', {
+        data: tokens,
+        timestamp: Date.now()
+      });
+
+      console.log(`Successfully processed ${tokens.length} tokens from CoinGecko`);
+      return tokens;
+    } catch (error) {
+      console.error('Error fetching from CoinGecko:', error);
+      // 如果 CoinGecko 失败，尝试使用 Jupiter API
+      return this.getJupiterTop100();
     }
   }
 }
