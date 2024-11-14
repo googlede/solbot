@@ -32,7 +32,8 @@
     "memory-cache": "^0.2.0",
     "express-compression": "^1.0.2",
     "pg": "^8.11.3",
-    "bigint-buffer": "^1.1.5"
+    "bigint-buffer": "^1.1.5",
+    "ioredis": "^5.3.2"
   },
   "devDependencies": {
     "jest": "^29.7.0",

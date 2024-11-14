@@ -1,3 +1,5 @@
+# 编辑 server.js
+cat > src/server.js << 'EOF'
 // 加载环境变量配置
 require('dotenv').config();
 
@@ -16,9 +18,19 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3002;
 
+// 添加调试日志中间件
+app.use((req, res, next) => {
+    logger.info('Request received:', {
+        method: req.method,
+        url: req.url,
+        timestamp: new Date().toISOString()
+    });
+    next();
+});
+
 // 配置中间件
 app.use(helmet({
-    contentSecurityPolicy: false,  // 允许加载外部资源
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false
 }));
 app.use(cors());
@@ -29,17 +41,11 @@ app.use(morgan('combined', {
     stream: logger.stream,
     skip: (req) => req.url === '/api/health'
 }));
-app.use((req, res, next) => {
-    // 禁用缓存
-    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-    res.header('Expires', '-1');
-    res.header('Pragma', 'no-cache');
-    next();
-});
 
 // 静态文件服务
 app.use('/static', express.static(path.join(__dirname, 'public/static')));
 app.use('/js', express.static(path.join(__dirname, 'public/js')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 注册 API 路由
 app.use('/api', apiRoutes);

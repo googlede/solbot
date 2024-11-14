@@ -72,28 +72,13 @@ router.get('/health', async (req, res) => {
 // Top 100 代币列表接口
 // 返回市值排名前 100 的代币信息
 router.get('/tokens/top100', async (req, res) => {
-  try {
-    const tokens = await TokenService.getTop100Tokens();
-    if (!tokens || tokens.length === 0) {
-      logger.warn('No tokens returned from TokenService');
-      return res.status(404).json({
-        status: 'error',
-        message: 'No tokens available'
-      });
+    try {
+        const tokens = await TokenService.getTop100Tokens();
+        res.json({ tokens });
+    } catch (error) {
+        logger.error('Error fetching top tokens:', error);
+        res.status(500).json({ error: error.message });
     }
-    
-    res.json({
-      status: 'success',
-      data: tokens
-    });
-  } catch (error) {
-    logger.error('Error in /tokens/top100:', error);
-    res.status(500).json({
-      status: 'error',
-      message: error.message,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    });
-  }
 });
 
 // 导出智能钱包数据
