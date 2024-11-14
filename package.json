@@ -10,7 +10,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "deploy": "node src/scripts/deploy.js",
-    "deploy:prod": "NODE_ENV=production node src/scripts/deploy.js"
+    "deploy:prod": "NODE_ENV=production node src/scripts/deploy.js",
+    "rebuild": "npm rebuild"
   },
   "author": "",
   "license": "ISC",
@@ -29,7 +30,9 @@
     "p-queue": "^6.6.2",
     "exceljs": "^4.4.0",
     "memory-cache": "^0.2.0",
-    "express-compression": "^1.0.2"
+    "express-compression": "^1.0.2",
+    "pg": "^8.11.3",
+    "bigint-buffer": "^1.1.5"
   },
   "devDependencies": {
     "jest": "^29.7.0",
