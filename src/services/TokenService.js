@@ -24,8 +24,11 @@ class TokenService {
 
       // 尝试从 Jupiter API 获取数据
       console.log('Fetching from Jupiter API...');
+      const jupiterResponse = await axios.get('https://token.jup.ag/all');
+      console.log('Jupiter API raw response:', jupiterResponse.data ? 'data received' : 'no data');
+      
       const jupiterTokens = await this.getJupiterTop100();
-      console.log('Jupiter API response:', jupiterTokens ? jupiterTokens.length : 'null');
+      console.log('Jupiter API processed response:', jupiterTokens ? jupiterTokens.length : 'null');
       
       if (jupiterTokens && jupiterTokens.length > 0) {
         console.log('Successfully got tokens from Jupiter:', jupiterTokens.length);
@@ -34,11 +37,23 @@ class TokenService {
 
       // 如果 Jupiter API 失败，尝试 CoinGecko
       console.log('Jupiter API failed, trying CoinGecko...');
+      const coingeckoResponse = await axios.get(
+        `${this.COINGECKO_API_URL}/coins/markets`, {
+        params: {
+          vs_currency: 'usd',
+          order: 'market_cap_desc',
+          per_page: 100,
+          platform: 'solana'
+        }
+      });
+      console.log('CoinGecko API raw response:', coingeckoResponse.data ? 'data received' : 'no data');
+      
       const tokens = await this.getCoingeckoTop100();
       console.log('CoinGecko response:', tokens ? tokens.length : 'null');
       return tokens;
     } catch (error) {
       console.error('Error in getTop100Tokens:', error);
+      console.error('Error details:', error.response?.data || error.message);
       return [];
     }
   }
