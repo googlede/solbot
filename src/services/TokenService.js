@@ -1,4 +1,3 @@
-cat > src/services/TokenService.js << 'EOL'
 const axios = require('axios');
 const LRU = require('lru-cache');
 const logger = require('../utils/logger');
@@ -32,7 +31,7 @@ class TokenService {
       const response = await this._retryRequest(() => {
         logger.info('Making request to https://token.jup.ag/all');
         return axios.get('https://token.jup.ag/all', {
-          timeout: 10000,  // 10秒超时
+          timeout: 10000,
           headers: {
             'Accept': 'application/json',
             'User-Agent': 'SolBot/1.0'
@@ -134,4 +133,3 @@ class TokenService {
 }
 
 module.exports = new TokenService();
-EOL
