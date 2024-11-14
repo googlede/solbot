@@ -1,3 +1,5 @@
+# 创建新的 logger.js
+cat > src/utils/logger.js << 'EOL'
 const winston = require('winston');
 const path = require('path');
 const fs = require('fs');
@@ -23,20 +25,17 @@ const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: customFormat,
   transports: [
-    // 错误日志文件
     new winston.transports.File({
       filename: path.join(logDir, 'error.log'),
       level: 'error',
-      maxsize: 5242880, // 5MB
+      maxsize: 5242880,
       maxFiles: 5,
     }),
-    // 所有日志文件
     new winston.transports.File({
       filename: path.join(logDir, 'combined.log'),
-      maxsize: 5242880, // 5MB
+      maxsize: 5242880,
       maxFiles: 5,
     }),
-    // 开发环境下的控制台输出
     ...(process.env.NODE_ENV !== 'production' ? [
       new winston.transports.Console({
         format: winston.format.combine(
@@ -46,30 +45,26 @@ const logger = winston.createLogger({
       })
     ] : [])
   ],
-  // 异常处理
   exceptionHandlers: [
     new winston.transports.File({
       filename: path.join(logDir, 'exceptions.log'),
-      maxsize: 5242880, // 5MB
+      maxsize: 5242880,
       maxFiles: 5,
     })
   ],
-  // 拒绝处理
   rejectionHandlers: [
     new winston.transports.File({
       filename: path.join(logDir, 'rejections.log'),
-      maxsize: 5242880, // 5MB
+      maxsize: 5242880,
       maxFiles: 5,
     })
   ]
 });
 
-// 为 Morgan 中间件创建流
 logger.stream = {
   write: (message) => logger.info(message.trim())
 };
 
-// 添加性能监控
 logger.trackPerformance = (label) => {
   const start = process.hrtime();
   return () => {
@@ -80,11 +75,9 @@ logger.trackPerformance = (label) => {
   };
 };
 
-// 添加请求追踪
 logger.logRequest = (req, res, next) => {
   const start = process.hrtime();
   
-  // 在请求结束时记录
   res.on('finish', () => {
     const [seconds, nanoseconds] = process.hrtime(start);
     const duration = seconds * 1000 + nanoseconds / 1e6;
@@ -102,4 +95,5 @@ logger.logRequest = (req, res, next) => {
   next();
 };
 
-module.exports = logger; 
+module.exports = logger;
+EOL

@@ -1,3 +1,4 @@
+cat > src/server.js << 'EOL'
 // 加载环境变量配置，确保所有环境变量都可用
 require('dotenv').config();
 
@@ -112,3 +113,4 @@ process.on('uncaughtException', (error) => {
 
 // 导出 app 实例供测试使用
 module.exports = app;
+EOL
