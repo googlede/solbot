@@ -11,6 +11,7 @@ const logger = require('./utils/logger');
 const apiRoutes = require('./routes/api');
 const path = require('path');
 const redis = require('./config/redis');
+const ActivityService = require('./services/ActivityService');
 
 // 创建 Express 应用实例
 const app = express();
@@ -98,7 +99,6 @@ app.use((req, res, next) => {
 // 修改活动流路由
 app.get('/api/activity/stream', async (req, res) => {
     try {
-        // 记录请求
         logger.info('Activity stream requested', {
             ip: req.ip,
             timestamp: new Date().toISOString()
@@ -120,19 +120,25 @@ app.get('/api/activity/stream', async (req, res) => {
         }
 
         // 获取新数据
-        data = await getActivityData(); // 你的数据获取函数
+        data = await ActivityService.getActivityData();
         
         // 尝试缓存数据
         try {
-            await redis.set(cacheKey, JSON.stringify(data), 'EX', 300);
+            if (data) {
+                await redis.set(cacheKey, JSON.stringify(data), 'EX', 300);
+            }
         } catch (cacheError) {
             logger.error('Cache set error:', cacheError);
             // 缓存错误不影响返回数据
         }
 
-        res.json(data);
+        res.json(data || { activities: [], timestamp: new Date().toISOString() });
     } catch (error) {
-        logger.error('Activity stream error:', error);
+        logger.error('Activity stream error:', {
+            error: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString()
+        });
         res.status(500).json({ 
             error: 'Internal Server Error',
             message: process.env.NODE_ENV === 'development' ? error.message : undefined
