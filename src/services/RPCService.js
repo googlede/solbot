@@ -28,8 +28,8 @@ class RPCService {
 
     // 初始化 LRU 缓存
     this.cache = new LRU({
-      max: 500,        // 最大缓存条目数
-      maxAge: this.cacheTimeout
+      max: 500,
+      ttl: this.cacheTimeout  // 使用 ttl 替代 maxAge
     });
 
     // 性能指标收集

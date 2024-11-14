@@ -23,7 +23,9 @@ class TokenService {
       
       const cached = this.cache.get('top100');
       if (cached) {
-        logger.info('Returning cached tokens data');
+        logger.info('Returning cached tokens data', { 
+          tokenCount: cached.length 
+        });
         return cached;
       }
 
@@ -42,8 +44,10 @@ class TokenService {
       logger.info('Jupiter API Response:', {
         status: response.status,
         statusText: response.statusText,
+        headers: response.headers,
+        dataType: typeof response.data,
         dataLength: response.data?.length,
-        hasData: !!response.data
+        sampleData: response.data?.slice(0, 2)
       });
 
       if (!response.data || !Array.isArray(response.data)) {
@@ -101,7 +105,8 @@ class TokenService {
       logger.error('Error in getTop100Tokens:', {
         message: error.message,
         stack: error.stack,
-        response: error.response?.data
+        response: error.response?.data,
+        config: error.config
       });
       
       const staleCache = this.cache.get('top100');
