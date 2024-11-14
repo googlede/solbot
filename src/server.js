@@ -1,28 +1,29 @@
+# 在服务器上执行
 cat > src/server.js << 'EOL'
-// 加载环境变量配置，确保所有环境变量都可用
+// 加载环境变量配置
 require('dotenv').config();
 
 // 导入必要的依赖模块
-const express = require('express');        // Web 应用框架
-const cors = require('cors');             // 跨域资源共享中间件
-const helmet = require('helmet');         // 安全中间件
-const morgan = require('morgan');         // HTTP 请求日志中间件
-const RPCService = require('./services/RPCService');  // RPC 服务
-const logger = require('./utils/logger');  // 日志工具
-const apiRoutes = require('./routes/api'); // API 路由模块
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const RPCService = require('./services/RPCService');
+const logger = require('./utils/logger');
+const apiRoutes = require('./routes/api');
 
 // 创建 Express 应用实例
 const app = express();
 const port = process.env.PORT || 3002;
 
 // 配置中间件
-app.use(helmet());  // 添加各种 HTTP 安全头
-app.use(cors());    // 允许跨域请求
-app.use(express.json());  // 解析 JSON 请求体
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
 app.use(logger.logRequest);
 app.use(morgan('combined', { 
   stream: logger.stream,
-  skip: (req) => req.url === '/api/health' // 跳过健康检查的日志
+  skip: (req) => req.url === '/api/health'
 }));
 
 // 注册 API 路由

@@ -5,10 +5,9 @@ const logger = require('../utils/logger');
 
 class TokenService {
   constructor() {
-    // 初始化缓存
     this.cache = new LRU({
       max: 500,
-      ttl: 1000 * 60 * 5 // 5分钟缓存
+      ttl: 1000 * 60 * 5
     });
 
     this.JUPITER_API_URL = process.env.JUPITER_API_URL || 'https://price.jup.ag/v4';
@@ -23,21 +22,18 @@ class TokenService {
     try {
       logger.info('Starting getTop100Tokens request...');
       
-      // 检查缓存
       const cached = this.cache.get('top100');
       if (cached) {
         logger.info('Returning cached tokens data');
         return cached;
       }
 
-      // 获取代币列表
       logger.info('Fetching tokens from Jupiter API...');
       const response = await this._retryRequest(() => {
         logger.info('Making request to https://token.jup.ag/all');
         return axios.get('https://token.jup.ag/all');
       });
       
-      // 打印响应数据
       logger.info(`Jupiter API response status: ${response.status}`);
       logger.info(`Jupiter API response data length: ${response.data?.length || 0}`);
       
@@ -48,9 +44,8 @@ class TokenService {
 
       logger.info(`Received ${response.data.length} tokens from Jupiter`);
 
-      // 处理数据
       const tokens = response.data
-        .filter(token => token.address && token.symbol) // 过滤无效数据
+        .filter(token => token.address && token.symbol)
         .map(token => ({
           symbol: token.symbol,
           name: token.name || token.symbol,
@@ -59,9 +54,8 @@ class TokenService {
           logoURI: token.logoURI,
           tags: token.tags || []
         }))
-        .slice(0, 100); // 只取前100个
+        .slice(0, 100);
 
-      // 获取价格数据
       const tokenAddresses = tokens.map(t => t.address).join(',');
       logger.info('Fetching price data...');
       const priceResponse = await this._retryRequest(() =>
@@ -70,14 +64,12 @@ class TokenService {
         })
       );
 
-      // 合并价格数据
       const tokensWithPrice = tokens.map(token => ({
         ...token,
         price: priceResponse.data?.data?.[token.address]?.price || 0,
         volume24h: priceResponse.data?.data?.[token.address]?.volume24h || 0
       }));
 
-      // 缓存结果
       this.cache.set('top100', tokensWithPrice);
       
       logger.info(`Successfully processed ${tokensWithPrice.length} tokens`);
@@ -87,7 +79,6 @@ class TokenService {
       logger.error('Error in getTop100Tokens:', error);
       logger.error('Error details:', error.response?.data || error.message);
       
-      // 尝试返回缓存数据，即使已过期
       const staleCache = this.cache.get('top100');
       if (staleCache) {
         logger.info('Returning stale cache data due to error');
