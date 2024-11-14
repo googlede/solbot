@@ -29,6 +29,13 @@ app.use(morgan('combined', {
     stream: logger.stream,
     skip: (req) => req.url === '/api/health'
 }));
+app.use((req, res, next) => {
+    // 禁用缓存
+    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.header('Expires', '-1');
+    res.header('Pragma', 'no-cache');
+    next();
+});
 
 // 静态文件服务
 app.use('/static', express.static(path.join(__dirname, 'public/static')));
