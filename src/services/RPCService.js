@@ -133,7 +133,7 @@ class RPCService {
       return other;
     }
 
-    // 如果都不可用，等待一段时间后重试
+    // 如���都不可用，等待一段时间后重试
     await new Promise(resolve => setTimeout(resolve, 1000));
     return this._getOptimalProvider();
   }
@@ -387,6 +387,22 @@ class RPCService {
         isOpen: this.circuitBreaker.isOpen,
         failureCount: this.circuitBreaker.failureCount,
         tripCount: this.metrics.circuitBreakerTrips
+      },
+      rpcProviders: {
+        primary: {
+          isHealthy: this.providers.primary.isHealthy,
+          requestCount: this.requestCounts.primary,
+          failureCount: this.failureCounts.primary
+        },
+        fallback: {
+          isHealthy: this.providers.fallback.isHealthy,
+          requestCount: this.requestCounts.fallback,
+          failureCount: this.failureCounts.fallback
+        }
+      },
+      system: {
+        memory: process.memoryUsage(),
+        cpu: process.cpuUsage()
       }
     };
   }

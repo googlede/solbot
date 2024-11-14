@@ -8,15 +8,24 @@ const logger = require('../utils/logger');
 // 用于监控服务状态和性能指标
 router.get('/health', async (req, res) => {
   try {
-    // 获取最新的区块高度作为健康检查
+    const startTime = Date.now();
     const slot = await RPCService.executeRequest('getSlot');
+    const responseTime = Date.now() - startTime;
+
     res.json({
       status: 'ok',
+      timestamp: new Date().toISOString(),
       slot,
-      metrics: RPCService.getDetailedMetrics()  // 返回详细的性能指标
+      responseTime,
+      metrics: RPCService.getDetailedMetrics(),
+      system: {
+        memory: process.memoryUsage(),
+        uptime: process.uptime()
+      }
     });
   } catch (error) {
-    res.status(500).json({
+    logger.error('Health check failed:', error);
+    res.status(503).json({
       status: 'error',
       message: error.message,
       metrics: RPCService.getDetailedMetrics()
