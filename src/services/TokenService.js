@@ -15,12 +15,18 @@ class TokenService {
   async getTop100Tokens() {
     try {
       console.log('Starting getTop100Tokens...');
-      
+      const cacheKey = 'top100';
+      const cached = this.cache.get(cacheKey);
+      if (cached) {
+        console.log('Returning cached tokens:', cached.length);
+        return cached;
+      }
+
       // 尝试从 Jupiter API 获取数据
       console.log('Fetching from Jupiter API...');
       const jupiterTokens = await this.getJupiterTop100();
-      if (jupiterTokens.length > 0) {
-        console.log('Successfully got tokens from Jupiter');
+      if (jupiterTokens && jupiterTokens.length > 0) {
+        console.log('Successfully got tokens from Jupiter:', jupiterTokens.length);
         return jupiterTokens;
       }
 

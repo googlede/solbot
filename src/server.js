@@ -21,20 +21,6 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('combined', { stream: logger.stream }));
 
-// 健康检查路由
-app.get('/health', (req, res) => {
-    const metrics = RPCService.getMetrics();
-    res.json({
-        status: 'ok',
-        timestamp: new Date(),
-        providers: {
-            primary: RPCService.providers.primary.isHealthy,
-            fallback: RPCService.providers.fallback.isHealthy
-        },
-        metrics
-    });
-});
-
 // API 路由
 app.get('/api/block/:slot', async (req, res) => {
     try {
