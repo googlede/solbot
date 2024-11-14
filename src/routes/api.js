@@ -1,22 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const rpcService = require('../services/RPCService');
+const RPCService = require('../services/RPCService');
 const TokenService = require('../services/TokenService');
 
 router.get('/health', async (req, res) => {
   try {
     // 获取最新的区块高度作为健康检查
-    const slot = await rpcService.executeRequest('getSlot');
+    const slot = await RPCService.executeRequest('getSlot');
     res.json({
       status: 'ok',
       slot,
-      metrics: rpcService.getDetailedMetrics()
+      metrics: RPCService.getDetailedMetrics()
     });
   } catch (error) {
     res.status(500).json({
       status: 'error',
       message: error.message,
-      metrics: rpcService.getDetailedMetrics()
+      metrics: RPCService.getDetailedMetrics()
     });
   }
 });
