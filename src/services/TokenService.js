@@ -199,7 +199,7 @@ class TokenService {
   // 添加 Jupiter API 相关方法
   async getJupiterPrice(address) {
     try {
-      const response = await axios.get('https://price.jup.ag/v2/price', {
+      const response = await axios.get(`${this.JUPITER_API_URL}/price`, {
         params: {
           ids: address
         }
@@ -218,7 +218,8 @@ class TokenService {
   async getJupiterTop100() {
     try {
       console.log('Fetching tokens from Jupiter...');
-      const response = await axios.get('https://token.jup.ag/strict');
+      // 使用 token.jup.ag/all 获取所有代币
+      const response = await axios.get('https://token.jup.ag/all');
       console.log('Jupiter tokens response:', response.data);
 
       if (!response.data) {
@@ -231,7 +232,7 @@ class TokenService {
       const tokenAddresses = tokens.slice(0, 100).map(token => token.address);
       console.log('Fetching prices for tokens...');
       
-      const priceResponse = await axios.get('https://price.jup.ag/v2/price', {
+      const priceResponse = await axios.get(`${this.JUPITER_API_URL}/price`, {
         params: {
           ids: tokenAddresses.join(',')
         }

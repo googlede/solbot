@@ -37,4 +37,14 @@ router.get('/tokens/top100', async (req, res) => {
   }
 });
 
+// 在现有代码后添加错误处理中间件
+router.use((err, req, res, next) => {
+  console.error('API Error:', err);
+  res.status(500).json({
+    status: 'error',
+    message: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
+
 module.exports = router; 
