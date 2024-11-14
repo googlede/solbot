@@ -1,6 +1,3 @@
-# 编辑 server.js
-cat > src/server.js << 'EOF'
-// 加载环境变量配置
 require('dotenv').config();
 
 // 导入必要的依赖模块
