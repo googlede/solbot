@@ -6,6 +6,8 @@ class RedisClient {
         this.client = null;
         this.isConnected = false;
         this.isAuthenticating = false;
+        this.authRetryCount = 0;
+        this.maxAuthRetries = 3;
         this.initializeClient();
     }
 
@@ -25,18 +27,19 @@ class RedisClient {
             connectTimeout: 10000,
             autoResubscribe: false,
             autoResendUnfulfilledCommands: false,
-            reconnectOnError: function (err) {
-                const targetError = 'READONLY';
-                if (err.message.includes(targetError)) {
-                    return true;
+            reconnectOnError(err) {
+                if (err.message.includes('READONLY') || err.message.includes('NOAUTH')) {
+                    return 2;
                 }
                 return false;
             }
         });
 
-        this.client.on('connect', async () => {
+        this.client.on('connect', () => {
             logger.info('Redis connecting...');
-            await this.authenticate();
+            this.authenticate().catch(err => {
+                logger.error('Initial authentication failed:', err);
+            });
         });
 
         this.client.on('ready', () => {
@@ -44,15 +47,14 @@ class RedisClient {
             logger.info('Redis connection established');
         });
 
-        this.client.on('error', async (err) => {
-            if (err.message.includes('NOAUTH') && !this.isAuthenticating) {
-                await this.authenticate();
-            } else if (!err.message.includes('NOAUTH')) {
+        this.client.on('error', (err) => {
+            if (!err.message.includes('NOAUTH')) {
                 logger.error('Redis error:', {
                     message: err.message,
                     stack: err.stack
                 });
             }
+            this.handleError(err);
         });
 
         this.client.on('close', () => {
@@ -61,14 +63,27 @@ class RedisClient {
         });
     }
 
+    async handleError(err) {
+        if (err.message.includes('NOAUTH') && !this.isAuthenticating) {
+            await this.authenticate();
+        }
+    }
+
     async authenticate() {
-        if (this.isAuthenticating) return;
-        
+        if (this.isAuthenticating || this.authRetryCount >= this.maxAuthRetries) {
+            return;
+        }
+
         try {
             this.isAuthenticating = true;
+            this.authRetryCount++;
+            
             await this.client.auth('a44155702');
+            
             this.isConnected = true;
             this.isAuthenticating = false;
+            this.authRetryCount = 0;
+            
             logger.info('Redis authenticated successfully');
             
             const ping = await this.client.ping();
@@ -78,10 +93,12 @@ class RedisClient {
         } catch (error) {
             this.isAuthenticating = false;
             this.isConnected = false;
+            
             if (!error.message.includes('NOAUTH')) {
                 logger.error('Redis authentication error:', {
                     error: error.message,
-                    stack: error.stack
+                    stack: error.stack,
+                    retryCount: this.authRetryCount
                 });
             }
         }
@@ -128,7 +145,5 @@ class RedisClient {
     }
 }
 
-// 创建单例实例
 const redisClient = new RedisClient();
-
 module.exports = redisClient; 
