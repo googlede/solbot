@@ -1,7 +1,7 @@
 const { Connection } = require('@solana/web3.js');
 const config = require('../config/api.config');
 const LRU = require('lru-cache');
-const PQueue = require('p-queue');
+const PQueue = (...args) => import('p-queue').then(({default: PQueue}) => new PQueue(...args));
 const winston = require('winston');
 const fs = require('fs');
 const path = require('path');
