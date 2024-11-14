@@ -6,18 +6,16 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('express-compression');
-const RPCService = require('./services/RPCService');
 const logger = require('./utils/logger');
-const apiRoutes = require('./routes/api');
-const path = require('path');
 const redis = require('./config/redis');
 const ActivityService = require('./services/ActivityService');
+const path = require('path');
 
 // 创建 Express 应用实例
 const app = express();
 const port = process.env.PORT || 3002;
 
-// 配置中间件
+// 基础中间件
 app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false
@@ -26,25 +24,40 @@ app.use(cors());
 app.use(express.json());
 app.use(compression());
 
-// 配置日志
-const logFormat = ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"';
-app.use(morgan(logFormat, { 
+// 日志中间件
+app.use(morgan('combined', { 
     stream: logger.stream,
     skip: (req) => req.url === '/api/health'
 }));
 
-// 请求日志中间件
-app.use((req, res, next) => {
-    logger.info('Request received:', {
-        method: req.method,
-        url: req.url,
-        ip: req.ip,
-        timestamp: new Date().toISOString()
-    });
-    next();
+// 健康检查路由
+app.get('/api/health', async (req, res) => {
+    try {
+        const status = {
+            service: 'ok',
+            timestamp: new Date().toISOString()
+        };
+
+        // 检查 Redis 连接
+        try {
+            const ping = await redis.client.ping();
+            status.redis = ping === 'PONG' ? 'ok' : 'error';
+        } catch (redisError) {
+            logger.error('Redis health check failed:', redisError);
+            status.redis = 'error';
+        }
+
+        res.json(status);
+    } catch (error) {
+        logger.error('Health check failed:', error);
+        res.status(500).json({ 
+            error: 'Health check failed',
+            timestamp: new Date().toISOString()
+        });
+    }
 });
 
-// API 路由
+// 活动流路由
 app.get('/api/activity/stream', async (req, res) => {
     try {
         logger.info('Activity stream requested', {
@@ -52,35 +65,12 @@ app.get('/api/activity/stream', async (req, res) => {
             timestamp: new Date().toISOString()
         });
 
-        const cacheKey = 'activity_stream';
-        let data;
-        
-        try {
-            data = await redis.get(cacheKey);
-            if (data) {
-                logger.info('Cache hit for activity stream');
-                return res.json(JSON.parse(data));
-            }
-        } catch (redisError) {
-            logger.error('Redis error:', redisError);
-        }
-
-        data = await ActivityService.getActivityData();
-        
-        try {
-            if (data) {
-                await redis.set(cacheKey, JSON.stringify(data), 'EX', 300);
-            }
-        } catch (cacheError) {
-            logger.error('Cache set error:', cacheError);
-        }
-
+        const data = await ActivityService.getActivityData();
         res.json(data || { activities: [], timestamp: new Date().toISOString() });
     } catch (error) {
         logger.error('Activity stream error:', {
             error: error.message,
-            stack: error.stack,
-            timestamp: new Date().toISOString()
+            stack: error.stack
         });
         res.status(500).json({ 
             error: 'Internal Server Error',
@@ -89,14 +79,21 @@ app.get('/api/activity/stream', async (req, res) => {
     }
 });
 
+// 静态文件服务
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 所有其他路由返回 index.html
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
 // 错误处理中间件
 app.use((err, req, res, next) => {
     logger.error('Unhandled Error:', {
         error: err.message,
         stack: err.stack,
         url: req.url,
-        method: req.method,
-        timestamp: new Date().toISOString()
+        method: req.method
     });
     
     res.status(500).json({ 
