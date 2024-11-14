@@ -1,5 +1,3 @@
-# 创建新的 logger.js
-cat > src/utils/logger.js << 'EOL'
 const winston = require('winston');
 const path = require('path');
 const fs = require('fs');
@@ -96,4 +94,3 @@ logger.logRequest = (req, res, next) => {
 };
 
 module.exports = logger;
-EOL

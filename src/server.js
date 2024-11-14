@@ -1,5 +1,3 @@
-# 在服务器上执行
-cat > src/server.js << 'EOL'
 // 加载环境变量配置
 require('dotenv').config();
 
@@ -64,4 +62,3 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 module.exports = app;
-EOL
