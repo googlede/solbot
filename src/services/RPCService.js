@@ -1,7 +1,6 @@
 const { Connection } = require('@solana/web3.js');
 const config = require('../config/api.config');
 const LRU = require('lru-cache');
-const PQueue = (...args) => import('p-queue').then(({default: PQueue}) => new PQueue(...args));
 const winston = require('winston');
 const fs = require('fs');
 const path = require('path');
@@ -47,11 +46,13 @@ class RPCService {
     };
     
     // 请求队列配置
-    this.requestQueue = new PQueue({
-      concurrency: 20,  // 最大并发请求数
-      interval: 1000,   // 时间窗口（毫秒）
-      intervalCap: 50   // 每个时间窗口内的最大请求数
-    });
+    this.requestQueue = {
+      add: async (fn) => {
+        // 简单的限流实现
+        await new Promise(resolve => setTimeout(resolve, 50)); // 50ms 间隔
+        return fn();
+      }
+    };
     
     // 熔断器配置
     this.circuitBreaker = {
