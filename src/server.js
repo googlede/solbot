@@ -7,6 +7,8 @@ const morgan = require('morgan');
 const RPCService = require('./services/RPCService');
 const logger = require('./utils/logger');
 
+console.log('Environment PORT:', process.env.PORT);
+
 const app = express();
 const port = process.env.PORT || 3002;
 
