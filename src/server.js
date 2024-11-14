@@ -9,6 +9,7 @@ const morgan = require('morgan');
 const RPCService = require('./services/RPCService');
 const logger = require('./utils/logger');
 const apiRoutes = require('./routes/api');
+const path = require('path');
 
 // 创建 Express 应用实例
 const app = express();
@@ -23,6 +24,8 @@ app.use(morgan('combined', {
   stream: logger.stream,
   skip: (req) => req.url === '/api/health'
 }));
+app.use('/static', express.static(path.join(__dirname, 'public/static')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 注册 API 路由
 app.use('/api', apiRoutes);
