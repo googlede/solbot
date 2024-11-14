@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -6,7 +8,9 @@ const RPCService = require('./services/RPCService');
 const logger = require('./utils/logger');
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3002;
+
+console.log('Starting server with port:', process.env.PORT);
 
 // 中间件
 app.use(helmet());
