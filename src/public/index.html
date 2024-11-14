@@ -8,99 +8,75 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    
+    <!-- CSS 文件 -->
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/smart-money.css">
+    <link rel="stylesheet" href="/static/css/animations.css">
+    <link rel="stylesheet" href="/static/css/notifications.css">
+    <link rel="stylesheet" href="/static/css/mobile.css">
+
+    <!-- 第三方库 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <div class="header-left">
-                <h1>Solana Smart Money Analysis</h1>
-                <p class="subtitle">Track and analyze smart money movements on Solana</p>
-            </div>
-            <div class="header-right">
-                <div class="network-status">
-                    <span class="status-dot"></span>
-                    <span class="network-name">Mainnet</span>
-                </div>
-            </div>
-        </header>
+    <div id="smartMoneyContainer" class="smart-money-dashboard">
+        <!-- 搜索和过滤区 -->
+        <div class="search-section">
+            <input type="text" id="tokenSearch" placeholder="输入代币地址..." />
+            <select id="timeFilter">
+                <option value="24h">24小时</option>
+                <option value="7d">7天</option>
+                <option value="30d">30天</option>
+            </select>
+            <button id="searchBtn" class="primary-btn">分析</button>
+        </div>
 
-        <div class="dashboard-grid">
-            <!-- 概览卡片 -->
-            <div class="metrics-grid">
-                <div class="metric-card" id="totalVolume">
-                    <h4>24h Volume</h4>
-                    <div class="metric-value">Loading...</div>
-                </div>
-                <div class="metric-card" id="activeWallets">
-                    <h4>Smart Wallets</h4>
-                    <div class="metric-value">Loading...</div>
-                </div>
-                <div class="metric-card" id="successRate">
-                    <h4>Success Rate</h4>
-                    <div class="metric-value">Loading...</div>
-                </div>
-                <div class="metric-card" id="avgProfit">
-                    <h4>Avg. Profit</h4>
-                    <div class="metric-value">Loading...</div>
-                </div>
+        <!-- 数据概览区 -->
+        <div class="overview-section">
+            <div class="metric-card">
+                <h3>智能钱包数量</h3>
+                <div id="walletCount" class="metric-value">-</div>
             </div>
-
-            <!-- 图表区域 -->
-            <div class="charts-container">
-                <div class="chart-card">
-                    <h3>Volume Trend</h3>
-                    <canvas id="volumeChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <h3>Smart Money Distribution</h3>
-                    <canvas id="distributionChart"></canvas>
-                </div>
+            <div class="metric-card">
+                <h3>平均收益率</h3>
+                <div id="avgProfit" class="metric-value">-</div>
             </div>
-
-            <!-- 智能钱包列表 -->
-            <div class="wallet-section">
-                <div class="section-header">
-                    <h2>Smart Wallets</h2>
-                    <div class="controls">
-                        <select id="filterSelect">
-                            <option value="all">All Wallets</option>
-                            <option value="high">High Performance</option>
-                            <option value="active">Most Active</option>
-                        </select>
-                        <input type="text" id="searchInput" placeholder="Search address...">
-                        <button id="refreshButton" class="button">
-                            <span class="icon">🔄</span>
-                            Refresh
-                        </button>
-                    </div>
-                </div>
-                <div id="walletList" class="wallet-list">
-                    <div class="loading">Loading wallets...</div>
-                </div>
+            <div class="metric-card">
+                <h3>总交易量</h3>
+                <div id="totalVolume" class="metric-value">-</div>
             </div>
+        </div>
 
-            <!-- 交易活动 -->
-            <div class="activity-section">
-                <h2>Recent Activity</h2>
-                <div id="activityFeed" class="activity-feed">
-                    <div class="loading">Loading activity...</div>
-                </div>
+        <!-- 智能钱包列表 -->
+        <div class="wallet-list-section">
+            <h2>智能钱包排行</h2>
+            <div id="walletList" class="wallet-list"></div>
+        </div>
+
+        <!-- 图表区域 -->
+        <div class="charts-section">
+            <div class="chart-container">
+                <h3>收益分布</h3>
+                <canvas id="profitChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>交易活动</h3>
+                <canvas id="activityChart"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- 模态框 -->
-    <div id="walletModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div id="walletDetails"></div>
-        </div>
-    </div>
-
+    <!-- JavaScript 文件 -->
+    <script src="/static/js/theme.js"></script>
     <script src="/static/js/charts.js"></script>
-    <script src="/static/js/smartWallet.js"></script>
     <script src="/static/js/activity.js"></script>
+    <script src="/js/views/ChartView.js"></script>
+    <script src="/js/views/SmartMoneyView.js"></script>
+    <script src="/js/views/WalletDetailView.js"></script>
+    <script src="/js/views/FilterView.js"></script>
+    <script src="/js/services/RealtimeService.js"></script>
+    <script src="/js/services/ExportService.js"></script>
+    <script src="/js/components/NotificationManager.js"></script>
 </body>
 </html> 
