@@ -5,6 +5,7 @@ class RedisClient {
     constructor() {
         this.client = null;
         this.isConnected = false;
+        this.isAuthenticating = false;
         this.initializeClient();
     }
 
@@ -23,12 +24,19 @@ class RedisClient {
             showFriendlyErrorStack: true,
             connectTimeout: 10000,
             autoResubscribe: false,
-            autoResendUnfulfilledCommands: false
+            autoResendUnfulfilledCommands: false,
+            reconnectOnError: function (err) {
+                const targetError = 'READONLY';
+                if (err.message.includes(targetError)) {
+                    return true;
+                }
+                return false;
+            }
         });
 
-        this.client.on('connect', () => {
+        this.client.on('connect', async () => {
             logger.info('Redis connecting...');
-            this.authenticate();
+            await this.authenticate();
         });
 
         this.client.on('ready', () => {
@@ -36,11 +44,10 @@ class RedisClient {
             logger.info('Redis connection established');
         });
 
-        this.client.on('error', (err) => {
-            this.isConnected = false;
-            if (err.message.includes('NOAUTH')) {
-                this.authenticate();
-            } else {
+        this.client.on('error', async (err) => {
+            if (err.message.includes('NOAUTH') && !this.isAuthenticating) {
+                await this.authenticate();
+            } else if (!err.message.includes('NOAUTH')) {
                 logger.error('Redis error:', {
                     message: err.message,
                     stack: err.stack
@@ -55,21 +62,28 @@ class RedisClient {
     }
 
     async authenticate() {
+        if (this.isAuthenticating) return;
+        
         try {
+            this.isAuthenticating = true;
             await this.client.auth('a44155702');
+            this.isConnected = true;
+            this.isAuthenticating = false;
             logger.info('Redis authenticated successfully');
             
             const ping = await this.client.ping();
             if (ping === 'PONG') {
-                this.isConnected = true;
                 logger.info('Redis connection test successful');
             }
         } catch (error) {
-            logger.error('Redis authentication error:', {
-                error: error.message,
-                stack: error.stack
-            });
+            this.isAuthenticating = false;
             this.isConnected = false;
+            if (!error.message.includes('NOAUTH')) {
+                logger.error('Redis authentication error:', {
+                    error: error.message,
+                    stack: error.stack
+                });
+            }
         }
     }
 
@@ -78,8 +92,13 @@ class RedisClient {
             if (!this.isConnected) {
                 await this.authenticate();
             }
-            return await this.client.get(key);
+            const result = await this.client.get(key);
+            return result;
         } catch (error) {
+            if (error.message.includes('NOAUTH')) {
+                await this.authenticate();
+                return await this.client.get(key);
+            }
             logger.error('Redis get error:', {
                 key,
                 error: error.message
@@ -93,8 +112,13 @@ class RedisClient {
             if (!this.isConnected) {
                 await this.authenticate();
             }
-            return await this.client.set(key, value, ...args);
+            const result = await this.client.set(key, value, ...args);
+            return result;
         } catch (error) {
+            if (error.message.includes('NOAUTH')) {
+                await this.authenticate();
+                return await this.client.set(key, value, ...args);
+            }
             logger.error('Redis set error:', {
                 key,
                 error: error.message
