@@ -91,6 +91,56 @@ app.use((err, req, res, next) => {
     next(err);
 });
 
+// 添加请求日志中间件
+app.use((req, res, next) => {
+    logger.info('Incoming request:', {
+        path: req.path,
+        method: req.method,
+        query: req.query,
+        timestamp: new Date().toISOString()
+    });
+    next();
+});
+
+// 修改数据路由
+app.get('/api/activity/stream', async (req, res) => {
+    try {
+        const cacheKey = 'wallet_activity_stream';
+        
+        // 尝试从 Redis 获取缓存
+        const cachedData = await redis.get(cacheKey);
+        if (cachedData) {
+            logger.info('Returning cached data');
+            return res.json(JSON.parse(cachedData));
+        }
+
+        // 如果没有缓存，从数据库获取
+        const data = await WalletService.getActivityStream();
+        
+        // 记录数据状态
+        logger.info('Activity stream data:', {
+            hasData: !!data,
+            dataLength: data ? data.length : 0,
+            timestamp: new Date().toISOString()
+        });
+
+        // 缓存数据
+        await redis.set(cacheKey, JSON.stringify(data), 'EX', 300); // 5分钟过期
+        
+        res.json(data);
+    } catch (error) {
+        logger.error('Error fetching activity stream:', {
+            error: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString()
+        });
+        res.status(500).json({ 
+            error: 'Internal Server Error',
+            message: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
+
 // 所有其他路由返回 index.html
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
