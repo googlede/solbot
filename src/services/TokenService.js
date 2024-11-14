@@ -25,6 +25,8 @@ class TokenService {
       // 尝试从 Jupiter API 获取数据
       console.log('Fetching from Jupiter API...');
       const jupiterTokens = await this.getJupiterTop100();
+      console.log('Jupiter API response:', jupiterTokens ? jupiterTokens.length : 'null');
+      
       if (jupiterTokens && jupiterTokens.length > 0) {
         console.log('Successfully got tokens from Jupiter:', jupiterTokens.length);
         return jupiterTokens;
@@ -33,7 +35,7 @@ class TokenService {
       // 如果 Jupiter API 失败，尝试 CoinGecko
       console.log('Jupiter API failed, trying CoinGecko...');
       const tokens = await this.getCoingeckoTop100();
-      console.log('Got tokens from CoinGecko:', tokens.length);
+      console.log('CoinGecko response:', tokens ? tokens.length : 'null');
       return tokens;
     } catch (error) {
       console.error('Error in getTop100Tokens:', error);

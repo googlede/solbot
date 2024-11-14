@@ -22,6 +22,8 @@ app.use(express.json());
 app.use(morgan('combined', { stream: logger.stream }));
 
 // API 路由
+app.use('/api', apiRoutes);
+
 app.get('/api/block/:slot', async (req, res) => {
     try {
         const block = await RPCService.getBlock(parseInt(req.params.slot));
@@ -57,9 +59,6 @@ app.post('/api/batch/transactions', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-
-// 添加 API 路由
-app.use('/api', apiRoutes);
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
