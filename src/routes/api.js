@@ -8,27 +8,61 @@ const logger = require('../utils/logger');
 // 用于监控服务状态和性能指标
 router.get('/health', async (req, res) => {
   try {
+    logger.info('Health check started');
     const startTime = Date.now();
-    const slot = await RPCService.executeRequest('getSlot');
-    const responseTime = Date.now() - startTime;
+    
+    // 基本系统检查
+    const systemInfo = {
+      memory: process.memoryUsage(),
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString()
+    };
 
-    res.json({
+    // RPC 连接检查
+    let slot;
+    try {
+      slot = await RPCService.executeRequest('getSlot');
+      logger.info('RPC check successful', { slot });
+    } catch (error) {
+      logger.error('RPC check failed:', error);
+      return res.status(503).json({
+        status: 'error',
+        message: 'RPC service unavailable',
+        error: error.message,
+        systemInfo
+      });
+    }
+
+    const responseTime = Date.now() - startTime;
+    
+    // 获取详细指标
+    const metrics = RPCService.getDetailedMetrics();
+    
+    logger.info('Health check completed successfully', {
+      responseTime,
+      slot,
+      metrics: {
+        requestCount: metrics.requestCount,
+        errorCount: metrics.errorCount,
+        uptime: metrics.uptime
+      }
+    });
+
+    // 返回完整的健康检查信息
+    return res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
-      slot,
       responseTime,
-      metrics: RPCService.getDetailedMetrics(),
-      system: {
-        memory: process.memoryUsage(),
-        uptime: process.uptime()
-      }
+      slot,
+      metrics,
+      systemInfo
     });
   } catch (error) {
     logger.error('Health check failed:', error);
-    res.status(503).json({
+    return res.status(503).json({
       status: 'error',
       message: error.message,
-      metrics: RPCService.getDetailedMetrics()
+      timestamp: new Date().toISOString()
     });
   }
 });
