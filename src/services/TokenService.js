@@ -7,7 +7,8 @@ class TokenService {
   constructor() {
     this.rpcService = RPCService;
     this.cache = new Map();
-    this.COINGECKO_API_URL = 'https://api.coingecko.com/api/v3';
+    this.COINGECKO_API_URL = process.env.COINGECKO_API_URL;
+    this.JUPITER_API_URL = process.env.JUPITER_API_URL;
     this.cacheTimeout = 15 * 60 * 1000; // 15分钟缓存
   }
 
@@ -15,9 +16,12 @@ class TokenService {
     try {
       const cacheKey = 'top100';
       const cached = this.cache.get(cacheKey);
-      if (cached) return cached;
+      if (cached) {
+        console.log('Returning cached tokens');
+        return cached;
+      }
 
-      // 获取 Solana 生态系统的所有代币
+      console.log('Fetching from CoinGecko...');
       const response = await axios.get(
         `${this.COINGECKO_API_URL}/coins/markets`, {
         params: {
@@ -27,6 +31,12 @@ class TokenService {
           platform: 'solana'
         }
       });
+
+      console.log('CoinGecko response:', response.data);
+
+      if (!response.data || !Array.isArray(response.data)) {
+        throw new Error('Invalid response from CoinGecko');
+      }
 
       const tokens = response.data.map(token => ({
         symbol: token.symbol.toUpperCase(),
@@ -39,9 +49,17 @@ class TokenService {
       this.cache.set(cacheKey, tokens);
       return tokens;
     } catch (error) {
-      console.error('Error fetching from CoinGecko:', error);
-      // 回退到 Jupiter API
-      return this.getJupiterTop100();
+      console.error('Error fetching from CoinGecko:', error.message);
+      console.log('Falling back to Jupiter API...');
+      
+      try {
+        const jupiterTokens = await this.getJupiterTop100();
+        console.log('Jupiter tokens count:', jupiterTokens.length);
+        return jupiterTokens;
+      } catch (jupiterError) {
+        console.error('Jupiter API also failed:', jupiterError.message);
+        return [];
+      }
     }
   }
 
@@ -176,6 +194,66 @@ class TokenService {
       data,
       timestamp: Date.now()
     });
+  }
+
+  // 添加 Jupiter API 相关方法
+  async getJupiterPrice(address) {
+    try {
+      const response = await axios.get(`${this.JUPITER_API_URL}/v4/price`, {
+        params: {
+          ids: address
+        }
+      });
+
+      if (response.data?.data?.[address]?.price) {
+        return response.data.data[address].price;
+      }
+      return 0;
+    } catch (error) {
+      console.error(`Error fetching price from Jupiter for ${address}:`, error);
+      return 0;
+    }
+  }
+
+  async getJupiterTop100() {
+    try {
+      console.log('Fetching tokens from Jupiter...');
+      const response = await axios.get(`${this.JUPITER_API_URL}/v4/tokens`);
+      console.log('Jupiter tokens response:', response.data);
+
+      if (!response.data?.data) {
+        throw new Error('Invalid response from Jupiter');
+      }
+
+      const tokens = response.data.data;
+      console.log('Processing Jupiter tokens...');
+
+      // 获取价格数据
+      const tokenAddresses = tokens.slice(0, 100).map(token => token.address);
+      console.log('Fetching prices for tokens...');
+      
+      const priceResponse = await axios.get(`${this.JUPITER_API_URL}/v4/price`, {
+        params: {
+          ids: tokenAddresses.join(',')
+        }
+      });
+
+      const priceData = priceResponse.data?.data || {};
+
+      return tokens.slice(0, 100).map(token => ({
+        symbol: token.symbol,
+        address: token.address,
+        price: priceData[token.address]?.price || 0,
+        marketCap: token.marketCap || 0,
+        volume24h: priceData[token.address]?.volume24h || 0
+      }));
+    } catch (error) {
+      console.error('Detailed Jupiter error:', error.message);
+      if (error.response) {
+        console.error('Jupiter API response:', error.response.data);
+      }
+      throw error;
+    }
   }
 }
 
