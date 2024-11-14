@@ -4,6 +4,7 @@ const RPCService = require('../services/RPCService');
 const TokenService = require('../services/TokenService');
 const logger = require('../utils/logger');
 const ExportService = require('../services/ExportService');
+const SmartMoneyTrackingService = require('../services/SmartMoneyTrackingService');
 
 // 健康检查接口
 // 用于监控服务状态和性能指标
@@ -122,6 +123,23 @@ router.use((err, req, res, next) => {
     // 只在开发环境返回错误堆栈
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
+});
+
+router.get('/track/smart-money/:tokenAddress', async (req, res) => {
+    try {
+        const { tokenAddress } = req.params;
+        const { timeWindow = '24h' } = req.query;
+        
+        const analysis = await SmartMoneyTrackingService.trackSmartMoneyByToken(
+            tokenAddress,
+            timeWindow
+        );
+        
+        res.json(analysis);
+    } catch (error) {
+        logger.error('Error tracking smart money:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 module.exports = router; 

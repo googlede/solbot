@@ -2,6 +2,7 @@ class SmartMoneyView {
     constructor() {
         this.container = document.getElementById('smartMoneyContainer');
         this.initializeView();
+        this.loadInitialData();
     }
 
     initializeView() {
@@ -65,6 +66,23 @@ class SmartMoneyView {
         document.getElementById('timeFilter').addEventListener('change', () => this.analyze());
     }
 
+    async loadInitialData() {
+        try {
+            this.showLoading(true);
+            const response = await fetch('/api/tokens/top100');
+            if (!response.ok) {
+                throw new Error('Failed to fetch top tokens');
+            }
+            const data = await response.json();
+            
+            this.updateTopTokens(data);
+        } catch (error) {
+            this.showError(error.message);
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
     async analyze() {
         const tokenAddress = document.getElementById('tokenSearch').value;
         const timeWindow = document.getElementById('timeFilter').value;
@@ -94,17 +112,14 @@ class SmartMoneyView {
     }
 
     updateView(data) {
-        // 更新概览数据
         document.getElementById('walletCount').textContent = data.summary.totalAddresses;
         document.getElementById('avgProfit').textContent = 
             `${(data.summary.averageProfit * 100).toFixed(2)}%`;
         document.getElementById('totalVolume').textContent = 
             `$${this.formatNumber(data.summary.totalVolume)}`;
 
-        // 更新钱包列表
         this.updateWalletList(data.topPerformers);
 
-        // 更新图表
         this.updateCharts(data);
     }
 
@@ -131,10 +146,8 @@ class SmartMoneyView {
     }
 
     updateCharts(data) {
-        // 更新收益分布图表
         this.updateProfitChart(data);
         
-        // 更新活动图表
         this.updateActivityChart(data);
     }
 
@@ -206,7 +219,6 @@ class SmartMoneyView {
             this.activityChart.destroy();
         }
 
-        // 处理活动数据
         const activities = this._processActivityData(data);
         
         this.activityChart = new Chart(ctx, {
@@ -235,9 +247,34 @@ class SmartMoneyView {
             }
         });
     }
+
+    updateTopTokens(data) {
+        const walletList = document.getElementById('walletList');
+        if (!data || !data.tokens) return;
+
+        walletList.innerHTML = data.tokens.slice(0, 10).map(token => `
+            <div class="wallet-card">
+                <div class="wallet-header">
+                    <span class="wallet-address">${this.formatAddress(token.address)}</span>
+                    <span class="wallet-score">Volume: $${this.formatNumber(token.volume24h)}</span>
+                </div>
+                <div class="wallet-metrics">
+                    <div class="metric">
+                        <span class="label">价格</span>
+                        <span class="value">$${token.price.toFixed(6)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">24h变化</span>
+                        <span class="value ${token.priceChange24h >= 0 ? 'positive' : 'negative'}">
+                            ${token.priceChange24h.toFixed(2)}%
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
 }
 
-// 初始化视图
 document.addEventListener('DOMContentLoaded', () => {
     window.smartMoneyView = new SmartMoneyView();
 }); 
