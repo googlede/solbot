@@ -3,6 +3,8 @@ const config = require('../config/api.config');
 const LRU = require('lru-cache');
 const PQueue = require('p-queue');
 const winston = require('winston');
+const fs = require('fs');
+const path = require('path');
 
 class RPCService {
   constructor() {
@@ -40,7 +42,7 @@ class RPCService {
     this.requestQueue = new PQueue({
       concurrency: 20,  // 最大并发请求数
       interval: 1000,   // 时间窗口
-      intervalCap: 50   // 每个时间窗口内的最大请求数
+      intervalCap: 50   // 每个时间窗口内的最大请��数
     });
     
     this.circuitBreaker = {
@@ -51,6 +53,12 @@ class RPCService {
       isOpen: false
     };
     
+    // 确保日志目录存在
+    const logDir = path.join(__dirname, '../../logs');
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir);
+    }
+    
     this.logger = winston.createLogger({
       level: 'info',
       format: winston.format.combine(
@@ -58,8 +66,13 @@ class RPCService {
         winston.format.json()
       ),
       transports: [
-        new winston.transports.File({ filename: 'error.log', level: 'error' }),
-        new winston.transports.File({ filename: 'combined.log' })
+        new winston.transports.File({ 
+          filename: path.join(logDir, 'error.log'), 
+          level: 'error' 
+        }),
+        new winston.transports.File({ 
+          filename: path.join(logDir, 'combined.log')
+        })
       ]
     });
   }
