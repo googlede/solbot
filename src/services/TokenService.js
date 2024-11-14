@@ -199,7 +199,7 @@ class TokenService {
   // 添加 Jupiter API 相关方法
   async getJupiterPrice(address) {
     try {
-      const response = await axios.get(`${this.JUPITER_API_URL}/v4/price`, {
+      const response = await axios.get('https://price.jup.ag/v2/price', {
         params: {
           ids: address
         }
@@ -218,21 +218,20 @@ class TokenService {
   async getJupiterTop100() {
     try {
       console.log('Fetching tokens from Jupiter...');
-      const response = await axios.get(`${this.JUPITER_API_URL}/v4/tokens`);
+      const response = await axios.get('https://token.jup.ag/strict');
       console.log('Jupiter tokens response:', response.data);
 
-      if (!response.data?.data) {
+      if (!response.data) {
         throw new Error('Invalid response from Jupiter');
       }
 
-      const tokens = response.data.data;
+      const tokens = response.data;
       console.log('Processing Jupiter tokens...');
 
-      // 获取价格数据
       const tokenAddresses = tokens.slice(0, 100).map(token => token.address);
       console.log('Fetching prices for tokens...');
       
-      const priceResponse = await axios.get(`${this.JUPITER_API_URL}/v4/price`, {
+      const priceResponse = await axios.get('https://price.jup.ag/v2/price', {
         params: {
           ids: tokenAddresses.join(',')
         }
@@ -242,9 +241,9 @@ class TokenService {
 
       return tokens.slice(0, 100).map(token => ({
         symbol: token.symbol,
+        name: token.name,
         address: token.address,
         price: priceData[token.address]?.price || 0,
-        marketCap: token.marketCap || 0,
         volume24h: priceData[token.address]?.volume24h || 0
       }));
     } catch (error) {
