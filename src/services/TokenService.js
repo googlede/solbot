@@ -32,11 +32,17 @@ class TokenService {
 
       // 获取代币列表
       logger.info('Fetching tokens from Jupiter API...');
-      const response = await this._retryRequest(() => 
-        axios.get('https://token.jup.ag/all')
-      );
+      const response = await this._retryRequest(() => {
+        logger.info('Making request to https://token.jup.ag/all');
+        return axios.get('https://token.jup.ag/all');
+      });
+      
+      // 打印响应数据
+      logger.info(`Jupiter API response status: ${response.status}`);
+      logger.info(`Jupiter API response data length: ${response.data?.length || 0}`);
       
       if (!response.data || !Array.isArray(response.data)) {
+        logger.error('Invalid response format:', response.data);
         throw new Error('Invalid response from Jupiter API');
       }
 

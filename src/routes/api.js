@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const RPCService = require('../services/RPCService');
 const TokenService = require('../services/TokenService');
+const logger = require('../utils/logger');
 
 // 健康检查接口
 // 用于监控服务状态和性能指标
@@ -28,15 +29,24 @@ router.get('/health', async (req, res) => {
 router.get('/tokens/top100', async (req, res) => {
   try {
     const tokens = await TokenService.getTop100Tokens();
+    if (!tokens || tokens.length === 0) {
+      logger.warn('No tokens returned from TokenService');
+      return res.status(404).json({
+        status: 'error',
+        message: 'No tokens available'
+      });
+    }
+    
     res.json({
       status: 'success',
       data: tokens
     });
   } catch (error) {
-    console.error('Error in /tokens/top100:', error);
+    logger.error('Error in /tokens/top100:', error);
     res.status(500).json({
       status: 'error',
-      message: error.message
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
