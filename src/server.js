@@ -68,25 +68,18 @@ app.get('/api/health/redis', async (req, res) => {
 });
 
 // Redis 错误处理中间件
-app.use((err, req, res, next) => {
-    if (err.name === 'RedisError') {
-        logger.error('Redis Error:', {
-            error: err.message,
-            stack: err.stack,
-            timestamp: new Date().toISOString()
-        });
+app.use(async (err, req, res, next) => {
+    if (err.message && err.message.includes('NOAUTH')) {
+        logger.error('Redis auth error:', err);
         
-        // 尝试重连 Redis
-        redis.disconnect();
-        redis.connect().catch(error => {
-            logger.error('Redis reconnection failed:', error);
-        });
-        
-        // 使用备用存储或返回错误响应
-        return res.status(503).json({
-            error: 'Service temporarily unavailable',
-            message: 'Redis connection error'
-        });
+        // 尝试重新认证
+        try {
+            await redis.auth('a44155702');
+            // 认证成功后重试请求
+            return next();
+        } catch (authError) {
+            logger.error('Redis reauth failed:', authError);
+        }
     }
     next(err);
 });
@@ -102,38 +95,44 @@ app.use((req, res, next) => {
     next();
 });
 
-// 修改数据路由
+// 修改活动流路由
 app.get('/api/activity/stream', async (req, res) => {
     try {
-        const cacheKey = 'wallet_activity_stream';
+        // 记录请求
+        logger.info('Activity stream requested', {
+            ip: req.ip,
+            timestamp: new Date().toISOString()
+        });
+
+        // 尝试从 Redis 获取数据
+        const cacheKey = 'activity_stream';
+        let data;
         
-        // 尝试从 Redis 获取缓存
-        const cachedData = await redis.get(cacheKey);
-        if (cachedData) {
-            logger.info('Returning cached data');
-            return res.json(JSON.parse(cachedData));
+        try {
+            data = await redis.get(cacheKey);
+            if (data) {
+                logger.info('Cache hit for activity stream');
+                return res.json(JSON.parse(data));
+            }
+        } catch (redisError) {
+            logger.error('Redis error:', redisError);
+            // Redis 错误时继续获取新数据
         }
 
-        // 如果没有缓存，从数据库获取
-        const data = await WalletService.getActivityStream();
+        // 获取新数据
+        data = await getActivityData(); // 你的数据获取函数
         
-        // 记录数据状态
-        logger.info('Activity stream data:', {
-            hasData: !!data,
-            dataLength: data ? data.length : 0,
-            timestamp: new Date().toISOString()
-        });
+        // 尝试缓存数据
+        try {
+            await redis.set(cacheKey, JSON.stringify(data), 'EX', 300);
+        } catch (cacheError) {
+            logger.error('Cache set error:', cacheError);
+            // 缓存错误不影响返回数据
+        }
 
-        // 缓存数据
-        await redis.set(cacheKey, JSON.stringify(data), 'EX', 300); // 5分钟过期
-        
         res.json(data);
     } catch (error) {
-        logger.error('Error fetching activity stream:', {
-            error: error.message,
-            stack: error.stack,
-            timestamp: new Date().toISOString()
-        });
+        logger.error('Activity stream error:', error);
         res.status(500).json({ 
             error: 'Internal Server Error',
             message: process.env.NODE_ENV === 'development' ? error.message : undefined
