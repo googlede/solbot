@@ -71,15 +71,22 @@ app.get('/api/health/redis', async (req, res) => {
 // Redis 错误处理中间件
 app.use(async (err, req, res, next) => {
     if (err.message && err.message.includes('NOAUTH')) {
-        logger.error('Redis auth error:', err);
+        logger.error('Redis auth error:', {
+            error: err.message,
+            path: req.path,
+            timestamp: new Date().toISOString()
+        });
         
         // 尝试重新认证
         try {
             await redis.auth('a44155702');
-            // 认证成功后重试请求
+            logger.info('Redis reauthorized successfully');
             return next();
         } catch (authError) {
-            logger.error('Redis reauth failed:', authError);
+            logger.error('Redis reauth failed:', {
+                error: authError.message,
+                timestamp: new Date().toISOString()
+            });
         }
     }
     next(err);
@@ -115,8 +122,12 @@ app.get('/api/activity/stream', async (req, res) => {
                 return res.json(JSON.parse(data));
             }
         } catch (redisError) {
-            logger.error('Redis error:', redisError);
-            // Redis 错误时继续获取新数据
+            if (redisError.message.includes('NOAUTH')) {
+                await redis.auth('a44155702');
+                logger.info('Redis reauthorized in route handler');
+            } else {
+                logger.error('Redis error:', redisError);
+            }
         }
 
         // 获取新数据

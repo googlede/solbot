@@ -1,7 +1,7 @@
 const Redis = require('ioredis');
 const logger = require('../utils/logger');
 
-const redis = new Redis({
+const redisConfig = {
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: process.env.REDIS_PORT || 6379,
     password: 'a44155702',
@@ -10,9 +10,10 @@ const redis = new Redis({
         return delay;
     },
     maxRetriesPerRequest: 3,
-    enableReadyCheck: true,
-    autoResubscribe: true,
-    autoResendUnfulfilledCommands: true,
+    enableReadyCheck: false,
+    lazyConnect: true,
+    showFriendlyErrorStack: true,
+    connectTimeout: 10000,
     reconnectOnError(err) {
         const targetError = 'READONLY';
         if (err.message.includes(targetError)) {
@@ -20,10 +21,32 @@ const redis = new Redis({
         }
         return false;
     }
-});
+};
+
+const redis = new Redis(redisConfig);
+
+const initRedis = async () => {
+    try {
+        await redis.auth('a44155702');
+        logger.info('Redis authenticated successfully');
+        
+        const ping = await redis.ping();
+        if (ping === 'PONG') {
+            logger.info('Redis connection test successful');
+        }
+    } catch (error) {
+        logger.error('Redis initialization error:', {
+            error: error.message,
+            stack: error.stack
+        });
+    }
+};
 
 redis.on('connect', () => {
     logger.info('Redis connecting...');
+    initRedis().catch(err => {
+        logger.error('Redis init error:', err);
+    });
 });
 
 redis.on('ready', () => {
@@ -35,20 +58,10 @@ redis.on('error', (err) => {
         message: err.message,
         stack: err.stack
     });
-    
-    if (err.message.includes('NOAUTH')) {
-        redis.auth('a44155702').catch(authErr => {
-            logger.error('Redis auth retry failed:', authErr);
-        });
-    }
 });
 
 redis.on('close', () => {
     logger.warn('Redis connection closed');
-});
-
-redis.auth('a44155702').catch(err => {
-    logger.error('Initial Redis auth failed:', err);
 });
 
 module.exports = redis; 
