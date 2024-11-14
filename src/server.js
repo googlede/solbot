@@ -4,11 +4,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const morgan = require('morgan');
 const compression = require('express-compression');
 const logger = require('./utils/logger');
 const redis = require('./config/redis');
-const ActivityService = require('./services/ActivityService');
 const path = require('path');
 
 // 创建 Express 应用实例
@@ -25,108 +23,58 @@ app.use(express.json());
 app.use(compression());
 
 // 日志中间件
-app.use(morgan('combined', { 
-    stream: logger.stream,
-    skip: (req) => req.url === '/api/health'
-}));
-
-// 健康检查路由
-app.get('/api/health', async (req, res) => {
-    try {
-        const status = {
-            service: 'ok',
-            timestamp: new Date().toISOString()
-        };
-
-        // 检查 Redis 连接
-        try {
-            const ping = await redis.client.ping();
-            status.redis = ping === 'PONG' ? 'ok' : 'error';
-        } catch (redisError) {
-            logger.error('Redis health check failed:', redisError);
-            status.redis = 'error';
-        }
-
-        res.json(status);
-    } catch (error) {
-        logger.error('Health check failed:', error);
-        res.status(500).json({ 
-            error: 'Health check failed',
-            timestamp: new Date().toISOString()
-        });
-    }
+app.use((req, res, next) => {
+    logger.info('Request received:', {
+        method: req.method,
+        url: req.url,
+        ip: req.ip,
+        timestamp: new Date().toISOString()
+    });
+    next();
 });
 
 // API 路由
-app.get('/api/activity/stream', async (req, res) => {
+app.get('/api/tokens/trending', async (req, res) => {
     try {
-        logger.info('Activity stream requested', {
-            ip: req.ip,
-            timestamp: new Date().toISOString()
-        });
-
-        // 尝试从 Redis 获取缓存
-        try {
-            const cached = await redis.get('activity_stream');
-            if (cached) {
-                logger.info('Cache hit for activity stream');
-                return res.json(JSON.parse(cached));
-            }
-        } catch (redisError) {
-            logger.error('Redis error:', redisError);
+        // 尝试从缓存获取数据
+        const cached = await redis.get('trending_tokens');
+        if (cached) {
+            return res.json(JSON.parse(cached));
         }
 
-        // 如果没有缓存，返回默认数据
-        const defaultData = {
-            activities: [
+        // 模拟数据 - 后续替换为真实数据
+        const mockData = {
+            tokens: [
                 {
-                    type: 'swap',
-                    token0: 'SOL',
-                    token1: 'USDC',
-                    amount0: '100',
-                    amount1: '2000',
-                    timestamp: new Date().toISOString(),
-                    wallet: '5KKsb...'
-                }
+                    symbol: 'PNUT2.0',
+                    age: '1d',
+                    liquidity: '45.1K',
+                    holders: '2.1K',
+                    txs1h: '16,923',
+                    volume: '$14.4K',
+                    price: '$0.0001',
+                    change1h: '+1.5%',
+                    change5m: '+3.3%',
+                    change1d: '-17.1%'
+                },
+                // ... 添加更多模拟数据
             ],
-            stats: {
-                totalVolume: '1000000',
-                activeWallets: '100',
-                avgProfit: '15.5'
-            },
             timestamp: new Date().toISOString()
         };
 
         // 缓存数据
-        try {
-            await redis.set('activity_stream', JSON.stringify(defaultData), 'EX', 300);
-        } catch (cacheError) {
-            logger.error('Cache set error:', cacheError);
-        }
-
-        res.json(defaultData);
+        await redis.set('trending_tokens', JSON.stringify(mockData), 'EX', 60);
+        res.json(mockData);
     } catch (error) {
-        logger.error('Activity stream error:', {
-            error: error.message,
-            stack: error.stack
-        });
-        res.status(500).json({ 
-            error: 'Internal Server Error',
-            message: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
+        logger.error('Error fetching trending tokens:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
 // 静态文件服务
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 所有其他路由返回 index.html
-app.get('*', (req, res) => {
-    res.setHeader('Content-Type', 'text/html');
-    res.sendFile(path.join(__dirname, 'public/index.html'));
-});
-
-// 错误处理中间件
+// 错误处理
 app.use((err, req, res, next) => {
     logger.error('Unhandled Error:', {
         error: err.message,
@@ -145,7 +93,6 @@ app.use((err, req, res, next) => {
 app.listen(port, '0.0.0.0', () => {
     logger.info(`Server started at ${new Date().toISOString()}`);
     logger.info(`Server listening on port ${port}`);
-    logger.info(`Environment: ${process.env.NODE_ENV}`);
 });
 
 module.exports = app;
