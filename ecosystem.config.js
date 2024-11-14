@@ -26,7 +26,7 @@ module.exports = {
   deploy: {
     production: {
       user: 'root',
-      host: process.env.DEPLOY_HOST,
+      host: process.env.DEPLOY_HOST || 'localhost',
       ref: 'origin/main',
       repo: 'git@github.com:yourusername/solbot.git',
       path: '/root/solbot',
