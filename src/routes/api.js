@@ -3,6 +3,7 @@ const router = express.Router();
 const RPCService = require('../services/RPCService');
 const TokenService = require('../services/TokenService');
 const logger = require('../utils/logger');
+const ExportService = require('../services/ExportService');
 
 // 健康检查接口
 // 用于监控服务状态和性能指标
@@ -92,6 +93,23 @@ router.get('/tokens/top100', async (req, res) => {
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
+});
+
+// 导出智能钱包数据
+router.get('/export/smart-wallets', async (req, res) => {
+    try {
+        const buffer = await ExportService.exportSmartWallets();
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=smart-wallets.xlsx');
+        res.send(buffer);
+    } catch (error) {
+        logger.error('Error in export endpoint:', error);
+        res.status(500).json({
+            status: 'error',
+            message: error.message
+        });
+    }
 });
 
 // 全局错误处理中间件

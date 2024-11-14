@@ -5,94 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solana Smart Money Analysis</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="stylesheet" href="/static/css/main.5b69d05e.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .token-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .token-card {
-            border: 1px solid #eee;
-            padding: 15px;
-            border-radius: 6px;
-            background: white;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-        }
-        .error {
-            color: red;
-            text-align: center;
-            padding: 20px;
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Solana Smart Money Analysis</h1>
-            <p>Track and analyze smart money movements on Solana</p>
-        </div>
-        
-        <div id="tokenList" class="token-list">
-            <div class="loading">Loading tokens...</div>
+        <header class="header">
+            <div class="header-left">
+                <h1>Solana Smart Money Analysis</h1>
+                <p class="subtitle">Track and analyze smart money movements on Solana</p>
+            </div>
+            <div class="header-right">
+                <div class="network-status">
+                    <span class="status-dot"></span>
+                    <span class="network-name">Mainnet</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- 概览卡片 -->
+            <div class="metrics-grid">
+                <div class="metric-card" id="totalVolume">
+                    <h4>24h Volume</h4>
+                    <div class="metric-value">Loading...</div>
+                </div>
+                <div class="metric-card" id="activeWallets">
+                    <h4>Smart Wallets</h4>
+                    <div class="metric-value">Loading...</div>
+                </div>
+                <div class="metric-card" id="successRate">
+                    <h4>Success Rate</h4>
+                    <div class="metric-value">Loading...</div>
+                </div>
+                <div class="metric-card" id="avgProfit">
+                    <h4>Avg. Profit</h4>
+                    <div class="metric-value">Loading...</div>
+                </div>
+            </div>
+
+            <!-- 图表区域 -->
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3>Volume Trend</h3>
+                    <canvas id="volumeChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Smart Money Distribution</h3>
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 智能钱包列表 -->
+            <div class="wallet-section">
+                <div class="section-header">
+                    <h2>Smart Wallets</h2>
+                    <div class="controls">
+                        <select id="filterSelect">
+                            <option value="all">All Wallets</option>
+                            <option value="high">High Performance</option>
+                            <option value="active">Most Active</option>
+                        </select>
+                        <input type="text" id="searchInput" placeholder="Search address...">
+                        <button id="refreshButton" class="button">
+                            <span class="icon">🔄</span>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+                <div id="walletList" class="wallet-list">
+                    <div class="loading">Loading wallets...</div>
+                </div>
+            </div>
+
+            <!-- 交易活动 -->
+            <div class="activity-section">
+                <h2>Recent Activity</h2>
+                <div id="activityFeed" class="activity-feed">
+                    <div class="loading">Loading activity...</div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="/static/js/main.0402d5be.js"></script>
-    <script src="/js/tokens.js"></script>
-    <script>
-        // 初始化页面
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const response = await fetch('/api/tokens/top100');
-                const data = await response.json();
-                
-                if (data.status === 'success' && data.data) {
-                    const tokenList = document.getElementById('tokenList');
-                    tokenList.innerHTML = data.data.map(token => `
-                        <div class="token-card">
-                            <img src="${token.logoURI || '/placeholder.png'}" 
-                                 alt="${token.symbol}" 
-                                 style="width: 32px; height: 32px;">
-                            <h3>${token.symbol}</h3>
-                            <p>${token.name}</p>
-                            <p>Price: $${token.price.toFixed(4)}</p>
-                            <p>24h Volume: $${(token.volume24h || 0).toLocaleString()}</p>
-                        </div>
-                    `).join('');
-                } else {
-                    throw new Error('Failed to load tokens');
-                }
-            } catch (error) {
-                document.getElementById('tokenList').innerHTML = `
-                    <div class="error">
-                        Error loading tokens: ${error.message}
-                    </div>
-                `;
-            }
-        });
-    </script>
+    <!-- 模态框 -->
+    <div id="walletModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="walletDetails"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/smartWallet.js"></script>
+    <script src="/static/js/activity.js"></script>
 </body>
 </html> 
