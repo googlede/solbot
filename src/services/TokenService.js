@@ -218,18 +218,19 @@ class TokenService {
   async getJupiterTop100() {
     try {
       console.log('Fetching tokens from Jupiter...');
-      // 使用 token.jup.ag/all 获取所有代币
       const response = await axios.get('https://token.jup.ag/all');
-      console.log('Jupiter tokens response:', response.data);
+      console.log('Jupiter tokens response received');
 
       if (!response.data) {
         throw new Error('Invalid response from Jupiter');
       }
 
-      const tokens = response.data;
-      console.log('Processing Jupiter tokens...');
+      // 只取前 100 个代币
+      const tokens = response.data.slice(0, 100);
+      console.log(`Processing ${tokens.length} Jupiter tokens...`);
 
-      const tokenAddresses = tokens.slice(0, 100).map(token => token.address);
+      // 批量获取价格数据
+      const tokenAddresses = tokens.map(token => token.address);
       console.log('Fetching prices for tokens...');
       
       const priceResponse = await axios.get(`${this.JUPITER_API_URL}/price`, {
@@ -240,19 +241,28 @@ class TokenService {
 
       const priceData = priceResponse.data?.data || {};
 
-      return tokens.slice(0, 100).map(token => ({
+      // 格式化返回数据
+      const formattedTokens = tokens.map(token => ({
         symbol: token.symbol,
         name: token.name,
         address: token.address,
         price: priceData[token.address]?.price || 0,
         volume24h: priceData[token.address]?.volume24h || 0
       }));
+
+      // 缓存结果
+      this.cache.set('top100', {
+        data: formattedTokens,
+        timestamp: Date.now()
+      });
+
+      return formattedTokens;
     } catch (error) {
       console.error('Detailed Jupiter error:', error.message);
       if (error.response) {
         console.error('Jupiter API response:', error.response.data);
       }
-      throw error;
+      return [];
     }
   }
 }
