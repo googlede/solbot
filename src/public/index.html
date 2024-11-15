@@ -963,64 +963,52 @@
             margin-bottom: 2px;
         }
 
+        /* 表格容器样式 */
         .table-container {
             position: relative;
             margin: 24px 0;
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: visible; /* 允许表头溢出 */
+            overflow: hidden; /* 改为 hidden */
         }
 
+        /* 表格基础样式 */
         .token-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
             font-size: 14px;
+            position: relative; /* 添加相对定位 */
         }
 
-        /* 表头容器 */
+        /* 表头样式 */
         .token-table thead {
-            position: sticky;
-            top: 64px; /* 导航栏高度 */
+            position: relative; /* 初始状态为相对定位 */
+            background: #0f1011;
+            transition: all 0.3s ease;
+        }
+
+        /* 表头固定状态 */
+        .token-table thead.sticky {
+            position: fixed; /* 固定状态改为固定定位 */
+            top: 64px;
+            left: auto;
+            width: inherit;
             z-index: 100;
             background: #0f1011;
-            transition: box-shadow 0.3s ease, transform 0.3s ease;
-            transform: translateY(0);
-            will-change: transform;
-        }
-
-        /* 表头固定时的样式 */
-        .token-table thead.sticky {
+            border-bottom: 1px solid #3a3b42;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
-        /* 表头单元格样式 */
-        .token-table th {
-            padding: 10px 16px;
-            text-align: left;
-            color: var(--text-gray);
-            font-weight: normal;
-            border-bottom: 1px solid #3a3b42;
-            background: #0f1011;
-            white-space: nowrap;
+        /* 表头占位符 */
+        .header-placeholder {
+            display: none;
+            height: 41px; /* 与表头高度一致 */
         }
 
-        /* 数据行样式 */
-        .token-table td {
-            padding: 8px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            white-space: nowrap;
-        }
-
-        /* 确保最后一行没有边框 */
-        .token-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* 添加平滑滚动 */
-        .table-container {
-            scroll-behavior: smooth;
+        .header-placeholder.active {
+            display: block;
         }
     </style>
 </head>
@@ -1480,7 +1468,7 @@
                             const isUp = icon.classList.contains('up');
                             const direction = isUp ? 'asc' : 'desc';
                             
-                            // 重置所有图标
+                            // 重置所有���标
                             document.querySelectorAll('.sort-icon').forEach(i => i.classList.remove('active'));
                             
                             // 激活当前图标
@@ -1713,45 +1701,47 @@
         document.head.appendChild(style);
 
         document.addEventListener('DOMContentLoaded', () => {
-            const thead = document.querySelector('.token-table thead');
+            const table = document.querySelector('.token-table');
+            const thead = table.querySelector('thead');
             const container = document.querySelector('.table-container');
-            const navHeight = 64; // 导航栏高度
+            const navHeight = 64;
+
+            // 创建表头占位符
+            const placeholder = document.createElement('div');
+            placeholder.className = 'header-placeholder';
+            table.insertBefore(placeholder, thead.nextSibling);
 
             let lastScrollY = window.scrollY;
             let ticking = false;
 
             function updateHeader() {
                 const containerRect = container.getBoundingClientRect();
-                const headerHeight = thead.offsetHeight;
-                
-                // 计算触发点
-                const triggerPoint = navHeight;
-                const releasePoint = containerRect.top + headerHeight;
+                const tableRect = table.getBoundingClientRect();
 
-                if (containerRect.top <= triggerPoint && 
-                    containerRect.bottom >= headerHeight + triggerPoint) {
-                    // 表头应该固定
+                if (containerRect.top <= navHeight && 
+                    containerRect.bottom >= thead.offsetHeight + navHeight) {
+                    
                     if (!thead.classList.contains('sticky')) {
+                        // 计算表头宽度和位置
+                        const headWidth = table.offsetWidth;
+                        const leftOffset = tableRect.left;
+
+                        // 应用固定定位
                         thead.classList.add('sticky');
-                        // 添加微小的延迟以确保过渡效果
-                        requestAnimationFrame(() => {
-                            thead.style.transform = 'translateY(0)';
-                        });
+                        placeholder.classList.add('active');
+                        
+                        // 设置表头样式
+                        thead.style.width = `${headWidth}px`;
+                        thead.style.left = `${leftOffset}px`;
                     }
                 } else {
-                    // 表头应该返回原位
                     if (thead.classList.contains('sticky')) {
+                        // 恢复原始状态
                         thead.classList.remove('sticky');
-                        thead.style.transform = '';
+                        placeholder.classList.remove('active');
+                        thead.style.width = '';
+                        thead.style.left = '';
                     }
-                }
-
-                // 处理滚动方向
-                const scrollingUp = lastScrollY > window.scrollY;
-                lastScrollY = window.scrollY;
-
-                if (scrollingUp && thead.classList.contains('sticky')) {
-                    thead.style.transform = 'translateY(0)';
                 }
             }
 
@@ -1767,9 +1757,17 @@
             }, { passive: true });
 
             // 处理窗口大小变化
+            let resizeTimeout;
             window.addEventListener('resize', () => {
-                updateHeader();
-            }, { passive: true });
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    if (thead.classList.contains('sticky')) {
+                        const tableRect = table.getBoundingClientRect();
+                        thead.style.width = `${table.offsetWidth}px`;
+                        thead.style.left = `${tableRect.left}px`;
+                    }
+                }, 100);
+            });
         });
     </script>
 </body>
