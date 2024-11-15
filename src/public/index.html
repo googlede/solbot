@@ -1076,11 +1076,8 @@
                         </div>
                     </td>
                     <td>
-                        <div class="volume-cell">
-                            <div class="dual-value-primary">$${formatNumber(token.volume24h)}</div>
-                            <div class="${getValueTierClass(token.volume24h)}">
-                                $${formatNumber(token.volume24h)}
-                            </div>
+                        <div class="${getValueTierClass(token.volume24h)}">
+                            $${formatNumber(token.volume24h)}
                         </div>
                     </td>
                     <td class="price-value">${formatPrice(token.price)}</td>
@@ -1354,11 +1351,8 @@
                         </div>
                     </td>
                     <td>
-                        <div class="volume-cell">
-                            <div class="dual-value-primary">$${formatNumber(token.volume24h)}</div>
-                            <div class="${getValueTierClass(token.volume24h)}">
-                                $${formatNumber(token.volume24h)}
-                            </div>
+                        <div class="${getValueTierClass(token.volume24h)}">
+                            $${formatNumber(token.volume24h)}
                         </div>
                     </td>
                     <td class="price-value">${formatPrice(token.price)}</td>
@@ -1452,6 +1446,31 @@
                 return 'N/A';
             }
         }
+
+        // 更新样式，移除不需要的双行样式
+        const style = document.createElement('style');
+        style.textContent = `
+            /* ... 保留之前的样式 ... */
+
+            .tx-count-cell .split-txs span:not(.tx-separator) {
+                transition: color 0.2s ease;
+            }
+
+            /* 移除之前的 volume-cell 相关样式 */
+
+            /* 确保分隔符保持原有颜色 */
+            .tx-separator {
+                color: var(--text-gray) !important;
+            }
+
+            /* 双行显示时第一行保持白色 */
+            .dual-value-primary {
+                color: #ffffff !important;
+                font-size: 1.1em;
+                font-weight: 500;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html> 
