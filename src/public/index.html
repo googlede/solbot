@@ -673,6 +673,55 @@
         .value-tiers-legend div:first-child .legend-color {
             background: #a64dff;  /* 更新图例中的颜色 */
         }
+
+        .token-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .token-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .token-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .token-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .token-name {
+            color: #ffffff;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .token-address {
+            color: #7a7f8c;
+            font-size: 0.85em;
+            font-family: monospace;
+        }
+
+        /* 添加链接样式 */
+        .token-address a {
+            color: inherit;
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .token-address a:hover {
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -964,9 +1013,22 @@
             tokenList.innerHTML = tokens.map(token => `
                 <tr>
                     <td>
-                        <div class="token-name">
-                            <div class="token-icon"></div>
-                            ${token.symbol}
+                        <div class="token-cell">
+                            <div class="token-icon">
+                                <img src="${token.iconUrl || 'default-token-icon.png'}" 
+                                     alt="${token.symbol}"
+                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\'%3E%3Ccircle cx=\'12\' cy=\'12\' r=\'12\' fill=\'%232c2d33\'/%3E%3C/svg%3E'">
+                            </div>
+                            <div class="token-info">
+                                <div class="token-name">${token.symbol}</div>
+                                <div class="token-address">
+                                    <a href="https://solscan.io/token/${token.address}" 
+                                       target="_blank" 
+                                       title="${token.address}">
+                                        ${formatAddress(token.address)}
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </td>
                     <td class="age-value">${formatAge(token.createdAt)}</td>
@@ -1172,7 +1234,11 @@
                 const data = await response.json();
                 
                 // 存储原始数据
-                tokenData = data.tokens;
+                tokenData = data.tokens.map(token => ({
+                    ...token,
+                    // 如果后端没有提供图标URL，可以使用默认图标
+                    iconUrl: token.iconUrl || `https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/${token.address}/logo.png`
+                }));
                 
                 // 应用默认排序
                 sortTokens();
@@ -1223,9 +1289,22 @@
             tokenList.innerHTML = tokens.map(token => `
                 <tr>
                     <td>
-                        <div class="token-name">
-                            <div class="token-icon"></div>
-                            ${token.symbol}
+                        <div class="token-cell">
+                            <div class="token-icon">
+                                <img src="${token.iconUrl || 'default-token-icon.png'}" 
+                                     alt="${token.symbol}"
+                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\'%3E%3Ccircle cx=\'12\' cy=\'12\' r=\'12\' fill=\'%232c2d33\'/%3E%3C/svg%3E'">
+                            </div>
+                            <div class="token-info">
+                                <div class="token-name">${token.symbol}</div>
+                                <div class="token-address">
+                                    <a href="https://solscan.io/token/${token.address}" 
+                                       target="_blank" 
+                                       title="${token.address}">
+                                        ${formatAddress(token.address)}
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </td>
                     <td class="age-value">${formatAge(token.createdAt)}</td>
@@ -1331,6 +1410,12 @@
                 legend.style.display = 'none';
             });
         });
+
+        // 添加地址格式化函数
+        function formatAddress(address) {
+            if (!address) return '';
+            return `${address.slice(0, 5)}...${address.slice(-3)}`;
+        }
     </script>
 </body>
 </html> 
