@@ -227,7 +227,7 @@
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: auto;
+            overflow: visible;
             position: relative;
         }
 
@@ -858,7 +858,7 @@
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: auto;
+            overflow: visible;
             position: relative;
         }
 
@@ -868,24 +868,22 @@
             border-collapse: separate;
             border-spacing: 0;
             font-size: 14px;
-            table-layout: fixed;
-        }
-
-        /* 表头容器 */
-        .table-header-container {
-            position: sticky;
-            top: 64px;
-            z-index: 100;
-            background: #0f1011;
-            margin-bottom: -1px;
         }
 
         /* 表头样式 */
-        .token-table thead tr {
+        .token-table thead {
+            position: sticky;
+            top: 64px;
+            z-index: 1000;
+            transition: box-shadow 0.3s ease;
             background: #0f1011;
         }
 
-        .token-table th {
+        .token-table thead.sticky {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .token-table thead th {
             padding: 10px 16px;
             text-align: left;
             color: var(--text-gray);
@@ -897,14 +895,36 @@
         }
 
         /* 数据行样式 */
-        .token-table td {
+        .token-table tbody td {
             padding: 8px 16px;
             white-space: nowrap;
             height: 20px;
             line-height: 1.2;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            overflow: hidden;
-            text-overflow: ellipsis;
+        }
+
+        /* 确保表头在固定时的圆角 */
+        .token-table thead.sticky th:first-child {
+            border-top-left-radius: 0;
+        }
+
+        .token-table thead.sticky th:last-child {
+            border-top-right-radius: 0;
+        }
+
+        /* 滚动条样式 */
+        .token-table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .token-table-container::-webkit-scrollbar-track {
+            background: #0f1011;
+        }
+
+        .token-table-container::-webkit-scrollbar-thumb {
+            background: #2c2d33;
+            border-radius: 4px;
         }
 
         /* 列宽设置 */
@@ -1546,39 +1566,31 @@
 
         // 添加表头固定效果
         document.addEventListener('DOMContentLoaded', () => {
-            const headerContainer = document.querySelector('.table-header-container');
+            const thead = document.querySelector('.token-table thead');
             const tableContainer = document.querySelector('.token-table-container');
-            
+            const navHeight = 64;  // 顶部导航栏高度
+
             // 监听滚动事件
             window.addEventListener('scroll', () => {
                 const containerRect = tableContainer.getBoundingClientRect();
-                const headerRect = headerContainer.getBoundingClientRect();
+                const theadRect = thead.getBoundingClientRect();
                 
-                if (containerRect.top <= 64) {  // 64px 是顶部导航栏高度
-                    headerContainer.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+                if (containerRect.top <= navHeight) {
+                    thead.classList.add('sticky');
+                    
+                    // 计算表头应该停留的位置
+                    const stopPosition = navHeight;
+                    const offset = stopPosition - containerRect.top;
+                    
+                    // 确保表头不会超出表格容器底部
+                    if (containerRect.bottom >= theadRect.height + navHeight) {
+                        thead.style.transform = `translateY(${offset}px)`;
+                    }
                 } else {
-                    headerContainer.style.boxShadow = 'none';
+                    thead.classList.remove('sticky');
+                    thead.style.transform = 'translateY(0)';
                 }
             }, { passive: true });
-
-            // 同步表头和数据列宽
-            function syncColumnWidths() {
-                const headerCells = headerContainer.querySelectorAll('th');
-                const dataCells = document.querySelector('.token-table tbody tr')?.querySelectorAll('td');
-                
-                if (dataCells) {
-                    headerCells.forEach((th, i) => {
-                        const width = th.getBoundingClientRect().width;
-                        dataCells[i].style.width = `${width}px`;
-                    });
-                }
-            }
-
-            // 监听窗口大小变化
-            window.addEventListener('resize', syncColumnWidths);
-            
-            // 初始同步列宽
-            setTimeout(syncColumnWidths, 100);
         });
     </script>
 </body>
