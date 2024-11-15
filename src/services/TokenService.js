@@ -1,140 +1,58 @@
-const axios = require('axios');
-const LRU = require('lru-cache');
+const { Connection, PublicKey } = require('@solana/web3.js');
 const logger = require('../utils/logger');
+const redis = require('../config/redis');
 
 class TokenService {
-  constructor() {
-    this.cache = new LRU({
-      max: 500,
-      ttl: 1000 * 60 * 5
-    });
-
-    this.JUPITER_API_URL = process.env.JUPITER_API_URL || 'https://price.jup.ag/v4';
-    this.retryConfig = {
-      maxRetries: 3,
-      delay: 1000,
-      backoff: 2
-    };
-  }
-
-  async getTop100Tokens() {
-    try {
-      logger.info('Starting getTop100Tokens request...');
-      
-      const cached = this.cache.get('top100');
-      if (cached) {
-        logger.info('Returning cached tokens data', { 
-          tokenCount: cached.length 
-        });
-        return cached;
-      }
-
-      logger.info('Fetching tokens from Jupiter API...');
-      const response = await this._retryRequest(() => {
-        logger.info('Making request to https://token.jup.ag/all');
-        return axios.get('https://token.jup.ag/all', {
-          timeout: 10000,
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'SolBot/1.0'
-          }
-        });
-      });
-      
-      logger.info('Jupiter API Response:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-        dataType: typeof response.data,
-        dataLength: response.data?.length,
-        sampleData: response.data?.slice(0, 2)
-      });
-
-      if (!response.data || !Array.isArray(response.data)) {
-        throw new Error(`Invalid response from Jupiter API: ${JSON.stringify(response.data)}`);
-      }
-
-      const tokens = response.data
-        .filter(token => {
-          const isValid = token.address && token.symbol;
-          if (!isValid) {
-            logger.warn('Invalid token data:', token);
-          }
-          return isValid;
-        })
-        .map(token => ({
-          symbol: token.symbol,
-          name: token.name || token.symbol,
-          address: token.address,
-          decimals: token.decimals,
-          logoURI: token.logoURI,
-          tags: token.tags || []
-        }))
-        .slice(0, 100);
-
-      logger.info(`Filtered ${tokens.length} valid tokens`);
-
-      const tokenAddresses = tokens.map(t => t.address).join(',');
-      logger.info(`Fetching price data for ${tokens.length} tokens`);
-      
-      const priceResponse = await this._retryRequest(() =>
-        axios.get(`${this.JUPITER_API_URL}/price`, {
-          params: { ids: tokenAddresses },
-          timeout: 10000
-        })
-      );
-
-      logger.info('Price data response:', {
-        status: priceResponse.status,
-        hasData: !!priceResponse.data,
-        tokenCount: Object.keys(priceResponse.data?.data || {}).length
-      });
-
-      const tokensWithPrice = tokens.map(token => ({
-        ...token,
-        price: priceResponse.data?.data?.[token.address]?.price || 0,
-        volume24h: priceResponse.data?.data?.[token.address]?.volume24h || 0
-      }));
-
-      this.cache.set('top100', tokensWithPrice);
-      logger.info(`Successfully processed ${tokensWithPrice.length} tokens with prices`);
-      
-      return tokensWithPrice;
-
-    } catch (error) {
-      logger.error('Error in getTop100Tokens:', {
-        message: error.message,
-        stack: error.stack,
-        response: error.response?.data,
-        config: error.config
-      });
-      
-      const staleCache = this.cache.get('top100');
-      if (staleCache) {
-        logger.info('Returning stale cache data due to error');
-        return staleCache;
-      }
-      
-      throw new Error(`Failed to fetch tokens: ${error.message}`);
+    constructor() {
+        this.connection = new Connection(process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com');
+        this.cacheKey = 'top_100_tokens';
+        this.cacheExpiry = 60; // 1分钟缓存
     }
-  }
 
-  async _retryRequest(requestFn) {
-    let lastError;
-    for (let attempt = 0; attempt <= this.retryConfig.maxRetries; attempt++) {
-      try {
-        return await requestFn();
-      } catch (error) {
-        lastError = error;
-        if (attempt === this.retryConfig.maxRetries) break;
-        
-        const delay = this.retryConfig.delay * Math.pow(this.retryConfig.backoff, attempt);
-        logger.info(`Retry attempt ${attempt + 1} after ${delay}ms`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
+    async getTop100Tokens() {
+        try {
+            // 尝试从缓存获取数据
+            const cached = await redis.get(this.cacheKey);
+            if (cached) {
+                return JSON.parse(cached);
+            }
+
+            // 获取实时数据
+            const tokens = await this.fetchTokenData();
+            
+            // 缓存数据
+            await redis.set(this.cacheKey, JSON.stringify(tokens), 'EX', this.cacheExpiry);
+            
+            return tokens;
+        } catch (error) {
+            logger.error('Error getting top 100 tokens:', error);
+            throw error;
+        }
     }
-    throw lastError;
-  }
+
+    async fetchTokenData() {
+        try {
+            // 这里添加实际的 Solana token 数据获取逻辑
+            // 目前返回模拟数据
+            return [
+                {
+                    symbol: 'SOL',
+                    marketCap: 100000000,
+                    price: 100,
+                    volume24h: 5000000,
+                    holders: 1000000,
+                    txCount1h: 5000,
+                    change1h: 2.5,
+                    change24h: 5.0,
+                    change7d: 10.0
+                },
+                // ... 添加更多 token 数据
+            ];
+        } catch (error) {
+            logger.error('Error fetching token data:', error);
+            throw error;
+        }
+    }
 }
 
 module.exports = new TokenService();

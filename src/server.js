@@ -8,6 +8,7 @@ const compression = require('express-compression');
 const logger = require('./utils/logger');
 const redis = require('./config/redis');
 const path = require('path');
+const TokenService = require('./services/TokenService');
 
 // 创建 Express 应用实例
 const app = express();
@@ -68,6 +69,17 @@ app.get('/api/tokens/trending', async (req, res) => {
     } catch (error) {
         logger.error('Error fetching trending tokens:', error);
         res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Token 数据路由
+app.get('/api/tokens/top100', async (req, res) => {
+    try {
+        const tokens = await TokenService.getTop100Tokens();
+        res.json({ tokens });
+    } catch (error) {
+        logger.error('Error fetching top tokens:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 

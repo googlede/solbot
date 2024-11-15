@@ -122,15 +122,14 @@
             <thead>
                 <tr>
                     <th>Token</th>
-                    <th>Age</th>
-                    <th>Liq/MC</th>
+                    <th>Market Cap</th>
+                    <th>Price</th>
+                    <th>Volume (24h)</th>
                     <th>Holders</th>
                     <th>1h TXs</th>
-                    <th>Volume</th>
-                    <th>Price</th>
                     <th>1h%</th>
-                    <th>5m%</th>
                     <th>24h%</th>
+                    <th>7d%</th>
                 </tr>
             </thead>
             <tbody id="token-list">
@@ -142,13 +141,13 @@
     <script>
         let currentTimeframe = '1m';
 
-        async function fetchTrendingTokens() {
+        async function fetchTokens() {
             try {
-                const response = await fetch('/api/tokens/trending');
+                const response = await fetch('/api/tokens/top100');
                 const data = await response.json();
                 updateTokenList(data.tokens);
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('Error fetching tokens:', error);
             }
         }
 
@@ -162,22 +161,40 @@
                             ${token.symbol}
                         </div>
                     </td>
-                    <td>${token.age}</td>
-                    <td>${token.liquidity}</td>
-                    <td>${token.holders}</td>
-                    <td>${token.txs1h}</td>
-                    <td>${token.volume}</td>
-                    <td>${token.price}</td>
-                    <td class="${getChangeClass(token.change1h)}">${token.change1h}</td>
-                    <td class="${getChangeClass(token.change5m)}">${token.change5m}</td>
-                    <td class="${getChangeClass(token.change1d)}">${token.change1d}</td>
+                    <td>${formatUSD(token.marketCap)}</td>
+                    <td>${formatUSD(token.price)}</td>
+                    <td>${formatUSD(token.volume24h)}</td>
+                    <td>${formatNumber(token.holders)}</td>
+                    <td>${formatNumber(token.txCount1h)}</td>
+                    <td class="${getChangeClass(token.change1h)}">${formatPercent(token.change1h)}</td>
+                    <td class="${getChangeClass(token.change24h)}">${formatPercent(token.change24h)}</td>
+                    <td class="${getChangeClass(token.change7d)}">${formatPercent(token.change7d)}</td>
                 </tr>
             `).join('');
         }
 
-        function getChangeClass(change) {
-            if (!change) return '';
-            return change.startsWith('+') ? 'positive' : 'negative';
+        function formatUSD(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value);
+        }
+
+        function formatNumber(value) {
+            return new Intl.NumberFormat('en-US', {
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        function formatPercent(value) {
+            const sign = value >= 0 ? '+' : '';
+            return `${sign}${value.toFixed(2)}%`;
+        }
+
+        function getChangeClass(value) {
+            return value >= 0 ? 'positive' : 'negative';
         }
 
         function changeTimeframe(timeframe) {
@@ -187,13 +204,13 @@
             });
             document.querySelector(`button[onclick="changeTimeframe('${timeframe}')"]`)
                 .classList.add('active');
-            fetchTrendingTokens();
+            fetchTokens();
         }
 
         // 初始加载
-        fetchTrendingTokens();
-        // 每30秒更新一次
-        setInterval(fetchTrendingTokens, 30000);
+        fetchTokens();
+        // 每分钟刷新一次
+        setInterval(fetchTokens, 60000);
     </script>
 </body>
 </html> 
