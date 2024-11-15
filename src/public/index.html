@@ -1224,6 +1224,39 @@
                 </tr>
             `).join('');
         }
+
+        // 添加百分比格式化函数
+        function formatPercent(value) {
+            if (!value && value !== 0) return '-';
+            const sign = value > 0 ? '+' : '';
+            return `${sign}${value.toFixed(1)}%`;
+        }
+
+        // 修改数值格式化函数
+        function formatNumber(value) {
+            if (!value && value !== 0) return '-';
+            if (value >= 1_000_000_000) {
+                return `${(value / 1_000_000_000).toFixed(1)}B`;
+            }
+            if (value >= 1_000_000) {
+                return `${(value / 1_000_000).toFixed(1)}M`;
+            }
+            if (value >= 1_000) {
+                return `${(value / 1_000).toFixed(1)}K`;
+            }
+            return value.toFixed(2);
+        }
+
+        function formatPrice(price) {
+            if (!price && price !== 0) return '-';
+            if (price < 0.00001) {
+                return '$' + price.toExponential(2);
+            }
+            if (price < 0.01) {
+                return '$' + price.toFixed(6);
+            }
+            return '$' + price.toFixed(2);
+        }
     </script>
 </body>
 </html> 
