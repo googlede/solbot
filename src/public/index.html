@@ -970,7 +970,7 @@
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: hidden; /* 改为 hidden */
+            overflow: hidden; /* 控制内容溢出 */
         }
 
         /* 表格基础样式 */
@@ -979,36 +979,40 @@
             border-collapse: separate;
             border-spacing: 0;
             font-size: 14px;
-            position: relative; /* 添加相对定位 */
         }
 
         /* 表头样式 */
         .token-table thead {
-            position: relative; /* 初始状态为相对定位 */
+            position: sticky; /* 关键属性 */
+            top: 64px; /* 导航栏高度 */
             background: #0f1011;
-            transition: all 0.3s ease;
+            z-index: 10;
+            transition: box-shadow 0.3s ease; /* 平滑过渡 */
         }
 
-        /* 表头固定状态 */
-        .token-table thead.sticky {
-            position: fixed; /* 固定状态改为固定定位 */
-            top: 64px;
-            left: auto;
-            width: inherit;
-            z-index: 100;
+        /* 表头单元格样式 */
+        .token-table th {
+            position: sticky; /* 确保每个表头单元格也是sticky */
+            top: 64px; /* 与thead相同 */
+            padding: 10px 16px;
+            text-align: left;
+            color: var(--text-gray);
+            font-weight: normal;
             background: #0f1011;
+            white-space: nowrap;
             border-bottom: 1px solid #3a3b42;
+        }
+
+        /* 表头固定时的视觉效果 */
+        .token-table thead.is-sticky {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
-        /* 表头占位符 */
-        .header-placeholder {
-            display: none;
-            height: 41px; /* 与表头高度一致 */
-        }
-
-        .header-placeholder.active {
-            display: block;
+        /* 数据行样式 */
+        .token-table td {
+            padding: 8px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -1468,7 +1472,7 @@
                             const isUp = icon.classList.contains('up');
                             const direction = isUp ? 'asc' : 'desc';
                             
-                            // 重置所有���标
+                            // 重置所有图标
                             document.querySelectorAll('.sort-icon').forEach(i => i.classList.remove('active'));
                             
                             // 激活当前图标
@@ -1701,73 +1705,59 @@
         document.head.appendChild(style);
 
         document.addEventListener('DOMContentLoaded', () => {
-            const table = document.querySelector('.token-table');
-            const thead = table.querySelector('thead');
+            const thead = document.querySelector('.token-table thead');
             const container = document.querySelector('.table-container');
-            const navHeight = 64;
+            const navHeight = 64; // 导航栏高度
 
-            // 创建表头占位符
-            const placeholder = document.createElement('div');
-            placeholder.className = 'header-placeholder';
-            table.insertBefore(placeholder, thead.nextSibling);
-
-            let lastScrollY = window.scrollY;
-            let ticking = false;
-
-            function updateHeader() {
+            // 计算表头状态的方法
+            function calculateHeaderState() {
                 const containerRect = container.getBoundingClientRect();
-                const tableRect = table.getBoundingClientRect();
+                const theadRect = thead.getBoundingClientRect();
+                
+                return {
+                    // 容器顶部到视口顶部的距离
+                    containerTop: containerRect.top,
+                    // 容器底部到视口顶部的距离
+                    containerBottom: containerRect.bottom,
+                    // 表头高度
+                    headerHeight: theadRect.height,
+                    // 判断是否应该固定
+                    shouldStick: containerRect.top <= navHeight && 
+                               containerRect.bottom >= (theadRect.height + navHeight),
+                    // 计算滚动方向
+                    scrollingUp: this.lastScrollY > window.scrollY
+                };
+            }
 
-                if (containerRect.top <= navHeight && 
-                    containerRect.bottom >= thead.offsetHeight + navHeight) {
-                    
-                    if (!thead.classList.contains('sticky')) {
-                        // 计算表头宽度和位置
-                        const headWidth = table.offsetWidth;
-                        const leftOffset = tableRect.left;
-
-                        // 应用固定定位
-                        thead.classList.add('sticky');
-                        placeholder.classList.add('active');
-                        
-                        // 设置表头样式
-                        thead.style.width = `${headWidth}px`;
-                        thead.style.left = `${leftOffset}px`;
+            // 更新表头状态的方法
+            function updateHeaderState() {
+                const state = calculateHeaderState();
+                
+                if (state.shouldStick) {
+                    if (!thead.classList.contains('is-sticky')) {
+                        thead.classList.add('is-sticky');
                     }
                 } else {
-                    if (thead.classList.contains('sticky')) {
-                        // 恢复原始状态
-                        thead.classList.remove('sticky');
-                        placeholder.classList.remove('active');
-                        thead.style.width = '';
-                        thead.style.left = '';
+                    if (thead.classList.contains('is-sticky')) {
+                        thead.classList.remove('is-sticky');
                     }
                 }
             }
 
             // 使用 requestAnimationFrame 优化滚动性能
+            let ticking = false;
             window.addEventListener('scroll', () => {
                 if (!ticking) {
                     requestAnimationFrame(() => {
-                        updateHeader();
+                        updateHeaderState();
                         ticking = false;
                     });
                     ticking = true;
                 }
             }, { passive: true });
 
-            // 处理窗口大小变化
-            let resizeTimeout;
-            window.addEventListener('resize', () => {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(() => {
-                    if (thead.classList.contains('sticky')) {
-                        const tableRect = table.getBoundingClientRect();
-                        thead.style.width = `${table.offsetWidth}px`;
-                        thead.style.left = `${tableRect.left}px`;
-                    }
-                }, 100);
-            });
+            // 初始化状态
+            updateHeaderState();
         });
     </script>
 </body>
