@@ -69,8 +69,8 @@ class TokenService {
             'JTO': 'jtojtojtojtojtojtojtojtojtojtojtojtojtojtojto',
             'WEN': 'WENWENWENWENWENWENWENWENWENWENWENWENWENwen123',
             'PYTH': 'PYTHPYTHPYTHPYTHPYTHPYTHPYTHPYTHPYTHpyth123',
-            'ORCA': 'orcaorcaorcaorcaorcaorcaorcaorcaorcaorcaorca123',
-            'RAY': 'RAYRAYRAYRAYRAYRAYRAYRAYRAYRAYRAYRAYRAYRAYray123',
+            'ORCA': 'orcaorcaorcaorcaorcaorcaorcaorcaorcaorcaorcaorca123',
+            'RAY': 'RAYRAYRAYRAYRAYRAYRAYRAYRAYRAYRAYRAYRAYRAYRAYray123',
             'MEAN': 'MEANMEANMEANMEANMEANMEANMEANMEANMEANmean123'
         };
 
