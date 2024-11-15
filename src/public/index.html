@@ -895,83 +895,54 @@
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: visible; /* 允许表头在滚动时可见 */
+            overflow: hidden; /* 初始状态保持 hidden */
         }
 
         /* 表格基础样式 */
         .token-table {
             width: 100%;
-            border-collapse: separate;  /* 使用 separate 以支持 border-spacing */
+            border-collapse: separate;
             border-spacing: 0;
             font-size: 14px;
-            table-layout: fixed;  /* 固定布局以确保列宽一致 */
+            background: #0f1011;
         }
 
-        /* 列宽设置 */
-        .token-table th:nth-child(1),
-        .token-table td:nth-child(1) { width: 200px; }  /* Token */
-        
-        .token-table th:nth-child(2),
-        .token-table td:nth-child(2) { width: 80px; }   /* Age */
-        
-        .token-table th:nth-child(3),
-        .token-table td:nth-child(3) { width: 160px; }  /* Liq/MC */
-        
-        .token-table th:nth-child(4),
-        .token-table td:nth-child(4) { width: 120px; }  /* Holders */
-        
-        .token-table th:nth-child(5),
-        .token-table td:nth-child(5) { width: 140px; }  /* 24h TXs */
-        
-        .token-table th:nth-child(6),
-        .token-table td:nth-child(6) { width: 120px; }  /* 24h Vol */
-        
-        .token-table th:nth-child(7),
-        .token-table td:nth-child(7) { width: 100px; }  /* Price */
-        
-        .token-table th:nth-child(8),
-        .token-table th:nth-child(9),
-        .token-table th:nth-child(10),
-        .token-table td:nth-child(8),
-        .token-table td:nth-child(9),
-        .token-table td:nth-child(10) { width: 80px; }  /* 1m%, 5m%, 1h% */
-
-        /* 表头样式 */
+        /* 表头基础样式 - 初始状态 */
         .token-table thead {
-            position: sticky !important; /* 强制使用 sticky 定位 */
-            top: 64px !important; /* 强制固定在导航栏下方 */
+            position: relative; /* 初始为正常文档流 */
             background: #0f1011;
-            z-index: 100;
             transition: box-shadow 0.3s ease;
         }
 
-        /* 表头固定状态 */
-        .token-table thead.sticky {
+        /* 表头固定状态 - 仅在需要时应用 */
+        .token-table thead.is-sticky {
+            position: sticky;
+            top: 64px;
+            z-index: 100;
+            background: #0f1011;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         /* 表头单元格样式 */
         .token-table th {
-            position: sticky !important; /* 关键：表头单元格也需要 sticky */
-            top: 64px !important; /* 与 thead 相同的位置 */
             padding: 10px 16px;
             text-align: left;
             color: var(--text-gray);
             font-weight: normal;
-            background: #0f1011; /* 确保背景色 */
+            background: #0f1011;
             white-space: nowrap;
-            z-index: 100;
+            border-bottom: 1px solid #3a3b42;
         }
 
-        /* 数据单元格样式 */
+        /* 数据行样式 */
         .token-table td {
             padding: 8px 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
             white-space: nowrap;
-            background: #0f1011; /* 确保背景色 */
+            background: #0f1011;
         }
 
-        /* 最后一行不需要边框 */
+        /* 最后一行去除边框 */
         .token-table tr:last-child td {
             border-bottom: none;
         }
@@ -1670,41 +1641,42 @@
             const container = document.querySelector('.table-container');
             const navHeight = 64;
 
-            // 1. 位置计算方法
+            // 1. 精确的位置计算
             function calculateHeaderState() {
                 const containerRect = container.getBoundingClientRect();
                 const theadRect = thead.getBoundingClientRect();
                 
                 return {
+                    // 容器顶部到视口顶部的距离
                     containerTop: containerRect.top,
+                    // 容器底部到视口顶部的距离
                     containerBottom: containerRect.bottom,
+                    // 表头高度
                     headerHeight: theadRect.height,
-                    // 计算是否应该固定
+                    // 判断是否应该固定
                     shouldStick: containerRect.top <= navHeight && 
-                               containerRect.bottom >= (theadRect.height + navHeight),
-                    // 计算过渡进度
-                    progress: Math.max(0, Math.min(1, 
-                        (navHeight - containerRect.top) / theadRect.height
-                    ))
+                               containerRect.bottom >= (theadRect.height + navHeight)
                 };
             }
 
-            // 2. 状态更新方法
+            // 2. 状态更新逻辑
             function updateHeaderState() {
                 const state = calculateHeaderState();
                 
                 if (state.shouldStick) {
-                    if (!thead.classList.contains('sticky')) {
-                        thead.classList.add('sticky');
+                    if (!thead.classList.contains('is-sticky')) {
+                        container.style.overflow = 'visible'; // 允许表头溢出
+                        thead.classList.add('is-sticky');
                     }
                 } else {
-                    if (thead.classList.contains('sticky')) {
-                        thead.classList.remove('sticky');
+                    if (thead.classList.contains('is-sticky')) {
+                        container.style.overflow = 'hidden';
+                        thead.classList.remove('is-sticky');
                     }
                 }
             }
 
-            // 3. 滚动事件处理
+            // 3. 优化的滚动监听
             let ticking = false;
             window.addEventListener('scroll', () => {
                 if (!ticking) {
@@ -1716,8 +1688,10 @@
                 }
             }, { passive: true });
 
-            // 4. 初始化
-            updateHeaderState();
+            // 4. 初始化 - 确保初始状态正确
+            setTimeout(() => {
+                updateHeaderState();
+            }, 0);
         });
     </script>
 </body>
