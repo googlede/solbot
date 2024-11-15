@@ -895,7 +895,7 @@
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: hidden;  /* 控制圆角 */
+            overflow: visible; /* 允许表头在固定时可见 */
         }
 
         /* 表格基础样式 */
@@ -938,13 +938,18 @@
 
         /* 表头样式 */
         .token-table thead {
-            position: sticky;
-            top: 64px;  /* 导航栏高度 */
-            z-index: 10;
+            position: relative; /* 初始为正常文档流 */
             background: #0f1011;
             transition: all 0.3s ease;
-            transform: translateZ(0); /* 启用硬件加速 */
-            will-change: transform, box-shadow; /* 优化性能 */
+        }
+
+        /* 表头固定状态 */
+        .token-table thead.sticky {
+            position: sticky; /* 固定时切换为 sticky */
+            top: 64px;
+            z-index: 100;
+            background: #0f1011;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         /* 表头单元格样式 */
@@ -1703,83 +1708,42 @@
             const thead = document.querySelector('.token-table thead');
             const container = document.querySelector('.table-container');
             const navHeight = 64;
-            let lastScrollY = window.scrollY;
 
-            // 精确计算表头状态
+            // 1. 位置计算方法
             function calculateHeaderState() {
                 const containerRect = container.getBoundingClientRect();
                 const theadRect = thead.getBoundingClientRect();
-                const scrollDirection = window.scrollY > lastScrollY ? 'down' : 'up';
                 
                 return {
                     containerTop: containerRect.top,
                     containerBottom: containerRect.bottom,
                     headerHeight: theadRect.height,
-                    scrollDirection,
-                    // 计算触发点
-                    triggerPoint: navHeight,
-                    // 计算释放点
-                    releasePoint: containerRect.top + theadRect.height,
-                    // 判断是否应该固定
+                    // 计算是否应该固定
                     shouldStick: containerRect.top <= navHeight && 
                                containerRect.bottom >= (theadRect.height + navHeight),
-                    // 计算过渡进度 (0-1)
-                    progress: Math.min(1, Math.max(0, 
+                    // 计算过渡进度
+                    progress: Math.max(0, Math.min(1, 
                         (navHeight - containerRect.top) / theadRect.height
                     ))
                 };
             }
 
-            // 更新表头状态
+            // 2. 状态更新方法
             function updateHeaderState() {
                 const state = calculateHeaderState();
                 
-                // 更新滚动方向
-                lastScrollY = window.scrollY;
-
-                // 应用状态
                 if (state.shouldStick) {
-                    if (!thead.classList.contains('is-sticky')) {
-                        thead.classList.add('is-sticky');
+                    if (!thead.classList.contains('sticky')) {
+                        thead.classList.add('sticky');
                     }
-                    
-                    // 应用过渡效果
-                    const shadowOpacity = state.progress * 0.2; // 20% 最大透明度
-                    thead.style.boxShadow = `0 2px 8px rgba(0, 0, 0, ${shadowOpacity})`;
                 } else {
-                    if (thead.classList.contains('is-sticky')) {
-                        thead.classList.remove('is-sticky');
-                        thead.style.boxShadow = 'none';
+                    if (thead.classList.contains('sticky')) {
+                        thead.classList.remove('sticky');
                     }
-                }
-
-                // 在接近触发点时开始应用过渡效果
-                if (state.containerTop <= state.triggerPoint + 20) {
-                    const transitionProgress = (state.triggerPoint + 20 - state.containerTop) / 20;
-                    thead.style.transform = `translateZ(0) scale(${1 - transitionProgress * 0.001})`;
-                } else {
-                    thead.style.transform = 'translateZ(0)';
                 }
             }
 
-            // 使用 Intersection Observer 优化性能
-            const observer = new IntersectionObserver(
-                (entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            updateHeaderState();
-                        }
-                    });
-                },
-                {
-                    threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
-                    rootMargin: `-${navHeight}px 0px 0px 0px`
-                }
-            );
-
-            observer.observe(container);
-
-            // 优化滚动性能
+            // 3. 滚动事件处理
             let ticking = false;
             window.addEventListener('scroll', () => {
                 if (!ticking) {
@@ -1791,14 +1755,7 @@
                 }
             }, { passive: true });
 
-            // 处理窗口大小变化
-            let resizeTimeout;
-            window.addEventListener('resize', () => {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(updateHeaderState, 100);
-            });
-
-            // 初始化状态
+            // 4. 初始化
             updateHeaderState();
         });
     </script>
