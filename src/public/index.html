@@ -476,6 +476,36 @@
         .age-value {
             color: var(--text-gray);
         }
+
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        .sort-icons {
+            display: inline-flex;
+            flex-direction: column;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        .sort-icon {
+            font-size: 8px;
+            color: var(--text-gray);
+            opacity: 0.5;
+            transition: opacity 0.2s ease, color 0.2s ease;
+            line-height: 1;
+        }
+
+        .sort-icon.active {
+            opacity: 1;
+            color: var(--text-light);
+        }
+
+        .sort-icon:hover {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -626,16 +656,70 @@
                 <table class="token-table">
                     <thead>
                         <tr>
-                            <th>Token <span class="sort-icon">▼</span></th>
-                            <th>Age <span class="sort-icon">▼</span></th>
-                            <th>Liq $/MC $ <span class="sort-icon">▼</span></th>
-                            <th>Holders <span class="sort-icon">▼</span></th>
-                            <th>24h TXs <span class="sort-icon">▼</span></th>
-                            <th>24h Vol $ <span class="sort-icon">▼</span></th>
-                            <th>Price <span class="sort-icon">▼</span></th>
-                            <th>1m% <span class="sort-icon">▼</span></th>
-                            <th>5m% <span class="sort-icon">▼</span></th>
-                            <th>1h% <span class="sort-icon">▼</span></th>
+                            <th>Token</th>
+                            <th class="sortable" data-sort="age">
+                                Age
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="liqMc">
+                                Liq $/MC $
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="holders">
+                                Holders
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="txCount24h">
+                                24h TXs
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="volume24h" data-default-sort="desc">
+                                24h Vol $
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down active">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="price">
+                                Price
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="change1m">
+                                1m%
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="change5m">
+                                5m%
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="change1h">
+                                1h%
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="token-list">
@@ -793,6 +877,93 @@
             // 临时实现 - 后续替换为实际的路由逻辑
             console.log(`Navigating to: ${path}`);
         }
+
+        let currentSort = {
+            column: 'volume24h',
+            direction: 'desc'
+        };
+
+        let tokenData = []; // 存储原始数据
+
+        function initSorting() {
+            const headers = document.querySelectorAll('.sortable');
+            headers.forEach(header => {
+                const icons = header.querySelectorAll('.sort-icon');
+                icons.forEach(icon => {
+                    icon.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const column = header.dataset.sort;
+                        const isUp = icon.classList.contains('up');
+                        const direction = isUp ? 'asc' : 'desc';
+                        
+                        // 重置所有图标
+                        document.querySelectorAll('.sort-icon').forEach(i => i.classList.remove('active'));
+                        
+                        // 激活当前图标
+                        icon.classList.add('active');
+                        
+                        // 更新排序状态
+                        currentSort = { column, direction };
+                        
+                        // 执行排序
+                        sortTokens();
+                    });
+                });
+
+                // 设置默认排序
+                if (header.dataset.defaultSort) {
+                    const direction = header.dataset.defaultSort;
+                    const icon = header.querySelector(`.sort-icon.${direction === 'asc' ? 'up' : 'down'}`);
+                    icon.classList.add('active');
+                }
+            });
+        }
+
+        function sortTokens() {
+            const sortedTokens = [...tokenData].sort((a, b) => {
+                let aVal = a[currentSort.column];
+                let bVal = b[currentSort.column];
+                
+                // 特殊处理 age 字段
+                if (currentSort.column === 'age') {
+                    aVal = new Date(a.createdAt).getTime();
+                    bVal = new Date(b.createdAt).getTime();
+                }
+                
+                if (aVal === bVal) return 0;
+                
+                const modifier = currentSort.direction === 'asc' ? 1 : -1;
+                return aVal > bVal ? modifier : -modifier;
+            });
+
+            updateTokenList(sortedTokens);
+        }
+
+        async function fetchTokens() {
+            try {
+                const response = await fetch('/api/tokens/top');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                
+                // 存储原始数据
+                tokenData = data.tokens;
+                
+                // 应用默认排序
+                sortTokens();
+            } catch (error) {
+                console.error('Error fetching tokens:', error);
+                document.getElementById('token-list').innerHTML = 
+                    `<tr><td colspan="10">Error loading data: ${error.message}</td></tr>`;
+            }
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initSorting();
+            fetchTokens();
+            // 每分钟刷新一次
+            setInterval(fetchTokens, 60000);
+        });
     </script>
 </body>
 </html> 
