@@ -1003,6 +1003,128 @@
         .token-table tbody tr:hover {
             background-color: #1a1b1f;
         }
+
+        .page-content {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .table-container {
+            margin: 24px 0;
+            background: #0f1011;
+            border: 2px solid #3a3b42;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .token-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+            table-layout: fixed;
+        }
+
+        /* 列宽设置 */
+        .col-token { width: 200px; }
+        .col-age { width: 80px; }
+        .col-liq-mc { width: 160px; }
+        .col-holders { width: 120px; }
+        .col-txs { width: 140px; }
+        .col-volume { width: 120px; }
+        .col-price { width: 100px; }
+        .col-change { width: 80px; }
+
+        /* 表头样式 */
+        .token-table thead {
+            position: sticky;
+            top: 64px;
+            z-index: 100;
+            background: #0f1011;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .token-table thead.sticky {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .token-table th {
+            padding: 10px 16px;
+            text-align: left;
+            color: var(--text-gray);
+            font-weight: normal;
+            border-bottom: 1px solid #3a3b42;
+            background: #0f1011;
+            white-space: nowrap;
+        }
+
+        /* 数据行样式 */
+        .token-table td {
+            padding: 8px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            white-space: nowrap;
+        }
+
+        /* Token 列样式 */
+        .token-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .token-icon {
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .token-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .token-name {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .token-address {
+            color: var(--text-gray);
+            font-size: 0.85em;
+        }
+
+        /* 双行数据样式 */
+        .liq-mc-cell,
+        .tx-count-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .dual-value-primary {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        /* 确保内容不溢出 */
+        .token-table td > div,
+        .token-info > div {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -1632,85 +1754,39 @@
         // 添加表头固定效果
         document.addEventListener('DOMContentLoaded', () => {
             const thead = document.querySelector('.token-table thead');
-            const tableWrapper = document.querySelector('.token-table-wrapper');
-            const navHeight = 64; // 顶部导航栏高度
+            const container = document.querySelector('.table-container');
+            const navHeight = 64;
 
-            // 监听滚动事件
+            let lastScrollTop = 0;
+            let isScrollingUp = false;
+
             window.addEventListener('scroll', () => {
-                const wrapperRect = tableWrapper.getBoundingClientRect();
-                const headerHeight = thead.offsetHeight;
-
-                // 检查表头是否应该固定
-                if (wrapperRect.top <= navHeight) {
+                const currentScrollTop = window.pageYOffset;
+                isScrollingUp = currentScrollTop < lastScrollTop;
+                const containerRect = container.getBoundingClientRect();
+                
+                if (containerRect.top <= navHeight && containerRect.bottom >= thead.offsetHeight + navHeight) {
                     thead.classList.add('sticky');
                     
-                    // 确保表头不会超出表格底部
-                    if (wrapperRect.bottom >= headerHeight + navHeight) {
-                        thead.style.visibility = 'visible';
+                    // 添加过渡效果
+                    if (isScrollingUp) {
+                        thead.style.transform = 'translateY(0)';
                     } else {
-                        thead.style.visibility = 'hidden';
+                        thead.style.transform = `translateY(${Math.max(0, navHeight - containerRect.top)}px)`;
                     }
                 } else {
                     thead.classList.remove('sticky');
-                    thead.style.visibility = 'visible';
+                    thead.style.transform = 'none';
                 }
+                
+                lastScrollTop = currentScrollTop;
             }, { passive: true });
 
-            // 更新数据的函数
-            async function updateTokenList() {
-                try {
-                    const response = await fetch('/api/tokens/top');
-                    const data = await response.json();
-                    
-                    const tbody = document.querySelector('.token-table tbody');
-                    tbody.innerHTML = data.tokens.map(token => `
-                        <tr>
-                            <td>
-                                <div class="token-cell">
-                                    <div class="token-icon">
-                                        <img src="${token.iconUrl}" alt="${token.symbol}" onerror="this.src='default-token-icon.png'">
-                                    </div>
-                                    <div class="token-info">
-                                        <div class="token-name">${token.symbol}</div>
-                                        <div class="token-address">${formatAddress(token.address)}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>${formatAge(token.createdAt)}</td>
-                            <td>
-                                <div class="liq-mc-cell">
-                                    <div class="dual-value-primary">$${formatNumber(token.liquidity)}</div>
-                                    <div class="${getValueTierClass(token.marketCap)}">$${formatNumber(token.marketCap)}</div>
-                                </div>
-                            </td>
-                            <td>${formatNumber(token.holders)}</td>
-                            <td>
-                                <div class="tx-count-cell">
-                                    <div class="dual-value-primary">${formatNumber(token.txCount24h.total)}</div>
-                                    <div class="split-txs">
-                                        <span class="${getValueTierClass(token.txCount24h.buy)}">${formatNumber(token.txCount24h.buy)}</span>
-                                        <span class="tx-separator">/</span>
-                                        <span class="${getValueTierClass(token.txCount24h.sell)}">${formatNumber(token.txCount24h.sell)}</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="${getValueTierClass(token.volume24h)}">$${formatNumber(token.volume24h)}</td>
-                            <td class="price-value">$${formatPrice(token.price)}</td>
-                            <td class="price-change ${token.change1m > 0 ? 'positive' : 'negative'}">${formatPercent(token.change1m)}</td>
-                            <td class="price-change ${token.change5m > 0 ? 'positive' : 'negative'}">${formatPercent(token.change5m)}</td>
-                            <td class="price-change ${token.change1h > 0 ? 'positive' : 'negative'}">${formatPercent(token.change1h)}</td>
-                        </tr>
-                    `).join('');
-                } catch (error) {
-                    console.error('Error updating token list:', error);
-                }
-            }
-
-            // 初始加载数据
-            updateTokenList();
-            
-            // 每分钟更新一次数据
-            setInterval(updateTokenList, 60000);
+            // 监听窗口大小变化，确保列宽正确
+            window.addEventListener('resize', () => {
+                const tableWidth = container.offsetWidth;
+                document.documentElement.style.setProperty('--table-width', `${tableWidth}px`);
+            });
         });
     </script>
 </body>
