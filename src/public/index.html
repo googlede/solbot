@@ -179,10 +179,10 @@
 
         .token-table {
             width: 100%;
-            border-collapse: separate;
+            border-collapse: collapse;
             border-spacing: 0;
             font-size: 14px;
-            background: linear-gradient(to bottom, #0f1011, #0f1011);
+            background: #0f1011;
         }
 
         .token-table th {
@@ -198,13 +198,14 @@
 
         .token-table td {
             padding: 8px 16px;
-            border-bottom: none;
+            border: none !important;
             white-space: nowrap;
             height: 20px;
             line-height: 1.2;
         }
 
         .token-table tr {
+            border: none !important;
             transition: background-color 0.2s ease;
         }
 
@@ -791,57 +792,64 @@
         /* 更新表格样式 */
         .token-table {
             width: 100%;
-            border-collapse: separate;
+            border-collapse: collapse;
             border-spacing: 0;
             font-size: 14px;
+            background: #0f1011;
         }
 
         .token-table th {
-            padding: 12px 16px;
+            padding: 10px 16px;
             text-align: left;
             color: var(--text-gray);
             font-weight: normal;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #3a3b42;
             white-space: nowrap;
+            background: #0f1011;
+            height: 20px;
         }
 
         .token-table td {
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.8);  /* 白色，80% 不透明度 */
+            padding: 8px 16px;
+            border: none !important;
             white-space: nowrap;
+            height: 20px;
+            line-height: 1.2;
         }
 
-        /* 最后一行不显示分隔线 */
+        .token-table tr {
+            border: none !important;
+            transition: background-color 0.2s ease;
+        }
+
+        .token-table tr:hover {
+            background-color: #1a1b1f;
+        }
+
         .token-table tr:last-child td {
             border-bottom: none;
         }
 
-        /* 鼠标悬停效果 */
-        .token-table tr:hover td {
-            background-color: rgba(44, 45, 51, 0.3);
-        }
-
-        /* 确保表格容器有正确的背景色 */
         .token-table-container {
-            background: var(--bg-dark);
+            background: #0f1011;
+            border: 1px solid #3a3b42;
             border-radius: 8px;
             overflow: hidden;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        /* 调整双行内容的容器 */
-        .token-info,
-        .tx-count-cell,
-        .liq-mc-cell {
-            gap: 2px;  /* 减小双行内容之间的间距 */
-        }
-
-        /* 调整图标大小 */
         .token-icon {
-            width: 20px;  /* 减小图标大小 */
+            width: 20px;
             height: 20px;
         }
 
-        /* 调整双行文本的间距 */
+        .token-info,
+        .tx-count-cell,
+        .liq-mc-cell {
+            gap: 2px;
+        }
+
         .token-name {
             margin-bottom: 2px;
         }
