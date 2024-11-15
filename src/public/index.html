@@ -1016,88 +1016,7 @@
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .token-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 14px;
-        }
-
-        .token-table thead {
-            position: sticky;
-            top: 64px;  /* 顶部导航栏高度 */
-            z-index: 10;
-            background: #0f1011;
-            transition: box-shadow 0.3s ease;
-        }
-
-        .token-table thead::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            height: 1px;
-            background: #3a3b42;
-        }
-
-        .token-table th {
-            padding: 10px 16px;
-            text-align: left;
-            color: var(--text-gray);
-            font-weight: normal;
-            white-space: nowrap;
-            background: #0f1011;
-            position: relative;
-        }
-
-        .token-table td {
-            padding: 8px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            white-space: nowrap;
-        }
-
-        .token-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* 双行数据样式 */
-        .liq-mc-cell,
-        .tx-count-cell {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .dual-value-primary {
-            color: #fff;
-            font-weight: 500;
-        }
-
-        /* 确保表头在滚动时有阴影效果 */
-        .token-table thead.shadow {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .main-content {
-            width: 100%;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-            min-height: 200vh; /* 确保有足够的滚动空间 */
-        }
-
-        .table-section {
-            margin: 24px 0;
-        }
-
-        .table-container {
-            background: #0f1011;
-            border: 2px solid #3a3b42;
-            border-radius: 12px;
+            overflow: visible;
             position: relative;
         }
 
@@ -1108,9 +1027,11 @@
             font-size: 14px;
         }
 
+        /* 表头样式 */
         .token-table thead {
             position: relative; /* 初始状态 */
             background: #0f1011;
+            transition: all 0.3s ease;
         }
 
         .token-table thead.sticky {
@@ -1118,38 +1039,24 @@
             top: 64px; /* 顶部导航栏高度 */
             left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 44px); /* 考虑内边距和边框 */
-            max-width: 1356px;
-            z-index: 100;
+            width: inherit;
+            max-width: inherit;
             background: #0f1011;
+            z-index: 100;
             border-bottom: 1px solid #3a3b42;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .token-table th {
-            padding: 10px 16px;
-            text-align: left;
-            color: var(--text-gray);
-            font-weight: normal;
-            white-space: nowrap;
-            background: #0f1011;
-        }
-
-        .token-table td {
-            padding: 8px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            white-space: nowrap;
         }
 
         /* 表头占位符 */
         .header-placeholder {
-            display: none;
             visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .header-placeholder.active {
-            display: table-header-group;
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 </head>
