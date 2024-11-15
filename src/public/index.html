@@ -175,20 +175,32 @@
 
         .token-table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .token-table th,
-        .token-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
         }
 
         .token-table th {
+            padding: 12px 16px;
+            text-align: left;
             color: var(--text-gray);
             font-weight: normal;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .token-table td {
+            padding: 12px 16px;
+            border-bottom: 1px dashed #2c2d33;
+            white-space: nowrap;
+        }
+
+        .token-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .token-table tr:hover td {
+            background-color: rgba(44, 45, 51, 0.3);
         }
 
         .positive { color: var(--green); }
@@ -1402,7 +1414,7 @@
             return '$' + price.toFixed(2);
         }
 
-        // 修改地址格式化函数，添加错误处理
+        // 修改地址格式化函数，添加错误处���
         function formatAddress(address) {
             if (!address) return 'N/A';
             try {
