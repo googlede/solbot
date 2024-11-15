@@ -6,12 +6,12 @@ const PriceService = require('./PriceService');
 
 class TokenService {
     constructor() {
-        // 更新 RPC 节点列表，使用更可靠的节点
+        // 更新为更稳定的 RPC 节点列表
         this.rpcUrls = [
-            'https://api.mainnet-beta.solana.com',
             'https://rpc.ankr.com/solana',
-            'https://solana-mainnet.rpc.extrnode.com',
-            'https://solana.public-rpc.com'
+            'https://solana.public-rpc.com',
+            'https://mainnet.helius-rpc.com/?api-key=YOUR_API_KEY',  // 需要申请 API key
+            'https://solana-mainnet.g.alchemy.com/v2/YOUR_API_KEY'   // 需要申请 API key
         ];
         this.currentRpcIndex = 0;
         this.retryCount = 0;
@@ -72,26 +72,45 @@ class TokenService {
                 logger.error('Cache error:', cacheError);
             }
 
-            // 如果没有缓存数据，返回模拟数据（临时解决方案）
+            // 模拟数据生成函数
+            const generateMockTokens = (count) => {
+                const tokens = [];
+                const symbols = ['SOL', 'BONK', 'JTO', 'WEN', 'PYTH', 'ORCA', 'RAY', 'MEAN', 'DUST', 'RATIO'];
+                
+                for (let i = 0; i < count; i++) {
+                    const marketCap = Math.random() * 20000000000; // 0 到 200亿之间
+                    const price = Math.random() * 100; // 0 到 100美元之间
+                    const volume = marketCap * (Math.random() * 0.2); // 市值的0-20%
+                    
+                    tokens.push({
+                        symbol: symbols[i % symbols.length] + (i > 9 ? i : ''),
+                        marketCap: marketCap,
+                        price: price,
+                        volume24h: volume,
+                        holders: Math.floor(Math.random() * 1000000), // 0 到 100万持有者
+                        txCount1h: Math.floor(Math.random() * 50000), // 0 到 5万笔交易
+                        change1h: (Math.random() * 20) - 10, // -10% 到 +10%
+                        change24h: (Math.random() * 40) - 20, // -20% 到 +20%
+                        change7d: (Math.random() * 60) - 30, // -30% 到 +30%
+                    });
+                }
+
+                // 按市值排序
+                return tokens.sort((a, b) => b.marketCap - a.marketCap);
+            };
+
+            // 生成模拟数据
+            const minMarketCap = this.marketCapFilters[marketCapFilter];
+            const mockTokens = generateMockTokens(100) // 生成100个token
+                .filter(token => token.marketCap >= minMarketCap)
+                .slice(0, limit);
+
             const mockData = {
-                tokens: [
-                    {
-                        symbol: 'SOL',
-                        marketCap: 20000000000,
-                        price: 60.5,
-                        volume24h: 1500000000,
-                        holders: 500000,
-                        txCount1h: 25000,
-                        change1h: 2.5,
-                        change24h: 5.2,
-                        change7d: -3.1
-                    },
-                    // 添加更多模拟数据...
-                ],
+                tokens: mockTokens,
                 filter: {
-                    marketCap: this.marketCapFilters[marketCapFilter],
+                    marketCap: minMarketCap,
                     filterLabel: this.formatMarketCapLabel(marketCapFilter),
-                    totalCount: 1,
+                    totalCount: mockTokens.length,
                     displayCount: limit,
                     timestamp: new Date().toISOString()
                 }
