@@ -1016,13 +1016,8 @@
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: hidden;
+            overflow: visible; /* 允许表头溢出 */
             position: relative;
-        }
-
-        .table-wrapper {
-            width: 100%;
-            overflow-x: auto;
         }
 
         .token-table {
@@ -1030,29 +1025,24 @@
             border-collapse: separate;
             border-spacing: 0;
             font-size: 14px;
-            table-layout: fixed;
+            background: #0f1011;
         }
-
-        /* 列宽设置 */
-        .col-token { width: 200px; }
-        .col-age { width: 80px; }
-        .col-liq-mc { width: 160px; }
-        .col-holders { width: 120px; }
-        .col-txs { width: 140px; }
-        .col-volume { width: 120px; }
-        .col-price { width: 100px; }
-        .col-change { width: 80px; }
 
         /* 表头样式 */
         .token-table thead {
-            position: sticky;
-            top: 64px;
-            z-index: 100;
+            position: relative; /* 初始状态 */
             background: #0f1011;
-            transition: box-shadow 0.3s ease;
+            transition: all 0.3s ease;
         }
 
-        .token-table thead.sticky {
+        .token-table thead.fixed {
+            position: fixed;
+            top: 64px; /* 顶部导航栏高度 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 1360px; /* 1400px - 40px padding */
+            z-index: 100;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
@@ -1073,58 +1063,17 @@
             white-space: nowrap;
         }
 
-        /* Token 列样式 */
-        .token-cell {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        /* 列宽设置 */
+        .col-token { width: 200px; }
+        .col-age { width: 80px; }
+        .col-liq-mc { width: 160px; }
+        .col-holders { width: 120px; }
+        .col-txs { width: 140px; }
+        .col-volume { width: 120px; }
+        .col-price { width: 100px; }
+        .col-change { width: 80px; }
 
-        .token-icon {
-            width: 24px;
-            height: 24px;
-            min-width: 24px;
-            border-radius: 50%;
-            overflow: hidden;
-        }
-
-        .token-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            min-width: 0;
-        }
-
-        .token-name {
-            color: #fff;
-            font-weight: 500;
-        }
-
-        .token-address {
-            color: var(--text-gray);
-            font-size: 0.85em;
-        }
-
-        /* 双行数据样式 */
-        .liq-mc-cell,
-        .tx-count-cell {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .dual-value-primary {
-            color: #fff;
-            font-weight: 500;
-        }
-
-        /* 确保内容不溢出 */
-        .token-table td > div,
-        .token-info > div {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
+        /* 保持其他样式不变... */
     </style>
 </head>
 <body>
@@ -1271,25 +1220,25 @@
                 </div>
             </div>
 
-            <div class="token-table-wrapper">
-                <div class="token-table-container">
+            <div class="page-content">
+                <div class="table-container">
                     <table class="token-table">
                         <thead>
                             <tr>
-                                <th>Token</th>
-                                <th>Age</th>
-                                <th>Liq $ / MC $</th>
-                                <th>Holders</th>
-                                <th>24h TXs</th>
-                                <th>24h Vol $</th>
-                                <th>Price</th>
-                                <th>1m%</th>
-                                <th>5m%</th>
-                                <th>1h%</th>
+                                <th class="col-token">Token</th>
+                                <th class="col-age">Age</th>
+                                <th class="col-liq-mc">Liq $ / MC $</th>
+                                <th class="col-holders">Holders</th>
+                                <th class="col-txs">24h TXs</th>
+                                <th class="col-volume">24h Vol $</th>
+                                <th class="col-price">Price</th>
+                                <th class="col-change">1m%</th>
+                                <th class="col-change">5m%</th>
+                                <th class="col-change">1h%</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- 数据行由 JavaScript 动态生成 -->
+                            <!-- 数据行由 JavaScript 生成 -->
                         </tbody>
                     </table>
                 </div>
@@ -1753,39 +1702,57 @@
 
         // 添加表头固定效果
         document.addEventListener('DOMContentLoaded', () => {
-            const thead = document.querySelector('.token-table thead');
+            const table = document.querySelector('.token-table');
+            const thead = table.querySelector('thead');
             const container = document.querySelector('.table-container');
             const navHeight = 64;
 
-            let lastScrollTop = 0;
-            let isScrollingUp = false;
+            // 创建一个占位元素，用于保持布局
+            const placeholder = document.createElement('div');
+            placeholder.style.display = 'none';
+            placeholder.style.height = `${thead.offsetHeight}px`;
+            thead.parentNode.insertBefore(placeholder, thead.nextSibling);
 
             window.addEventListener('scroll', () => {
-                const currentScrollTop = window.pageYOffset;
-                isScrollingUp = currentScrollTop < lastScrollTop;
                 const containerRect = container.getBoundingClientRect();
-                
-                if (containerRect.top <= navHeight && containerRect.bottom >= thead.offsetHeight + navHeight) {
-                    thead.classList.add('sticky');
-                    
-                    // 添加过渡效果
-                    if (isScrollingUp) {
-                        thead.style.transform = 'translateY(0)';
-                    } else {
-                        thead.style.transform = `translateY(${Math.max(0, navHeight - containerRect.top)}px)`;
+                const tableTop = containerRect.top;
+                const tableBottom = containerRect.bottom;
+
+                if (tableTop <= navHeight && tableBottom > navHeight + thead.offsetHeight) {
+                    // 表头应该固定
+                    if (!thead.classList.contains('fixed')) {
+                        thead.classList.add('fixed');
+                        placeholder.style.display = 'block';
                     }
                 } else {
-                    thead.classList.remove('sticky');
-                    thead.style.transform = 'none';
+                    // 表头应该回到原位
+                    if (thead.classList.contains('fixed')) {
+                        thead.classList.remove('fixed');
+                        placeholder.style.display = 'none';
+                    }
                 }
-                
-                lastScrollTop = currentScrollTop;
+
+                // 确保列宽一致
+                if (thead.classList.contains('fixed')) {
+                    const ths = thead.querySelectorAll('th');
+                    const firstRow = table.querySelector('tbody tr');
+                    if (firstRow) {
+                        const tds = firstRow.querySelectorAll('td');
+                        ths.forEach((th, i) => {
+                            if (tds[i]) {
+                                const width = tds[i].offsetWidth;
+                                th.style.width = `${width}px`;
+                            }
+                        });
+                    }
+                }
             }, { passive: true });
 
-            // 监听窗口大小变化，确保列宽正确
+            // 监听窗口大小变化
             window.addEventListener('resize', () => {
-                const tableWidth = container.offsetWidth;
-                document.documentElement.style.setProperty('--table-width', `${tableWidth}px`);
+                if (thead.classList.contains('fixed')) {
+                    thead.style.width = `${container.offsetWidth}px`;
+                }
             });
         });
     </script>
