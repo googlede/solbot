@@ -241,33 +241,52 @@
 
         async function fetchTokens() {
             try {
+                // 显示加载状态
+                document.getElementById('token-list').innerHTML = '<tr><td colspan="9">Loading...</td></tr>';
+                
                 const response = await fetch(`/api/tokens/top?marketCap=${currentMarketCap}&limit=200`);
-                if (!response.ok) throw new Error('Network response was not ok');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const data = await response.json();
+                
+                if (!data.tokens || !Array.isArray(data.tokens)) {
+                    throw new Error('Invalid data format');
+                }
+
+                console.log('Received tokens:', data.tokens.length); // 调试日志
                 updateTokenList(data.tokens);
             } catch (error) {
                 console.error('Error fetching tokens:', error);
+                document.getElementById('token-list').innerHTML = 
+                    `<tr><td colspan="9">Error loading data: ${error.message}</td></tr>`;
             }
         }
 
         function updateTokenList(tokens) {
+            if (!tokens || tokens.length === 0) {
+                document.getElementById('token-list').innerHTML = 
+                    '<tr><td colspan="9">No tokens found</td></tr>';
+                return;
+            }
+
             const tokenList = document.getElementById('token-list');
             tokenList.innerHTML = tokens.map(token => `
                 <tr>
                     <td>
                         <div class="token-name">
                             <div class="token-icon"></div>
-                            ${token.symbol}
+                            ${token.symbol || 'Unknown'}
                         </div>
                     </td>
                     <td>${formatUSD(token.marketCap)}</td>
                     <td>${formatUSD(token.price)}</td>
                     <td>${formatUSD(token.volume24h)}</td>
-                    <td>${formatNumber(token.holders)}</td>
-                    <td>${formatNumber(token.txCount1h)}</td>
-                    <td class="${getChangeClass(token.change1h)}">${formatPercent(token.change1h)}</td>
-                    <td class="${getChangeClass(token.change24h)}">${formatPercent(token.change24h)}</td>
-                    <td class="${getChangeClass(token.change7d)}">${formatPercent(token.change7d)}</td>
+                    <td>${formatNumber(token.holders || 0)}</td>
+                    <td>${formatNumber(token.txCount1h || 0)}</td>
+                    <td class="${getChangeClass(token.change1h)}">${formatPercent(token.change1h || 0)}</td>
+                    <td class="${getChangeClass(token.change24h)}">${formatPercent(token.change24h || 0)}</td>
+                    <td class="${getChangeClass(token.change7d)}">${formatPercent(token.change7d || 0)}</td>
                 </tr>
             `).join('');
         }
