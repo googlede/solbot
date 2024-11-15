@@ -895,7 +895,7 @@
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: visible; /* 允许表头在固定时可见 */
+            overflow: visible; /* 允许表头在滚动时可见 */
         }
 
         /* 表格基础样式 */
@@ -938,31 +938,29 @@
 
         /* 表头样式 */
         .token-table thead {
-            position: relative; /* 初始为正常文档流 */
+            position: sticky !important; /* 强制使用 sticky 定位 */
+            top: 64px !important; /* 强制固定在导航栏下方 */
             background: #0f1011;
-            transition: all 0.3s ease;
+            z-index: 100;
+            transition: box-shadow 0.3s ease;
         }
 
         /* 表头固定状态 */
         .token-table thead.sticky {
-            position: sticky; /* 固定时切换为 sticky */
-            top: 64px;
-            z-index: 100;
-            background: #0f1011;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         /* 表头单元格样式 */
         .token-table th {
+            position: sticky !important; /* 关键：表头单元格也需要 sticky */
+            top: 64px !important; /* 与 thead 相同的位置 */
             padding: 10px 16px;
             text-align: left;
             color: var(--text-gray);
             font-weight: normal;
-            background: #0f1011;  /* 确保背景色 */
-            border-bottom: 1px solid #3a3b42;
+            background: #0f1011; /* 确保背景色 */
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            z-index: 100;
         }
 
         /* 数据单元格样式 */
@@ -970,49 +968,12 @@
             padding: 8px 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            background: #0f1011; /* 确保背景色 */
         }
 
         /* 最后一行不需要边框 */
         .token-table tr:last-child td {
             border-bottom: none;
-        }
-
-        /* 表头固定时的效果 */
-        .token-table thead.is-sticky {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        /* 表头底部边框 */
-        .token-table thead::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            height: 1px;
-            background: #3a3b42;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .token-table thead.is-sticky::after {
-            opacity: 1;
-        }
-
-        /* Token 列的特殊样式 */
-        .token-cell {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .token-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            min-width: 0;  /* 允许子元素收缩 */
         }
     </style>
 </head>
