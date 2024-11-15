@@ -145,7 +145,7 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 24px;
         }
 
         .header {
@@ -201,7 +201,7 @@
             white-space: nowrap;
             height: 20px;
             line-height: 1.2;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .token-table tr {
@@ -221,11 +221,13 @@
         }
 
         .token-table-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 24px auto;
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
             overflow: hidden;
-            margin: 24px 0;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 0 2px;
         }
@@ -856,6 +858,96 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
+        .token-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .token-info,
+        .tx-count-cell,
+        .liq-mc-cell {
+            gap: 2px;
+        }
+
+        .token-name {
+            margin-bottom: 2px;
+        }
+
+        /* 更新容器最大宽度 */
+        .container {
+            max-width: 1400px;  /* 调整容器最大宽度 */
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* 更新表格样式 */
+        .token-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+            background: #0f1011;
+        }
+
+        .token-table th {
+            padding: 10px 16px;
+            text-align: left;
+            color: var(--text-gray);
+            font-weight: normal;
+            border-bottom: 1px solid #3a3b42;
+            white-space: nowrap;
+            background: #0f1011;
+            height: 20px;
+        }
+
+        .token-table td {
+            padding: 8px 16px;
+            white-space: nowrap;
+            height: 20px;
+            line-height: 1.2;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);  /* 增加到 15% 不透明度 */
+        }
+
+        .token-table tr {
+            transition: all 0.2s ease;
+        }
+
+        /* 鼠标悬停效果 */
+        .token-table tr:hover {
+            background-color: #1a1b1f;
+            transform: translateZ(0);
+            box-shadow: 
+                0 1px 0 rgba(255, 255, 255, 0.07),
+                0 -1px 0 rgba(255, 255, 255, 0.07);
+        }
+
+        /* 最后一行不需要分隔线 */
+        .token-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* 表格容器样式 */
+        .token-table-container {
+            width: 100%;
+            max-width: 1400px;  /* 与容器最大宽度一致 */
+            margin: 24px auto;  /* 居中对齐 */
+            background: #0f1011;
+            border: 2px solid #3a3b42;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0 2px;
+        }
+
+        /* 响应式布局 */
+        @media (max-width: 1440px) {
+            .container,
+            .token-table-container {
+                max-width: 95%;
+            }
+        }
+
+        /* 保持其他样式不变 */
         .token-icon {
             width: 20px;
             height: 20px;
@@ -1535,7 +1627,7 @@
             }
         }
 
-        // 更新样式，移除不需要���双行样式
+        // 更新样式，移除不需要的双行样式
         const style = document.createElement('style');
         style.textContent = `
             /* ... 保留之前的样式 ... */
