@@ -75,7 +75,7 @@ class TokenService {
             // 修改模拟数据生成函数
             const generateMockTokens = (count) => {
                 const tokens = [];
-                const symbols = ['SOL', 'BONK', 'JTO', 'WEN', 'PYTH', 'ORCA', 'RAY', 'MEAN', 'DUST', 'RATIO'];
+                const symbols = ['SOL', 'BONK', 'JTO', 'WEN', 'PYTH', 'ORCA', 'RAY', 'MEAN'];
                 const now = new Date();
                 
                 for (let i = 0; i < count; i++) {
@@ -83,6 +83,10 @@ class TokenService {
                     const liquidity = marketCap * (Math.random() * 0.3); // 流动性为市值的0-30%
                     const price = Math.random() * 100;
                     const volume24h = liquidity * (Math.random() * 0.5); // 24h交易量为流动性的0-50%
+                    
+                    // 生成买入和卖出交易次数
+                    const buyTxs = Math.floor(Math.random() * 100000);
+                    const sellTxs = Math.floor(Math.random() * 100000);
                     
                     // 创建随机的创建时间（1-30天内）
                     const createdAt = new Date(now - Math.random() * 30 * 24 * 60 * 60 * 1000);
@@ -94,7 +98,11 @@ class TokenService {
                         marketCap: marketCap,
                         liqMcRatio: (liquidity / marketCap * 100).toFixed(2), // 流动性/市值比率
                         holders: Math.floor(Math.random() * 1000000),
-                        txCount24h: Math.floor(Math.random() * 50000),
+                        txCount24h: {
+                            total: buyTxs + sellTxs,
+                            buy: buyTxs,
+                            sell: sellTxs
+                        },
                         volume24h: volume24h,
                         price: price,
                         change1m: (Math.random() * 20) - 10,

@@ -572,6 +572,35 @@
             opacity: 0.5;
             user-select: none;
         }
+
+        .tx-count-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .total-txs {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .split-txs {
+            font-size: 0.9em;
+            color: var(--text-gray);
+        }
+
+        .buy-txs {
+            color: #16c784;  /* 买入使用绿色 */
+        }
+
+        .sell-txs {
+            color: #ea3943;  /* 卖出使用红色 */
+        }
+
+        .tx-separator {
+            margin: 0 4px;
+            color: var(--text-gray);
+        }
     </style>
 </head>
 <body>
@@ -876,7 +905,16 @@
                         </div>
                     </td>
                     <td>${formatNumber(token.holders)}</td>
-                    <td>${formatNumber(token.txCount24h)}</td>
+                    <td>
+                        <div class="tx-count-cell">
+                            <div class="total-txs">${formatNumber(token.txCount24h.total)}</div>
+                            <div class="split-txs">
+                                <span class="buy-txs">${formatNumber(token.txCount24h.buy)}</span>
+                                <span class="tx-separator">/</span>
+                                <span class="sell-txs">${formatNumber(token.txCount24h.sell)}</span>
+                            </div>
+                        </div>
+                    </td>
                     <td>
                         <div class="volume-value">$${formatNumber(token.volume24h)}</div>
                     </td>
@@ -1036,6 +1074,12 @@
                 if (currentSort.column === 'age') {
                     aVal = new Date(a.createdAt).getTime();
                     bVal = new Date(b.createdAt).getTime();
+                }
+                
+                // 特殊处理 txCount24h 字段
+                if (currentSort.column === 'txCount24h') {
+                    aVal = aVal.total;
+                    bVal = bVal.total;
                 }
                 
                 if (aVal === bVal) return 0;
