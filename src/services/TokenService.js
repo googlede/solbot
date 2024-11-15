@@ -6,10 +6,15 @@ const PriceService = require('./PriceService');
 
 class TokenService {
     constructor() {
-        this.connection = new Connection(
-            process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com',
-            'confirmed'
-        );
+        // 添加多个 RPC 节点作为备选
+        this.rpcUrls = [
+            'https://api.mainnet-beta.solana.com',
+            'https://solana-api.projectserum.com',
+            'https://rpc.ankr.com/solana'
+        ];
+        this.currentRpcIndex = 0;
+        this.initConnection();
+
         this.marketCapFilters = {
             '10k': 10000,
             '50k': 50000,
@@ -20,56 +25,95 @@ class TokenService {
         this.defaultFilter = '50k';
     }
 
+    initConnection() {
+        try {
+            const rpcUrl = this.rpcUrls[this.currentRpcIndex];
+            logger.info(`Initializing Solana connection with RPC: ${rpcUrl}`);
+            
+            this.connection = new Connection(rpcUrl, {
+                commitment: 'confirmed',
+                confirmTransactionInitialTimeout: 60000
+            });
+        } catch (error) {
+            logger.error('Failed to initialize Solana connection:', error);
+            this.switchRpcNode();
+        }
+    }
+
+    switchRpcNode() {
+        this.currentRpcIndex = (this.currentRpcIndex + 1) % this.rpcUrls.length;
+        logger.info(`Switching to RPC node: ${this.rpcUrls[this.currentRpcIndex]}`);
+        this.initConnection();
+    }
+
     async getTopTokens(marketCapFilter = this.defaultFilter, limit = 200) {
         try {
             const cacheKey = `top_tokens_${marketCapFilter}_${limit}`;
-            
+            logger.info('Starting getTopTokens with filter:', { marketCapFilter, limit });
+
             // 尝试从缓存获取
-            const cached = await redis.get(cacheKey);
-            if (cached) {
-                return JSON.parse(cached);
+            try {
+                const cached = await redis.get(cacheKey);
+                if (cached) {
+                    logger.info('Returning cached token data');
+                    return JSON.parse(cached);
+                }
+            } catch (cacheError) {
+                logger.error('Cache error:', cacheError);
             }
 
-            // 获取所有 token 账户
-            const tokenAccounts = await this.connection.getProgramAccounts(
-                TOKEN_PROGRAM_ID,
-                {
-                    filters: [
-                        {
-                            dataSize: 165,
-                        },
-                    ],
-                }
-            );
+            // 获取 token 账户
+            let tokenAccounts;
+            try {
+                logger.info('Fetching token accounts from Solana');
+                tokenAccounts = await this.connection.getProgramAccounts(
+                    TOKEN_PROGRAM_ID,
+                    {
+                        filters: [
+                            {
+                                dataSize: 165,
+                            },
+                        ],
+                    }
+                );
+                logger.info(`Found ${tokenAccounts.length} token accounts`);
+            } catch (rpcError) {
+                logger.error('RPC error, switching nodes:', rpcError);
+                this.switchRpcNode();
+                throw new Error('Failed to fetch token accounts, retrying...');
+            }
 
             // 获取 token 信息
-            const tokenInfos = await Promise.all(
-                tokenAccounts.map(async account => {
-                    try {
-                        const mintInfo = await this.connection.getParsedAccountInfo(
-                            account.pubkey
-                        );
-                        
-                        if (!mintInfo.value?.data.parsed) return null;
-
-                        return {
-                            address: account.pubkey.toString(),
-                            ...mintInfo.value.data.parsed.info
-                        };
-                    } catch (error) {
-                        logger.error('Error fetching token info:', error);
+            const tokenInfoPromises = tokenAccounts.map(async account => {
+                try {
+                    const mintInfo = await this.connection.getParsedAccountInfo(
+                        account.pubkey
+                    );
+                    
+                    if (!mintInfo.value?.data.parsed) {
+                        logger.warn(`Invalid mint info for token: ${account.pubkey.toString()}`);
                         return null;
                     }
-                })
-            );
+
+                    return {
+                        address: account.pubkey.toString(),
+                        ...mintInfo.value.data.parsed.info
+                    };
+                } catch (error) {
+                    logger.error(`Error fetching token info for ${account.pubkey.toString()}:`, error);
+                    return null;
+                }
+            });
+
+            const tokenInfos = (await Promise.all(tokenInfoPromises)).filter(Boolean);
+            logger.info(`Successfully processed ${tokenInfos.length} tokens`);
 
             // 获取价格数据
-            const validTokens = tokenInfos.filter(Boolean);
-            const addresses = validTokens.map(token => token.address);
+            const addresses = tokenInfos.map(token => token.address);
             const priceData = await PriceService.getTokenPrices(addresses);
 
             // 合并数据
-            const tokens = validTokens.map(token => {
+            const tokens = tokenInfos.map(token => {
                 const price = priceData[token.address.toLowerCase()] || {};
                 return {
                     address: token.address,
@@ -83,15 +127,15 @@ class TokenService {
                 };
             });
 
-            // 应用市值过滤
+            // 应用过滤和排序
             const minMarketCap = this.marketCapFilters[marketCapFilter] || this.marketCapFilters[this.defaultFilter];
-            
             const filteredTokens = tokens
                 .filter(token => token.marketCap >= minMarketCap)
                 .sort((a, b) => b.marketCap - a.marketCap)
                 .slice(0, limit);
 
-            // 添加过滤条件信息到返回数据
+            logger.info(`Filtered to ${filteredTokens.length} tokens with market cap >= ${minMarketCap}`);
+
             const result = {
                 tokens: filteredTokens,
                 filter: {
@@ -103,23 +147,22 @@ class TokenService {
                 }
             };
 
-            // 缓存结果（1分钟）
-            await redis.set(cacheKey, JSON.stringify(result), 'EX', 60);
+            // 缓存结果
+            try {
+                await redis.set(cacheKey, JSON.stringify(result), 'EX', 60);
+                logger.info('Successfully cached token data');
+            } catch (cacheError) {
+                logger.error('Failed to cache token data:', cacheError);
+            }
 
             return result;
         } catch (error) {
-            logger.error('Error getting top tokens:', error);
+            logger.error('Error in getTopTokens:', {
+                error: error.message,
+                stack: error.stack
+            });
             throw error;
         }
-    }
-
-    // 获取可用的市值过滤选项
-    getMarketCapFilters() {
-        return Object.entries(this.marketCapFilters).map(([key, value]) => ({
-            key,
-            value,
-            label: this.formatMarketCapLabel(key)
-        }));
     }
 
     formatMarketCapLabel(key) {
