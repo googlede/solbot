@@ -227,7 +227,7 @@
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: hidden;
+            overflow: auto;
             position: relative;
         }
 
@@ -836,88 +836,13 @@
             transition: all 0.2s ease;
         }
 
+        /* 鼠标悬停效果 */
         .token-table tr:hover {
             background-color: #1a1b1f;
             transform: translateZ(0);
             box-shadow: 
                 0 1px 0 rgba(255, 255, 255, 0.05),
                 0 -1px 0 rgba(255, 255, 255, 0.05);
-        }
-
-        .token-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .token-table-container {
-            background: #0f1011;
-            border: 1px solid #3a3b42;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 20px 0;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .token-icon {
-            width: 20px;
-            height: 20px;
-        }
-
-        .token-info,
-        .tx-count-cell,
-        .liq-mc-cell {
-            gap: 2px;
-        }
-
-        .token-name {
-            margin-bottom: 2px;
-        }
-
-        /* 更新容器最大宽度 */
-        .container {
-            max-width: 1400px;  /* 调整容器最大宽度 */
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
-        /* 更新表格样式 */
-        .token-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 14px;
-            background: #0f1011;
-        }
-
-        .token-table th {
-            padding: 10px 16px;
-            text-align: left;
-            color: var(--text-gray);
-            font-weight: normal;
-            border-bottom: 1px solid #3a3b42;
-            white-space: nowrap;
-            background: #0f1011;
-            height: 20px;
-        }
-
-        .token-table td {
-            padding: 8px 16px;
-            white-space: nowrap;
-            height: 20px;
-            line-height: 1.2;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);  /* 增加到 15% 不透明度 */
-        }
-
-        .token-table tr {
-            transition: all 0.2s ease;
-        }
-
-        /* 鼠标悬停效果 */
-        .token-table tr:hover {
-            background-color: #1a1b1f;
-            transform: translateZ(0);
-            box-shadow: 
-                0 1px 0 rgba(255, 255, 255, 0.07),
-                0 -1px 0 rgba(255, 255, 255, 0.07);
         }
 
         /* 最后一行不需要分隔线 */
@@ -928,77 +853,38 @@
         /* 表格容器样式 */
         .token-table-container {
             width: 100%;
-            max-width: 1400px;  /* 与容器最大宽度一致 */
-            margin: 24px auto;  /* 居中对齐 */
+            max-width: 1400px;
+            margin: 24px auto;
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 0 2px;
+            overflow: auto;
+            position: relative;
         }
 
-        /* 响应式布局 */
-        @media (max-width: 1440px) {
-            .container,
-            .token-table-container {
-                max-width: 95%;
-            }
-        }
-
-        /* 保持其他样式不变 */
-        .token-icon {
-            width: 20px;
-            height: 20px;
-        }
-
-        .token-info,
-        .tx-count-cell,
-        .liq-mc-cell {
-            gap: 2px;
-        }
-
-        .token-name {
-            margin-bottom: 2px;
-        }
-
-        /* 表头容器样式 */
-        .table-header-wrapper {
-            position: sticky;
-            top: 60px;  /* 调整这个值以匹配顶部导航栏的高度 */
-            z-index: 100;
-            background: #0f1011;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        /* 表头阴影效果 */
-        .table-header-wrapper.sticky {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        /* 更新表格样式 */
+        /* 表格基础样式 */
         .token-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
             font-size: 14px;
-            background: #0f1011;
+            table-layout: fixed;
         }
 
-        .token-table thead {
+        /* 表头容器 */
+        .table-header-container {
             position: sticky;
-            top: 64px;  /* 调整固定位置，与顶部导航栏对齐 */
+            top: 64px;
+            z-index: 100;
             background: #0f1011;
-            z-index: 10;
-            transition: box-shadow 0.3s ease;
+            margin-bottom: -1px;
         }
 
-        /* 滚动时添加阴影 */
-        .token-table thead.sticky {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        /* 表头样式 */
+        .token-table thead tr {
+            background: #0f1011;
         }
 
-        /* 表头单元格样式 */
         .token-table th {
             padding: 10px 16px;
             text-align: left;
@@ -1007,29 +893,29 @@
             border-bottom: 1px solid #3a3b42;
             white-space: nowrap;
             height: 20px;
-            background: #0f1011;  /* 确保背景色 */
+            background: #0f1011;
         }
 
-        /* 数据单元格样式 */
+        /* 数据行样式 */
         .token-table td {
             padding: 8px 16px;
             white-space: nowrap;
             height: 20px;
             line-height: 1.2;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* 列宽设置 */
-        .token-table th:nth-child(1),
-        .token-table td:nth-child(1) { width: 200px; }  /* Token 列 */
-        
-        .token-table th:nth-child(2),
-        .token-table td:nth-child(2) { width: 80px; }   /* Age 列 */
-        
-        .token-table th:nth-child(3),
-        .token-table td:nth-child(3) { width: 160px; }  /* Liq/MC 列 */
-        
-        /* ... 其他列宽设置 ... */
+        .col-token { width: 180px; }
+        .col-age { width: 80px; }
+        .col-liq-mc { width: 140px; }
+        .col-holders { width: 100px; }
+        .col-txs { width: 120px; }
+        .col-volume { width: 120px; }
+        .col-price { width: 100px; }
+        .col-change { width: 90px; }
     </style>
 </head>
 <body>
@@ -1177,89 +1063,27 @@
             </div>
 
             <div class="token-table-container">
+                <div class="table-header-container">
+                    <table class="token-table">
+                        <thead>
+                            <tr>
+                                <th class="col-token">Token</th>
+                                <th class="col-age">Age</th>
+                                <th class="col-liq-mc">Liq $ / MC $</th>
+                                <th class="col-holders">Holders</th>
+                                <th class="col-txs">24h TXs</th>
+                                <th class="col-volume">24h Vol $</th>
+                                <th class="col-price">Price</th>
+                                <th class="col-change">1m%</th>
+                                <th class="col-change">5m%</th>
+                                <th class="col-change">1h%</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
                 <table class="token-table">
-                    <thead>
-                        <tr>
-                            <th>Token</th>
-                            <th class="sortable" data-sort="age">
-                                Age
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable double-sort">
-                                <div class="sort-header">
-                                    <span class="sort-item" data-sort="liquidity">
-                                        Liq $
-                                        <div class="sort-icons">
-                                            <span class="sort-icon up">▲</span>
-                                            <span class="sort-icon down">▼</span>
-                                        </div>
-                                    </span>
-                                    /
-                                    <span class="sort-item" data-sort="marketCap">
-                                        MC $
-                                        <div class="sort-icons">
-                                            <span class="sort-icon up">▲</span>
-                                            <span class="sort-icon down">▼</span>
-                                        </div>
-                                    </span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="holders">
-                                Holders
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="txCount24h">
-                                24h TXs
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="volume24h" data-default-sort="desc">
-                                24h Vol $
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down active">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="price">
-                                Price
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="change1m">
-                                1m%
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="change5m">
-                                5m%
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="change1h">
-                                1h%
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody id="token-list">
-                        <!-- 动态填充数据 -->
+                    <tbody>
+                        <!-- 数据行由 JavaScript 生成 -->
                     </tbody>
                 </table>
             </div>
@@ -1722,40 +1546,39 @@
 
         // 添加表头固定效果
         document.addEventListener('DOMContentLoaded', () => {
-            const thead = document.querySelector('.token-table thead');
-            const navHeight = 64;  // 顶部导航栏高度
-
+            const headerContainer = document.querySelector('.table-header-container');
+            const tableContainer = document.querySelector('.token-table-container');
+            
             // 监听滚动事件
             window.addEventListener('scroll', () => {
-                const tableRect = document.querySelector('.token-table-container').getBoundingClientRect();
+                const containerRect = tableContainer.getBoundingClientRect();
+                const headerRect = headerContainer.getBoundingClientRect();
                 
-                if (tableRect.top <= navHeight && tableRect.bottom >= navHeight) {
-                    thead.classList.add('sticky');
+                if (containerRect.top <= 64) {  // 64px 是顶部导航栏高度
+                    headerContainer.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
                 } else {
-                    thead.classList.remove('sticky');
+                    headerContainer.style.boxShadow = 'none';
                 }
             }, { passive: true });
 
-            // 确保表格列宽一致
-            function adjustColumnWidths() {
-                const headerCells = thead.querySelectorAll('th');
-                const firstRow = document.querySelector('.token-table tbody tr');
+            // 同步表头和数据列宽
+            function syncColumnWidths() {
+                const headerCells = headerContainer.querySelectorAll('th');
+                const dataCells = document.querySelector('.token-table tbody tr')?.querySelectorAll('td');
                 
-                if (firstRow) {
-                    const bodyCells = firstRow.querySelectorAll('td');
+                if (dataCells) {
                     headerCells.forEach((th, i) => {
-                        if (bodyCells[i]) {
-                            const width = Math.max(th.offsetWidth, bodyCells[i].offsetWidth);
-                            th.style.width = `${width}px`;
-                            bodyCells[i].style.width = `${width}px`;
-                        }
+                        const width = th.getBoundingClientRect().width;
+                        dataCells[i].style.width = `${width}px`;
                     });
                 }
             }
 
-            // 初始调整和窗口大小变化时调整
-            window.addEventListener('resize', adjustColumnWidths);
-            setTimeout(adjustColumnWidths, 100);
+            // 监听窗口大小变化
+            window.addEventListener('resize', syncColumnWidths);
+            
+            // 初始同步列宽
+            setTimeout(syncColumnWidths, 100);
         });
     </script>
 </body>
