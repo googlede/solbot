@@ -962,6 +962,43 @@
         .token-name {
             margin-bottom: 2px;
         }
+
+        /* 表头容器样式 */
+        .table-header-wrapper {
+            position: sticky;
+            top: 60px;  /* 调整这个值以匹配顶部导航栏的高度 */
+            z-index: 100;
+            background: #0f1011;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* 表头阴影效果 */
+        .table-header-wrapper.sticky {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 更新表格样式 */
+        .token-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+            background: #0f1011;
+        }
+
+        .token-table thead {
+            background: #0f1011;
+        }
+
+        .token-table th {
+            padding: 10px 16px;
+            text-align: left;
+            color: var(--text-gray);
+            font-weight: normal;
+            border-bottom: 1px solid #3a3b42;
+            white-space: nowrap;
+            height: 20px;
+        }
     </style>
 </head>
 <body>
@@ -1651,6 +1688,65 @@
             }
         `;
         document.head.appendChild(style);
+
+        // 添加表头固定效果
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableContainer = document.querySelector('.token-table-container');
+            const thead = document.querySelector('.token-table thead');
+            const headerWrapper = document.createElement('div');
+            headerWrapper.className = 'table-header-wrapper';
+            
+            // 将表头包装在固定容器中
+            thead.parentNode.insertBefore(headerWrapper, thead);
+            headerWrapper.appendChild(thead);
+
+            // 监听滚动事件
+            let lastScrollTop = 0;
+            window.addEventListener('scroll', () => {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const tableRect = tableContainer.getBoundingClientRect();
+                const headerRect = headerWrapper.getBoundingClientRect();
+                
+                // 检查表格是否在视图中
+                if (tableRect.top <= 60 && tableRect.bottom >= headerRect.height + 60) {
+                    headerWrapper.classList.add('sticky');
+                } else {
+                    headerWrapper.classList.remove('sticky');
+                }
+
+                // 添加滚动方向检测
+                if (scrollTop > lastScrollTop) {
+                    // 向下滚动
+                    headerWrapper.style.transform = 'translateY(0)';
+                } else {
+                    // 向上滚动
+                    headerWrapper.style.transform = 'translateY(0)';
+                }
+                
+                lastScrollTop = scrollTop;
+            }, { passive: true });
+
+            // 调整表格布局
+            const adjustTableLayout = () => {
+                const headerCells = thead.querySelectorAll('th');
+                const firstRow = document.querySelector('.token-table tbody tr');
+                if (firstRow) {
+                    const bodyCells = firstRow.querySelectorAll('td');
+                    headerCells.forEach((th, i) => {
+                        if (bodyCells[i]) {
+                            const width = bodyCells[i].offsetWidth;
+                            th.style.width = `${width}px`;
+                        }
+                    });
+                }
+            };
+
+            // 监听窗口大小变化
+            window.addEventListener('resize', adjustTableLayout);
+            
+            // 初始调整
+            setTimeout(adjustTableLayout, 100);
+        });
     </script>
 </body>
 </html> 
