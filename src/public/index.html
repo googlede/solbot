@@ -1016,7 +1016,7 @@
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: hidden;
+            overflow: visible; /* 允许表头溢出 */
         }
 
         .token-table {
@@ -1028,42 +1028,38 @@
 
         /* 表头样式 */
         .token-table thead {
+            position: relative;
             background: #0f1011;
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .token-table thead.sticky {
             position: fixed;
             top: 64px;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            margin: 0 auto;
-            max-width: 1400px;
-            padding: 0 22px; /* 20px container padding + 2px border */
             background: #0f1011;
+            z-index: 100;
+            border-bottom: 1px solid #3a3b42;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
-        .token-table thead th {
+        .token-table th {
             padding: 10px 16px;
             text-align: left;
             color: var(--text-gray);
             font-weight: normal;
-            border-bottom: 1px solid #3a3b42;
+            white-space: nowrap;
             background: #0f1011;
         }
 
-        /* 数据行样式 */
-        .token-table tbody td {
+        .token-table td {
             padding: 8px 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            white-space: nowrap;
         }
 
-        /* 确保内容不换行 */
-        .token-table th,
-        .token-table td {
-            white-space: nowrap;
+        /* 最后一行不需要边框 */
+        .token-table tr:last-child td {
+            border-bottom: none;
         }
     </style>
 </head>
@@ -1244,7 +1240,7 @@
             document.getElementById('marketCapDropdown').classList.toggle('show');
         }
 
-        // 点击其他地方关闭下拉菜单
+        // 点击��他地方关闭下拉菜单
         window.onclick = function(event) {
             if (!event.target.matches('.filter-button')) {
                 const dropdowns = document.getElementsByClassName('dropdown-content');
@@ -1698,51 +1694,37 @@
             const container = document.querySelector('.table-container');
             const navHeight = 64;
 
-            // 创建一个占位元素，用于保持布局
-            const placeholder = document.createElement('div');
-            placeholder.style.display = 'none';
-            placeholder.style.height = `${thead.offsetHeight}px`;
-            thead.parentNode.insertBefore(placeholder, thead.nextSibling);
+            // 创建一个隐藏的表头副本用于保持布局
+            const theadClone = thead.cloneNode(true);
+            theadClone.style.visibility = 'hidden';
+            theadClone.style.position = 'static';
+            thead.parentNode.insertBefore(theadClone, thead.nextSibling);
 
             window.addEventListener('scroll', () => {
                 const containerRect = container.getBoundingClientRect();
-                const tableTop = containerRect.top;
-                const tableBottom = containerRect.bottom;
+                const tableRect = table.getBoundingClientRect();
 
-                if (tableTop <= navHeight && tableBottom > navHeight + thead.offsetHeight) {
-                    // 表头应该固定
-                    if (!thead.classList.contains('fixed')) {
-                        thead.classList.add('fixed');
-                        placeholder.style.display = 'block';
+                if (containerRect.top <= navHeight && containerRect.bottom >= thead.offsetHeight + navHeight) {
+                    if (!thead.classList.contains('sticky')) {
+                        thead.classList.add('sticky');
+                        thead.style.width = `${table.offsetWidth}px`;
+                        thead.style.left = `${tableRect.left}px`;
                     }
                 } else {
-                    // 表头应该回到原位
-                    if (thead.classList.contains('fixed')) {
-                        thead.classList.remove('fixed');
-                        placeholder.style.display = 'none';
-                    }
-                }
-
-                // 确保列宽一致
-                if (thead.classList.contains('fixed')) {
-                    const ths = thead.querySelectorAll('th');
-                    const firstRow = table.querySelector('tbody tr');
-                    if (firstRow) {
-                        const tds = firstRow.querySelectorAll('td');
-                        ths.forEach((th, i) => {
-                            if (tds[i]) {
-                                const width = tds[i].offsetWidth;
-                                th.style.width = `${width}px`;
-                            }
-                        });
+                    if (thead.classList.contains('sticky')) {
+                        thead.classList.remove('sticky');
+                        thead.style.width = '';
+                        thead.style.left = '';
                     }
                 }
             }, { passive: true });
 
-            // 监听窗口大小变化
+            // 处理窗口大小变化
             window.addEventListener('resize', () => {
-                if (thead.classList.contains('fixed')) {
-                    thead.style.width = `${container.offsetWidth}px`;
+                if (thead.classList.contains('sticky')) {
+                    const tableRect = table.getBoundingClientRect();
+                    thead.style.width = `${table.offsetWidth}px`;
+                    thead.style.left = `${tableRect.left}px`;
                 }
             });
         });
