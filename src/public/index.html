@@ -1016,8 +1016,7 @@
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: visible; /* 允许表头溢出 */
-            position: relative;
+            overflow: hidden;
         }
 
         .token-table {
@@ -1025,55 +1024,47 @@
             border-collapse: separate;
             border-spacing: 0;
             font-size: 14px;
-            background: #0f1011;
         }
 
         /* 表头样式 */
         .token-table thead {
-            position: relative; /* 初始状态 */
             background: #0f1011;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease;
         }
 
-        .token-table thead.fixed {
+        .token-table thead.sticky {
             position: fixed;
-            top: 64px; /* 顶部导航栏高度 */
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 1360px; /* 1400px - 40px padding */
+            top: 64px;
+            left: 0;
+            right: 0;
             z-index: 100;
+            margin: 0 auto;
+            max-width: 1400px;
+            padding: 0 22px; /* 20px container padding + 2px border */
+            background: #0f1011;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
-        .token-table th {
+        .token-table thead th {
             padding: 10px 16px;
             text-align: left;
             color: var(--text-gray);
             font-weight: normal;
             border-bottom: 1px solid #3a3b42;
             background: #0f1011;
-            white-space: nowrap;
         }
 
         /* 数据行样式 */
-        .token-table td {
+        .token-table tbody td {
             padding: 8px 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            white-space: nowrap;
         }
 
-        /* 列宽设置 */
-        .col-token { width: 200px; }
-        .col-age { width: 80px; }
-        .col-liq-mc { width: 160px; }
-        .col-holders { width: 120px; }
-        .col-txs { width: 140px; }
-        .col-volume { width: 120px; }
-        .col-price { width: 100px; }
-        .col-change { width: 80px; }
-
-        /* 保持其他样式不变... */
+        /* 确保内容不换行 */
+        .token-table th,
+        .token-table td {
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -1225,16 +1216,16 @@
                     <table class="token-table">
                         <thead>
                             <tr>
-                                <th class="col-token">Token</th>
-                                <th class="col-age">Age</th>
-                                <th class="col-liq-mc">Liq $ / MC $</th>
-                                <th class="col-holders">Holders</th>
-                                <th class="col-txs">24h TXs</th>
-                                <th class="col-volume">24h Vol $</th>
-                                <th class="col-price">Price</th>
-                                <th class="col-change">1m%</th>
-                                <th class="col-change">5m%</th>
-                                <th class="col-change">1h%</th>
+                                <th>Token</th>
+                                <th>Age</th>
+                                <th>Liq $ / MC $</th>
+                                <th>Holders</th>
+                                <th>24h TXs</th>
+                                <th>24h Vol $</th>
+                                <th>Price</th>
+                                <th>1m%</th>
+                                <th>5m%</th>
+                                <th>1h%</th>
                             </tr>
                         </thead>
                         <tbody>
