@@ -909,22 +909,22 @@
 
         /* 表头基础样式 - 初始状态 */
         .token-table thead {
-            position: relative; /* 初始为正常文档流 */
+            position: sticky; /* 始终使用 sticky 定位 */
+            top: 64px; /* 导航栏高度 */
             background: #0f1011;
+            z-index: 100;
             transition: box-shadow 0.3s ease;
         }
 
         /* 表头固定状态 - 仅在需要时应用 */
         .token-table thead.is-sticky {
-            position: sticky;
-            top: 64px;
-            z-index: 100;
-            background: #0f1011;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         /* 表头单元格样式 */
         .token-table th {
+            position: sticky; /* 单元格也需要 sticky */
+            top: 64px; /* 与 thead 相同 */
             padding: 10px 16px;
             text-align: left;
             color: var(--text-gray);
@@ -932,6 +932,7 @@
             background: #0f1011;
             white-space: nowrap;
             border-bottom: 1px solid #3a3b42;
+            z-index: 100;
         }
 
         /* 数据行样式 */
@@ -945,6 +946,67 @@
         /* 最后一行去除边框 */
         .token-table tr:last-child td {
             border-bottom: none;
+        }
+
+        /* 1. 滚动容器 */
+        .main-content {
+            min-height: 100vh;
+            padding-top: 64px; /* 导航栏高度 */
+        }
+
+        /* 2. 表格容器 */
+        .table-container {
+            position: relative; /* 创建定位上下文 */
+            margin: 24px 0;
+            background: #0f1011;
+            border: 2px solid #3a3b42;
+            border-radius: 12px;
+            /* 移除 overflow 属性，让表头可以自由移动 */
+        }
+
+        /* 3. 表格基础样式 */
+        .token-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+            background: #0f1011;
+        }
+
+        /* 4. 表头容器样式 */
+        .token-table thead {
+            position: sticky; /* 始终使用 sticky 定位 */
+            top: 64px; /* 导航栏高度 */
+            background: #0f1011;
+            z-index: 100;
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* 5. 表头单元格样式 */
+        .token-table th {
+            position: sticky; /* 单元格也需要 sticky */
+            top: 64px; /* 与 thead 相同 */
+            padding: 10px 16px;
+            text-align: left;
+            color: var(--text-gray);
+            font-weight: normal;
+            background: #0f1011;
+            white-space: nowrap;
+            border-bottom: 1px solid #3a3b42;
+            z-index: 100;
+        }
+
+        /* 6. 数据行样式 */
+        .token-table td {
+            padding: 8px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            white-space: nowrap;
+            background: #0f1011;
+        }
+
+        /* 7. 表头固定时的视觉效果 */
+        .token-table thead.is-sticky {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
@@ -1647,15 +1709,16 @@
                 const theadRect = thead.getBoundingClientRect();
                 
                 return {
-                    // 容器顶部到视口顶部的距离
                     containerTop: containerRect.top,
-                    // 容器底部到视口顶部的距离
                     containerBottom: containerRect.bottom,
-                    // 表头高度
                     headerHeight: theadRect.height,
-                    // 判断是否应该固定
+                    // 关键：计算表头是否应该固定
                     shouldStick: containerRect.top <= navHeight && 
-                               containerRect.bottom >= (theadRect.height + navHeight)
+                               containerRect.bottom >= (theadRect.height + navHeight),
+                    // 计算滚动进度
+                    scrollProgress: Math.max(0, Math.min(1, 
+                        (navHeight - containerRect.top) / theadRect.height
+                    ))
                 };
             }
 
@@ -1665,13 +1728,15 @@
                 
                 if (state.shouldStick) {
                     if (!thead.classList.contains('is-sticky')) {
-                        container.style.overflow = 'visible'; // 允许表头溢出
                         thead.classList.add('is-sticky');
                     }
+                    // 应用渐进式的视觉效果
+                    const shadowOpacity = state.scrollProgress * 0.2;
+                    thead.style.boxShadow = `0 2px 8px rgba(0, 0, 0, ${shadowOpacity})`;
                 } else {
                     if (thead.classList.contains('is-sticky')) {
-                        container.style.overflow = 'hidden';
                         thead.classList.remove('is-sticky');
+                        thead.style.boxShadow = 'none';
                     }
                 }
             }
@@ -1688,10 +1753,13 @@
                 }
             }, { passive: true });
 
-            // 4. 初始化 - 确保初始状态正确
-            setTimeout(() => {
-                updateHeaderState();
-            }, 0);
+            // 4. 监听窗口大小变化
+            window.addEventListener('resize', () => {
+                requestAnimationFrame(updateHeaderState);
+            }, { passive: true });
+
+            // 5. 初始化状态
+            updateHeaderState();
         });
     </script>
 </body>
