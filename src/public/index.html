@@ -696,33 +696,6 @@
             }
         }
 
-        function formatNumber(value) {
-            if (value >= 1000000) {
-                return (value / 1000000).toFixed(1) + 'M';
-            } else if (value >= 1000) {
-                return (value / 1000).toFixed(1) + 'K';
-            }
-            return value.toFixed(2);
-        }
-
-        function formatPrice(price) {
-            if (price < 0.00001) {
-                return price.toExponential(2);
-            }
-            return '$' + price.toFixed(price < 0.01 ? 6 : 2);
-        }
-
-        function formatAge(timestamp) {
-            const now = new Date();
-            const diff = now - new Date(timestamp);
-            const hours = diff / (1000 * 60 * 60);
-            
-            if (hours < 24) {
-                return Math.floor(hours) + 'h';
-            }
-            return Math.floor(hours / 24) + 'd';
-        }
-
         function updateTokenList(tokens) {
             const tokenList = document.getElementById('token-list');
             tokenList.innerHTML = tokens.map(token => `
@@ -735,7 +708,10 @@
                     </td>
                     <td class="age-value">${formatAge(token.createdAt)}</td>
                     <td>
-                        <div class="volume-value">${formatNumber(token.liquidity)}</div>
+                        <div class="volume-value">
+                            ${formatNumber(token.liquidity)}/${formatNumber(token.marketCap)}
+                            <span class="ratio">(${token.liqMcRatio}%)</span>
+                        </div>
                     </td>
                     <td>${formatNumber(token.holders)}</td>
                     <td>${formatNumber(token.txCount24h)}</td>
@@ -754,6 +730,40 @@
                     </td>
                 </tr>
             `).join('');
+        }
+
+        function formatNumber(value) {
+            if (!value && value !== 0) return '-';
+            if (value >= 1_000_000) {
+                return `${(value / 1_000_000).toFixed(1)}M`;
+            }
+            if (value >= 1_000) {
+                return `${(value / 1_000).toFixed(1)}K`;
+            }
+            return value.toFixed(2);
+        }
+
+        function formatPrice(price) {
+            if (!price && price !== 0) return '-';
+            if (price < 0.00001) {
+                return '$' + price.toExponential(2);
+            }
+            if (price < 0.01) {
+                return '$' + price.toFixed(6);
+            }
+            return '$' + price.toFixed(2);
+        }
+
+        function formatAge(timestamp) {
+            if (!timestamp) return '-';
+            const now = new Date();
+            const diff = now - new Date(timestamp);
+            const hours = diff / (1000 * 60 * 60);
+            
+            if (hours < 24) {
+                return `${Math.floor(hours)}h`;
+            }
+            return `${Math.floor(hours / 24)}d`;
         }
 
         function changeTimeframe(timeframe) {

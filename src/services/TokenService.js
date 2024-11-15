@@ -72,30 +72,37 @@ class TokenService {
                 logger.error('Cache error:', cacheError);
             }
 
-            // 模拟数据生成函数
+            // 修改模拟数据生成函数
             const generateMockTokens = (count) => {
                 const tokens = [];
                 const symbols = ['SOL', 'BONK', 'JTO', 'WEN', 'PYTH', 'ORCA', 'RAY', 'MEAN', 'DUST', 'RATIO'];
+                const now = new Date();
                 
                 for (let i = 0; i < count; i++) {
-                    const marketCap = Math.random() * 20000000000; // 0 到 200亿之间
-                    const price = Math.random() * 100; // 0 到 100美元之间
-                    const volume = marketCap * (Math.random() * 0.2); // 市值的0-20%
+                    const marketCap = Math.random() * 20000000000;
+                    const liquidity = marketCap * (Math.random() * 0.3); // 流动性为市值的0-30%
+                    const price = Math.random() * 100;
+                    const volume24h = liquidity * (Math.random() * 0.5); // 24h交易量为流动性的0-50%
+                    
+                    // 创建随机的创建时间（1-30天内）
+                    const createdAt = new Date(now - Math.random() * 30 * 24 * 60 * 60 * 1000);
                     
                     tokens.push({
                         symbol: symbols[i % symbols.length] + (i > 9 ? i : ''),
+                        createdAt: createdAt.toISOString(),
+                        liquidity: liquidity,
                         marketCap: marketCap,
+                        liqMcRatio: (liquidity / marketCap * 100).toFixed(2), // 流动性/市值比率
+                        holders: Math.floor(Math.random() * 1000000),
+                        txCount24h: Math.floor(Math.random() * 50000),
+                        volume24h: volume24h,
                         price: price,
-                        volume24h: volume,
-                        holders: Math.floor(Math.random() * 1000000), // 0 到 100万持有者
-                        txCount1h: Math.floor(Math.random() * 50000), // 0 到 5万笔交易
-                        change1h: (Math.random() * 20) - 10, // -10% 到 +10%
-                        change24h: (Math.random() * 40) - 20, // -20% 到 +20%
-                        change7d: (Math.random() * 60) - 30, // -30% 到 +30%
+                        change1m: (Math.random() * 20) - 10,
+                        change5m: (Math.random() * 40) - 20,
+                        change1h: (Math.random() * 60) - 30
                     });
                 }
 
-                // 按市值排序
                 return tokens.sort((a, b) => b.marketCap - a.marketCap);
             };
 
