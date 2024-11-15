@@ -6,9 +6,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('express-compression');
 const logger = require('./utils/logger');
-const redis = require('./config/redis');
-const path = require('path');
 const TokenService = require('./services/TokenService');
+const path = require('path');
 
 // 创建 Express 应用实例
 const app = express();
@@ -35,65 +34,48 @@ app.use((req, res, next) => {
 });
 
 // API 路由
-app.get('/api/tokens/trending', async (req, res) => {
-    try {
-        // 尝试从缓存获取数据
-        const cached = await redis.get('trending_tokens');
-        if (cached) {
-            return res.json(JSON.parse(cached));
-        }
-
-        // 模拟数据 - 后续替换为真实数据
-        const mockData = {
-            tokens: [
-                {
-                    symbol: 'PNUT2.0',
-                    age: '1d',
-                    liquidity: '45.1K',
-                    holders: '2.1K',
-                    txs1h: '16,923',
-                    volume: '$14.4K',
-                    price: '$0.0001',
-                    change1h: '+1.5%',
-                    change5m: '+3.3%',
-                    change1d: '-17.1%'
-                },
-                // ... 添加更多模拟数据
-            ],
-            timestamp: new Date().toISOString()
-        };
-
-        // 缓存数据
-        await redis.set('trending_tokens', JSON.stringify(mockData), 'EX', 60);
-        res.json(mockData);
-    } catch (error) {
-        logger.error('Error fetching trending tokens:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-// 获取 token 列表
 app.get('/api/tokens/top', async (req, res) => {
     try {
         const { marketCap = '50k', limit = 200 } = req.query;
+        logger.info('Fetching tokens with params:', { marketCap, limit });
+
         const tokens = await TokenService.getTopTokens(marketCap, parseInt(limit));
+        
+        if (!tokens || !tokens.tokens) {
+            logger.error('Invalid token data received');
+            return res.status(500).json({ 
+                error: 'Invalid data format',
+                message: 'Failed to fetch token data'
+            });
+        }
+
         res.json(tokens);
     } catch (error) {
-        logger.error('Error fetching top tokens:', error);
-        res.status(500).json({ error: error.message });
+        logger.error('Error fetching top tokens:', {
+            error: error.message,
+            stack: error.stack
+        });
+        
+        // 返回用户友好的错误信息
+        res.status(500).json({ 
+            error: 'Failed to fetch token data',
+            message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+        });
     }
 });
 
-// 获取市值过滤选项
-app.get('/api/filters/market-cap', (req, res) => {
-    const filters = TokenService.getMarketCapFilters();
-    res.json({ filters });
+// 健康检查端点
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'ok',
+        timestamp: new Date().toISOString()
+    });
 });
 
 // 静态文件服务
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 错误处理
+// 错误处理中间件
 app.use((err, req, res, next) => {
     logger.error('Unhandled Error:', {
         error: err.message,
@@ -104,7 +86,7 @@ app.use((err, req, res, next) => {
     
     res.status(500).json({ 
         error: 'Internal Server Error',
-        message: process.env.NODE_ENV === 'development' ? err.message : undefined
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
     });
 });
 
@@ -112,6 +94,7 @@ app.use((err, req, res, next) => {
 app.listen(port, '0.0.0.0', () => {
     logger.info(`Server started at ${new Date().toISOString()}`);
     logger.info(`Server listening on port ${port}`);
+    logger.info(`Environment: ${process.env.NODE_ENV}`);
 });
 
 module.exports = app;
