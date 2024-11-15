@@ -602,36 +602,76 @@
             color: var(--text-gray);
         }
 
-        /* 数值等级颜色系统 */
+        /* 更新数值等级颜色系统 */
         .value-tier-1 {  /* < 50K */
-            color: #7a7f8c;  /* 浅灰色 */
+            color: #a64dff;  /* 亮紫色 - 最小值 */
         }
         
         .value-tier-2 {  /* 50K - 1M */
-            color: #00a3ff;  /* 浅蓝色 */
-        }
-        
-        .value-tier-3 {  /* 1M - 20M */
             color: #00d1ff;  /* 亮蓝色 */
         }
         
+        .value-tier-3 {  /* 1M - 20M */
+            color: #00ff88;  /* 翠绿色 */
+        }
+        
         .value-tier-4 {  /* 20M - 1B */
-            color: #00ffea;  /* 青色 */
+            color: #ff9f1a;  /* 橙色 */
         }
         
         .value-tier-5 {  /* > 1B */
-            color: #00ffd1;  /* 青绿色 */
+            color: #ff47a1;  /* 粉红色 */
         }
 
-        /* 特殊字段的默认颜色 */
+        /* 数值等级的悬停效果 */
+        [class^="value-tier-"] {
+            transition: filter 0.2s ease;
+        }
+
+        [class^="value-tier-"]:hover {
+            filter: brightness(1.2);
+        }
+
+        /* 特殊字段的默认颜色保持不变 */
         .age-value, .price-value {
-            color: #7a7f8c !important;  /* 烟灰色 */
+            color: #7a7f8c !important;
         }
 
-        /* 双行数值显示时的样式 */
+        /* 双行数值显示时的样式保持不变 */
         .dual-value-primary {
-            color: #ffffff !important;  /* 第一行强制白色 */
-            font-size: 1.1em;  /* 稍大的字号 */
+            color: #ffffff !important;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        /* 添加图例样式 */
+        .value-tiers-legend {
+            display: none;
+            position: absolute;
+            background: #1a1b1f;
+            border: 1px solid #2c2d33;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        .value-tiers-legend div {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        /* 更新图例颜色 */
+        .value-tiers-legend div:first-child .legend-color {
+            background: #a64dff;  /* 更新图例中的颜色 */
         }
     </style>
 </head>
@@ -1257,6 +1297,40 @@
             }
             return '$' + price.toFixed(2);
         }
+
+        // 添加图例显示功能
+        document.addEventListener('DOMContentLoaded', () => {
+            const legend = document.createElement('div');
+            legend.className = 'value-tiers-legend';
+            legend.innerHTML = `
+                <div><span class="legend-color" style="background: #7a7f8c"></span>< 50K</div>
+                <div><span class="legend-color" style="background: #00d1ff"></span>50K - 1M</div>
+                <div><span class="legend-color" style="background: #00ff88"></span>1M - 20M</div>
+                <div><span class="legend-color" style="background: #ff9f1a"></span>20M - 1B</div>
+                <div><span class="legend-color" style="background: #ff47a1"></span>> 1B</div>
+            `;
+            document.body.appendChild(legend);
+
+            // 当鼠标悬停在数值上时显示图例
+            document.addEventListener('mouseover', (e) => {
+                if (e.target.classList && e.target.classList.toString().includes('value-tier-')) {
+                    const rect = e.target.getBoundingClientRect();
+                    legend.style.display = 'block';
+                    legend.style.left = `${rect.right + 10}px`;
+                    legend.style.top = `${rect.top}px`;
+                }
+            });
+
+            document.addEventListener('mouseout', (e) => {
+                if (!e.relatedTarget || !e.relatedTarget.closest('.value-tiers-legend')) {
+                    legend.style.display = 'none';
+                }
+            });
+
+            legend.addEventListener('mouseleave', () => {
+                legend.style.display = 'none';
+            });
+        });
     </script>
 </body>
 </html> 
