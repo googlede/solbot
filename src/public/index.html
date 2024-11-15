@@ -692,7 +692,7 @@
             color: #7a7f8c !important;
         }
 
-        /* 双行数值显示时的样式保持不变 */
+        /* 双行数值显示时的样式保持不��� */
         .dual-value-primary {
             color: #ffffff !important;
             font-size: 1.1em;
@@ -1016,7 +1016,7 @@
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: visible; /* 允许表头溢出 */
+            overflow: hidden;
         }
 
         .token-table {
@@ -1026,20 +1026,22 @@
             font-size: 14px;
         }
 
-        /* 表头样式 */
         .token-table thead {
-            position: relative;
+            position: sticky;
+            top: 64px;  /* 顶部导航栏高度 */
+            z-index: 10;
             background: #0f1011;
-            transition: all 0.3s ease;
+            transition: box-shadow 0.3s ease;
         }
 
-        .token-table thead.sticky {
-            position: fixed;
-            top: 64px;
-            background: #0f1011;
-            z-index: 100;
-            border-bottom: 1px solid #3a3b42;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        .token-table thead::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 1px;
+            background: #3a3b42;
         }
 
         .token-table th {
@@ -1049,6 +1051,7 @@
             font-weight: normal;
             white-space: nowrap;
             background: #0f1011;
+            position: relative;
         }
 
         .token-table td {
@@ -1057,9 +1060,26 @@
             white-space: nowrap;
         }
 
-        /* 最后一行不需要边框 */
         .token-table tr:last-child td {
             border-bottom: none;
+        }
+
+        /* 双行数据样式 */
+        .liq-mc-cell,
+        .tx-count-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .dual-value-primary {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        /* 确保表头在滚动时有阴影效果 */
+        .token-table thead.shadow {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
@@ -1240,7 +1260,7 @@
             document.getElementById('marketCapDropdown').classList.toggle('show');
         }
 
-        // 点击��他地方关闭下拉菜单
+        // 点击��地方关闭下拉菜单
         window.onclick = function(event) {
             if (!event.target.matches('.filter-button')) {
                 const dropdowns = document.getElementsByClassName('dropdown-content');
@@ -1689,44 +1709,22 @@
 
         // 添加表头固定效果
         document.addEventListener('DOMContentLoaded', () => {
-            const table = document.querySelector('.token-table');
-            const thead = table.querySelector('thead');
+            const thead = document.querySelector('.token-table thead');
             const container = document.querySelector('.table-container');
             const navHeight = 64;
 
-            // 创建一个隐藏的表头副本用于保持布局
-            const theadClone = thead.cloneNode(true);
-            theadClone.style.visibility = 'hidden';
-            theadClone.style.position = 'static';
-            thead.parentNode.insertBefore(theadClone, thead.nextSibling);
-
             window.addEventListener('scroll', () => {
                 const containerRect = container.getBoundingClientRect();
-                const tableRect = table.getBoundingClientRect();
+                const headerHeight = thead.offsetHeight;
 
-                if (containerRect.top <= navHeight && containerRect.bottom >= thead.offsetHeight + navHeight) {
-                    if (!thead.classList.contains('sticky')) {
-                        thead.classList.add('sticky');
-                        thead.style.width = `${table.offsetWidth}px`;
-                        thead.style.left = `${tableRect.left}px`;
-                    }
+                // 当表格接近顶部导航栏时添加阴影
+                if (containerRect.top <= navHeight && 
+                    containerRect.bottom >= headerHeight + navHeight) {
+                    thead.classList.add('shadow');
                 } else {
-                    if (thead.classList.contains('sticky')) {
-                        thead.classList.remove('sticky');
-                        thead.style.width = '';
-                        thead.style.left = '';
-                    }
+                    thead.classList.remove('shadow');
                 }
             }, { passive: true });
-
-            // 处理窗口大小变化
-            window.addEventListener('resize', () => {
-                if (thead.classList.contains('sticky')) {
-                    const tableRect = table.getBoundingClientRect();
-                    thead.style.width = `${table.offsetWidth}px`;
-                    thead.style.left = `${tableRect.left}px`;
-                }
-            });
         });
     </script>
 </body>
