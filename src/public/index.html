@@ -29,23 +29,61 @@
             line-height: 1.5;
         }
 
-        .search-container {
+        .navbar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            padding: 12px 20px;
+            height: 64px;
             background: var(--bg-dark);
             border-bottom: 1px solid var(--border-color);
             z-index: 1000;
             display: flex;
-            justify-content: center;
             align-items: center;
+            padding: 0 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-right: 40px;
+            text-decoration: none;
+            color: var(--text-light);
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #FF6B6B, #FFB347);
+        }
+
+        .logo img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-light);
+            letter-spacing: 0.5px;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .search-wrapper {
             position: relative;
-            max-width: 600px;
             width: 100%;
         }
 
@@ -96,7 +134,7 @@
         }
 
         .content {
-            margin-top: 80px;
+            margin-top: 84px;
             padding: 0 20px;
         }
 
@@ -239,24 +277,32 @@
     </style>
 </head>
 <body>
-    <div class="search-container">
-        <div class="search-wrapper">
-            <div class="search-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
+    <nav class="navbar">
+        <a href="/" class="brand">
+            <div class="logo">
+                <img src="https://example.com/pnut-squirrel-logo.png" alt="PNUT Squirrel">
             </div>
-            <input type="text" 
-                   class="search-input" 
-                   placeholder="Search token/contract/wallet" 
-                   aria-label="Search">
-            <div class="keyboard-shortcut">
-                <span>Ctrl</span>
-                <span>K</span>
+            <span class="brand-name">SolanaBot</span>
+        </a>
+        <div class="search-container">
+            <div class="search-wrapper">
+                <div class="search-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </div>
+                <input type="text" 
+                       class="search-input" 
+                       placeholder="Search token/contract/wallet" 
+                       aria-label="Search">
+                <div class="keyboard-shortcut">
+                    <span>Ctrl</span>
+                    <span>K</span>
+                </div>
             </div>
         </div>
-    </div>
+    </nav>
 
     <div class="content">
         <div class="container">
