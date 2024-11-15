@@ -72,15 +72,22 @@ app.get('/api/tokens/trending', async (req, res) => {
     }
 });
 
-// Token 数据路由
-app.get('/api/tokens/top100', async (req, res) => {
+// 获取 token 列表
+app.get('/api/tokens/top', async (req, res) => {
     try {
-        const tokens = await TokenService.getTop100Tokens();
-        res.json({ tokens });
+        const { marketCap = '50k', limit = 200 } = req.query;
+        const tokens = await TokenService.getTopTokens(marketCap, parseInt(limit));
+        res.json(tokens);
     } catch (error) {
         logger.error('Error fetching top tokens:', error);
         res.status(500).json({ error: error.message });
     }
+});
+
+// 获取市值过滤选项
+app.get('/api/filters/market-cap', (req, res) => {
+    const filters = TokenService.getMarketCapFilters();
+    res.json({ filters });
 });
 
 // 静态文件服务
