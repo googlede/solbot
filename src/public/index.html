@@ -722,6 +722,32 @@
         .token-address a:hover {
             opacity: 0.8;
         }
+
+        .tx-count-cell .split-txs span:not(.tx-separator) {
+            transition: color 0.2s ease;
+        }
+
+        .volume-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .volume-cell > div:last-child {
+            font-size: 0.9em;
+        }
+
+        /* 确保分隔符保持原有颜色 */
+        .tx-separator {
+            color: var(--text-gray) !important;
+        }
+
+        /* 双行显示时第一行保持白色 */
+        .dual-value-primary {
+            color: #ffffff !important;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -1037,17 +1063,24 @@
                     <td>${formatNumber(token.holders)}</td>
                     <td>
                         <div class="tx-count-cell">
-                            <div>${formatNumberWithTier(token.txCount24h.total, { isDualPrimary: true })}</div>
+                            <div class="dual-value-primary">${formatNumber(token.txCount24h.total)}</div>
                             <div class="split-txs">
-                                <span class="buy-txs">${formatNumber(token.txCount24h.buy)}</span>
+                                <span class="${getValueTierClass(token.txCount24h.buy)}">
+                                    ${formatNumber(token.txCount24h.buy)}
+                                </span>
                                 <span class="tx-separator">/</span>
-                                <span class="sell-txs">${formatNumber(token.txCount24h.sell)}</span>
+                                <span class="${getValueTierClass(token.txCount24h.sell)}">
+                                    ${formatNumber(token.txCount24h.sell)}
+                                </span>
                             </div>
                         </div>
                     </td>
                     <td>
                         <div class="volume-cell">
-                            <div>${formatNumberWithTier(token.volume24h, { isDualPrimary: true })}</div>
+                            <div class="dual-value-primary">$${formatNumber(token.volume24h)}</div>
+                            <div class="${getValueTierClass(token.volume24h)}">
+                                $${formatNumber(token.volume24h)}
+                            </div>
                         </div>
                     </td>
                     <td class="price-value">${formatPrice(token.price)}</td>
@@ -1253,6 +1286,7 @@
 
         // 添加数值等级判断函数
         function getValueTierClass(value) {
+            if (!value && value !== 0) return 'value-tier-1';
             if (value >= 1000000000) return 'value-tier-5';  // > 1B
             if (value >= 20000000) return 'value-tier-4';    // > 20M
             if (value >= 1000000) return 'value-tier-3';     // > 1M
@@ -1307,17 +1341,24 @@
                     <td>${formatNumber(token.holders)}</td>
                     <td>
                         <div class="tx-count-cell">
-                            <div>${formatNumberWithTier(token.txCount24h.total, { isDualPrimary: true })}</div>
+                            <div class="dual-value-primary">${formatNumber(token.txCount24h.total)}</div>
                             <div class="split-txs">
-                                <span class="buy-txs">${formatNumber(token.txCount24h.buy)}</span>
+                                <span class="${getValueTierClass(token.txCount24h.buy)}">
+                                    ${formatNumber(token.txCount24h.buy)}
+                                </span>
                                 <span class="tx-separator">/</span>
-                                <span class="sell-txs">${formatNumber(token.txCount24h.sell)}</span>
+                                <span class="${getValueTierClass(token.txCount24h.sell)}">
+                                    ${formatNumber(token.txCount24h.sell)}
+                                </span>
                             </div>
                         </div>
                     </td>
                     <td>
                         <div class="volume-cell">
-                            <div>${formatNumberWithTier(token.volume24h, { isDualPrimary: true })}</div>
+                            <div class="dual-value-primary">$${formatNumber(token.volume24h)}</div>
+                            <div class="${getValueTierClass(token.volume24h)}">
+                                $${formatNumber(token.volume24h)}
+                            </div>
                         </div>
                     </td>
                     <td class="price-value">${formatPrice(token.price)}</td>
