@@ -201,7 +201,7 @@
             white-space: nowrap;
             height: 20px;
             line-height: 1.2;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .token-table tr {
@@ -212,8 +212,8 @@
             background-color: #1a1b1f;
             transform: translateZ(0);
             box-shadow: 
-                0 1px 0 rgba(255, 255, 255, 0.05),
-                0 -1px 0 rgba(255, 255, 255, 0.05);
+                0 1px 0 rgba(255, 255, 255, 0.07),
+                0 -1px 0 rgba(255, 255, 255, 0.07);
         }
 
         .token-table tr:last-child td {
@@ -222,11 +222,12 @@
 
         .token-table-container {
             background: #0f1011;
-            border: 1px solid #3a3b42;
-            border-radius: 8px;
+            border: 2px solid #3a3b42;
+            border-radius: 12px;
             overflow: hidden;
-            margin: 20px 0;
+            margin: 24px 0;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0 2px;
         }
 
         .token-icon {
@@ -1534,7 +1535,7 @@
             }
         }
 
-        // 更新样式，移除不需要的双行样式
+        // 更新样式，移除不需要���双行样式
         const style = document.createElement('style');
         style.textContent = `
             /* ... 保留之前的样式 ... */
