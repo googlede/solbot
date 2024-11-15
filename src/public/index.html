@@ -936,6 +936,73 @@
         .col-volume { width: 120px; }
         .col-price { width: 100px; }
         .col-change { width: 90px; }
+
+        /* 表格包装器 */
+        .token-table-wrapper {
+            width: 100%;
+            max-width: 1400px;
+            margin: 24px auto;
+            position: relative;
+        }
+
+        /* 表格容器 */
+        .token-table-container {
+            background: #0f1011;
+            border: 2px solid #3a3b42;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* 表格基础样式 */
+        .token-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+        }
+
+        /* 表头样式 */
+        .token-table thead {
+            position: sticky;
+            top: 64px; /* 顶部导航栏高度 */
+            z-index: 100;
+            background: #0f1011;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .token-table thead.sticky {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .token-table th {
+            padding: 10px 16px;
+            text-align: left;
+            color: var(--text-gray);
+            font-weight: normal;
+            border-bottom: 1px solid #3a3b42;
+            white-space: nowrap;
+            height: 20px;
+            background: #0f1011;
+        }
+
+        /* 数据行样式 */
+        .token-table td {
+            padding: 8px 16px;
+            white-space: nowrap;
+            height: 20px;
+            line-height: 1.2;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* 最后一行不需要边框 */
+        .token-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* 鼠标悬停效果 */
+        .token-table tbody tr:hover {
+            background-color: #1a1b1f;
+        }
     </style>
 </head>
 <body>
@@ -1082,30 +1149,28 @@
                 </div>
             </div>
 
-            <div class="token-table-container">
-                <div class="table-header-container">
+            <div class="token-table-wrapper">
+                <div class="token-table-container">
                     <table class="token-table">
                         <thead>
                             <tr>
-                                <th class="col-token">Token</th>
-                                <th class="col-age">Age</th>
-                                <th class="col-liq-mc">Liq $ / MC $</th>
-                                <th class="col-holders">Holders</th>
-                                <th class="col-txs">24h TXs</th>
-                                <th class="col-volume">24h Vol $</th>
-                                <th class="col-price">Price</th>
-                                <th class="col-change">1m%</th>
-                                <th class="col-change">5m%</th>
-                                <th class="col-change">1h%</th>
+                                <th>Token</th>
+                                <th>Age</th>
+                                <th>Liq $ / MC $</th>
+                                <th>Holders</th>
+                                <th>24h TXs</th>
+                                <th>24h Vol $</th>
+                                <th>Price</th>
+                                <th>1m%</th>
+                                <th>5m%</th>
+                                <th>1h%</th>
                             </tr>
                         </thead>
+                        <tbody>
+                            <!-- 数据行由 JavaScript 动态生成 -->
+                        </tbody>
                     </table>
                 </div>
-                <table class="token-table">
-                    <tbody>
-                        <!-- 数据行由 JavaScript 生成 -->
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
@@ -1567,30 +1632,85 @@
         // 添加表头固定效果
         document.addEventListener('DOMContentLoaded', () => {
             const thead = document.querySelector('.token-table thead');
-            const tableContainer = document.querySelector('.token-table-container');
-            const navHeight = 64;  // 顶部导航栏高度
+            const tableWrapper = document.querySelector('.token-table-wrapper');
+            const navHeight = 64; // 顶部导航栏高度
 
             // 监听滚动事件
             window.addEventListener('scroll', () => {
-                const containerRect = tableContainer.getBoundingClientRect();
-                const theadRect = thead.getBoundingClientRect();
-                
-                if (containerRect.top <= navHeight) {
+                const wrapperRect = tableWrapper.getBoundingClientRect();
+                const headerHeight = thead.offsetHeight;
+
+                // 检查表头是否应该固定
+                if (wrapperRect.top <= navHeight) {
                     thead.classList.add('sticky');
                     
-                    // 计算表头应该停留的位置
-                    const stopPosition = navHeight;
-                    const offset = stopPosition - containerRect.top;
-                    
-                    // 确保表头不会超出表格容器底部
-                    if (containerRect.bottom >= theadRect.height + navHeight) {
-                        thead.style.transform = `translateY(${offset}px)`;
+                    // 确保表头不会超出表格底部
+                    if (wrapperRect.bottom >= headerHeight + navHeight) {
+                        thead.style.visibility = 'visible';
+                    } else {
+                        thead.style.visibility = 'hidden';
                     }
                 } else {
                     thead.classList.remove('sticky');
-                    thead.style.transform = 'translateY(0)';
+                    thead.style.visibility = 'visible';
                 }
             }, { passive: true });
+
+            // 更新数据的函数
+            async function updateTokenList() {
+                try {
+                    const response = await fetch('/api/tokens/top');
+                    const data = await response.json();
+                    
+                    const tbody = document.querySelector('.token-table tbody');
+                    tbody.innerHTML = data.tokens.map(token => `
+                        <tr>
+                            <td>
+                                <div class="token-cell">
+                                    <div class="token-icon">
+                                        <img src="${token.iconUrl}" alt="${token.symbol}" onerror="this.src='default-token-icon.png'">
+                                    </div>
+                                    <div class="token-info">
+                                        <div class="token-name">${token.symbol}</div>
+                                        <div class="token-address">${formatAddress(token.address)}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${formatAge(token.createdAt)}</td>
+                            <td>
+                                <div class="liq-mc-cell">
+                                    <div class="dual-value-primary">$${formatNumber(token.liquidity)}</div>
+                                    <div class="${getValueTierClass(token.marketCap)}">$${formatNumber(token.marketCap)}</div>
+                                </div>
+                            </td>
+                            <td>${formatNumber(token.holders)}</td>
+                            <td>
+                                <div class="tx-count-cell">
+                                    <div class="dual-value-primary">${formatNumber(token.txCount24h.total)}</div>
+                                    <div class="split-txs">
+                                        <span class="${getValueTierClass(token.txCount24h.buy)}">${formatNumber(token.txCount24h.buy)}</span>
+                                        <span class="tx-separator">/</span>
+                                        <span class="${getValueTierClass(token.txCount24h.sell)}">${formatNumber(token.txCount24h.sell)}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="${getValueTierClass(token.volume24h)}">$${formatNumber(token.volume24h)}</td>
+                            <td class="price-value">$${formatPrice(token.price)}</td>
+                            <td class="price-change ${token.change1m > 0 ? 'positive' : 'negative'}">${formatPercent(token.change1m)}</td>
+                            <td class="price-change ${token.change5m > 0 ? 'positive' : 'negative'}">${formatPercent(token.change5m)}</td>
+                            <td class="price-change ${token.change1h > 0 ? 'positive' : 'negative'}">${formatPercent(token.change1h)}</td>
+                        </tr>
+                    `).join('');
+                } catch (error) {
+                    console.error('Error updating token list:', error);
+                }
+            }
+
+            // 初始加载数据
+            updateTokenList();
+            
+            // 每分钟更新一次数据
+            setInterval(updateTokenList, 60000);
         });
     </script>
 </body>
