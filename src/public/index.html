@@ -514,65 +514,22 @@
         .sort-header {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 2px;
         }
 
         .sort-item {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            padding: 2px 0;
-        }
-
-        .liq-mc-cell {
-            display: flex;
-            flex-direction: column;
             gap: 4px;
-        }
-
-        .liq-value {
-            color: #00D1FF;  /* 流动性使用蓝色 */
-            font-weight: 500;
-        }
-
-        .mc-value {
-            color: #FFB347;  /* 市值使用橙色 */
-            font-weight: 500;
-        }
-
-        .ratio {
-            font-size: 12px;
-            color: var(--text-gray);
-            margin-left: 4px;
-        }
-
-        .sort-header {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .sort-title {
-            color: var(--text-gray);
-            margin-bottom: 4px;
-            white-space: nowrap;
-        }
-
-        .sort-controls {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-        }
-
-        .sort-item {
             cursor: pointer;
+            color: var(--text-gray);
+            font-size: 14px;
         }
 
         .sort-icons {
-            display: flex;
+            display: inline-flex;
             flex-direction: column;
-            align-items: center;
+            margin-left: 2px;
         }
 
         .sort-icon {
@@ -581,7 +538,6 @@
             opacity: 0.5;
             transition: opacity 0.2s ease, color 0.2s ease;
             line-height: 1;
-            padding: 2px;
         }
 
         .sort-icon.active {
@@ -768,21 +724,18 @@
                             </th>
                             <th class="sortable double-sort">
                                 <div class="sort-header">
-                                    <div class="sort-title">
-                                        Liq $/MC $
-                                    </div>
-                                    <div class="sort-controls">
-                                        <div class="sort-item" data-sort="liquidity">
-                                            <div class="sort-icons">
-                                                <span class="sort-icon up">▲</span>
-                                                <span class="sort-icon down">▼</span>
-                                            </div>
+                                    <div class="sort-item" data-sort="liquidity">
+                                        Liq $
+                                        <div class="sort-icons">
+                                            <span class="sort-icon up">▲</span>
+                                            <span class="sort-icon down">▼</span>
                                         </div>
-                                        <div class="sort-item" data-sort="marketCap">
-                                            <div class="sort-icons">
-                                                <span class="sort-icon up">▲</span>
-                                                <span class="sort-icon down">▼</span>
-                                            </div>
+                                    </div>
+                                    <div class="sort-item" data-sort="marketCap">
+                                        MC $
+                                        <div class="sort-icons">
+                                            <span class="sort-icon up">▲</span>
+                                            <span class="sort-icon down">▼</span>
                                         </div>
                                     </div>
                                 </div>
