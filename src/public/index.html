@@ -11,8 +11,9 @@
             --text-gray: #7a7f8c;
             --border-color: #1c1e21;
             --card-bg: #1a1b1f;
-            --green: #16c784;
-            --red: #ea3943;
+            --search-bg: #1a1b1f;
+            --search-border: #2c2d33;
+            --search-focus: #3a3b3f;
         }
 
         * {
@@ -26,6 +27,77 @@
             color: var(--text-light);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.5;
+        }
+
+        .search-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 20px;
+            background: var(--bg-dark);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .search-wrapper {
+            position: relative;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-gray);
+            display: flex;
+            align-items: center;
+        }
+
+        .keyboard-shortcut {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--search-border);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-gray);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 100px 12px 38px;
+            background: var(--search-bg);
+            border: 1px solid var(--search-border);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: var(--search-focus);
+            border-color: var(--text-gray);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-gray);
+        }
+
+        .content {
+            margin-top: 80px;
+            padding: 0 20px;
         }
 
         .container {
@@ -167,50 +239,71 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Solana Smart Money</h1>
-            <div class="filters">
-                <div class="filter-dropdown">
-                    <button class="filter-button" onclick="toggleDropdown()">
-                        <span id="current-filter">≥ $50K</span>
-                    </button>
-                    <div id="marketCapDropdown" class="dropdown-content">
-                        <a class="dropdown-item" onclick="changeMarketCap('10k')">≥ $10K</a>
-                        <a class="dropdown-item" onclick="changeMarketCap('50k')">≥ $50K</a>
-                        <a class="dropdown-item" onclick="changeMarketCap('150k')">≥ $150K</a>
-                        <a class="dropdown-item" onclick="changeMarketCap('500k')">≥ $500K</a>
-                        <a class="dropdown-item" onclick="changeMarketCap('1m')">≥ $1M</a>
-                    </div>
-                </div>
-                <div class="time-filters">
-                    <button onclick="changeTimeframe('1m')" class="active">1m</button>
-                    <button onclick="changeTimeframe('5m')">5m</button>
-                    <button onclick="changeTimeframe('1h')">1h</button>
-                    <button onclick="changeTimeframe('6h')">6h</button>
-                    <button onclick="changeTimeframe('24h')">24h</button>
-                </div>
+    <div class="search-container">
+        <div class="search-wrapper">
+            <div class="search-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </div>
+            <input type="text" 
+                   class="search-input" 
+                   placeholder="Search token/contract/wallet" 
+                   aria-label="Search">
+            <div class="keyboard-shortcut">
+                <span>Ctrl</span>
+                <span>K</span>
             </div>
         </div>
+    </div>
 
-        <table class="token-table">
-            <thead>
-                <tr>
-                    <th>Token</th>
-                    <th>Market Cap</th>
-                    <th>Price</th>
-                    <th>Volume (24h)</th>
-                    <th>Holders</th>
-                    <th>1h TXs</th>
-                    <th>1h%</th>
-                    <th>24h%</th>
-                    <th>7d%</th>
-                </tr>
-            </thead>
-            <tbody id="token-list">
-                <!-- 动态填充数据 -->
-            </tbody>
-        </table>
+    <div class="content">
+        <div class="container">
+            <div class="header">
+                <h1>Solana Smart Money</h1>
+                <div class="filters">
+                    <div class="filter-dropdown">
+                        <button class="filter-button" onclick="toggleDropdown()">
+                            <span id="current-filter">≥ $50K</span>
+                        </button>
+                        <div id="marketCapDropdown" class="dropdown-content">
+                            <a class="dropdown-item" onclick="changeMarketCap('10k')">≥ $10K</a>
+                            <a class="dropdown-item" onclick="changeMarketCap('50k')">≥ $50K</a>
+                            <a class="dropdown-item" onclick="changeMarketCap('150k')">≥ $150K</a>
+                            <a class="dropdown-item" onclick="changeMarketCap('500k')">≥ $500K</a>
+                            <a class="dropdown-item" onclick="changeMarketCap('1m')">≥ $1M</a>
+                        </div>
+                    </div>
+                    <div class="time-filters">
+                        <button onclick="changeTimeframe('1m')" class="active">1m</button>
+                        <button onclick="changeTimeframe('5m')">5m</button>
+                        <button onclick="changeTimeframe('1h')">1h</button>
+                        <button onclick="changeTimeframe('6h')">6h</button>
+                        <button onclick="changeTimeframe('24h')">24h</button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="token-table">
+                <thead>
+                    <tr>
+                        <th>Token</th>
+                        <th>Market Cap</th>
+                        <th>Price</th>
+                        <th>Volume (24h)</th>
+                        <th>Holders</th>
+                        <th>1h TXs</th>
+                        <th>1h%</th>
+                        <th>24h%</th>
+                        <th>7d%</th>
+                    </tr>
+                </thead>
+                <tbody id="token-list">
+                    <!-- 动态填充数据 -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -324,6 +417,14 @@
                 .classList.add('active');
             fetchTokens();
         }
+
+        // 添加键盘快捷键支持
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                document.querySelector('.search-input').focus();
+            }
+        });
 
         // 初始加载
         fetchTokens();
