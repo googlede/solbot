@@ -1402,40 +1402,6 @@
             return '$' + price.toFixed(2);
         }
 
-        // 添加图例显示功能
-        document.addEventListener('DOMContentLoaded', () => {
-            const legend = document.createElement('div');
-            legend.className = 'value-tiers-legend';
-            legend.innerHTML = `
-                <div><span class="legend-color" style="background: #7a7f8c"></span>< 50K</div>
-                <div><span class="legend-color" style="background: #00d1ff"></span>50K - 1M</div>
-                <div><span class="legend-color" style="background: #00ff88"></span>1M - 20M</div>
-                <div><span class="legend-color" style="background: #ff9f1a"></span>20M - 1B</div>
-                <div><span class="legend-color" style="background: #ff47a1"></span>> 1B</div>
-            `;
-            document.body.appendChild(legend);
-
-            // 当鼠标悬停在数值上时显示图例
-            document.addEventListener('mouseover', (e) => {
-                if (e.target.classList && e.target.classList.toString().includes('value-tier-')) {
-                    const rect = e.target.getBoundingClientRect();
-                    legend.style.display = 'block';
-                    legend.style.left = `${rect.right + 10}px`;
-                    legend.style.top = `${rect.top}px`;
-                }
-            });
-
-            document.addEventListener('mouseout', (e) => {
-                if (!e.relatedTarget || !e.relatedTarget.closest('.value-tiers-legend')) {
-                    legend.style.display = 'none';
-                }
-            });
-
-            legend.addEventListener('mouseleave', () => {
-                legend.style.display = 'none';
-            });
-        });
-
         // 修改地址格式化函数，添加错误处理
         function formatAddress(address) {
             if (!address) return 'N/A';
