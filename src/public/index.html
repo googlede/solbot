@@ -513,23 +513,25 @@
 
         .sort-header {
             display: flex;
-            flex-direction: column;
-            gap: 2px;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
         }
 
         .sort-item {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
             cursor: pointer;
             color: var(--text-gray);
-            font-size: 14px;
         }
 
         .sort-icons {
             display: inline-flex;
             flex-direction: column;
             margin-left: 2px;
+            height: 16px;
+            justify-content: center;
         }
 
         .sort-icon {
@@ -563,6 +565,12 @@
         .mc-value {
             color: #FFB347;
             font-weight: 500;
+        }
+
+        .sort-header > span:not(.sort-item) {
+            color: var(--text-gray);
+            opacity: 0.5;
+            user-select: none;
         }
     </style>
 </head>
@@ -724,20 +732,21 @@
                             </th>
                             <th class="sortable double-sort">
                                 <div class="sort-header">
-                                    <div class="sort-item" data-sort="liquidity">
+                                    <span class="sort-item" data-sort="liquidity">
                                         Liq $
                                         <div class="sort-icons">
                                             <span class="sort-icon up">▲</span>
                                             <span class="sort-icon down">▼</span>
                                         </div>
-                                    </div>
-                                    <div class="sort-item" data-sort="marketCap">
+                                    </span>
+                                    /
+                                    <span class="sort-item" data-sort="marketCap">
                                         MC $
                                         <div class="sort-icons">
                                             <span class="sort-icon up">▲</span>
                                             <span class="sort-icon down">▼</span>
                                         </div>
-                                    </div>
+                                    </span>
                                 </div>
                             </th>
                             <th class="sortable" data-sort="holders">
