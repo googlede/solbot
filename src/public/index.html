@@ -228,8 +228,7 @@
             border: 2px solid #3a3b42;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 0 2px;
+            position: relative;
         }
 
         .token-icon {
@@ -987,9 +986,19 @@
         }
 
         .token-table thead {
+            position: sticky;
+            top: 64px;  /* 调整固定位置，与顶部导航栏对齐 */
             background: #0f1011;
+            z-index: 10;
+            transition: box-shadow 0.3s ease;
         }
 
+        /* 滚动时添加阴影 */
+        .token-table thead.sticky {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 表头单元格样式 */
         .token-table th {
             padding: 10px 16px;
             text-align: left;
@@ -998,7 +1007,29 @@
             border-bottom: 1px solid #3a3b42;
             white-space: nowrap;
             height: 20px;
+            background: #0f1011;  /* 确保背景色 */
         }
+
+        /* 数据单元格样式 */
+        .token-table td {
+            padding: 8px 16px;
+            white-space: nowrap;
+            height: 20px;
+            line-height: 1.2;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* 列宽设置 */
+        .token-table th:nth-child(1),
+        .token-table td:nth-child(1) { width: 200px; }  /* Token 列 */
+        
+        .token-table th:nth-child(2),
+        .token-table td:nth-child(2) { width: 80px; }   /* Age 列 */
+        
+        .token-table th:nth-child(3),
+        .token-table td:nth-child(3) { width: 160px; }  /* Liq/MC 列 */
+        
+        /* ... 其他列宽设置 ... */
     </style>
 </head>
 <body>
@@ -1691,61 +1722,40 @@
 
         // 添加表头固定效果
         document.addEventListener('DOMContentLoaded', () => {
-            const tableContainer = document.querySelector('.token-table-container');
             const thead = document.querySelector('.token-table thead');
-            const headerWrapper = document.createElement('div');
-            headerWrapper.className = 'table-header-wrapper';
-            
-            // 将表头包装在固定容器中
-            thead.parentNode.insertBefore(headerWrapper, thead);
-            headerWrapper.appendChild(thead);
+            const navHeight = 64;  // 顶部导航栏高度
 
             // 监听滚动事件
-            let lastScrollTop = 0;
             window.addEventListener('scroll', () => {
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const tableRect = tableContainer.getBoundingClientRect();
-                const headerRect = headerWrapper.getBoundingClientRect();
+                const tableRect = document.querySelector('.token-table-container').getBoundingClientRect();
                 
-                // 检查表格是否在视图中
-                if (tableRect.top <= 60 && tableRect.bottom >= headerRect.height + 60) {
-                    headerWrapper.classList.add('sticky');
+                if (tableRect.top <= navHeight && tableRect.bottom >= navHeight) {
+                    thead.classList.add('sticky');
                 } else {
-                    headerWrapper.classList.remove('sticky');
+                    thead.classList.remove('sticky');
                 }
-
-                // 添加滚动方向检测
-                if (scrollTop > lastScrollTop) {
-                    // 向下滚动
-                    headerWrapper.style.transform = 'translateY(0)';
-                } else {
-                    // 向上滚动
-                    headerWrapper.style.transform = 'translateY(0)';
-                }
-                
-                lastScrollTop = scrollTop;
             }, { passive: true });
 
-            // 调整表格布局
-            const adjustTableLayout = () => {
+            // 确保表格列宽一致
+            function adjustColumnWidths() {
                 const headerCells = thead.querySelectorAll('th');
                 const firstRow = document.querySelector('.token-table tbody tr');
+                
                 if (firstRow) {
                     const bodyCells = firstRow.querySelectorAll('td');
                     headerCells.forEach((th, i) => {
                         if (bodyCells[i]) {
-                            const width = bodyCells[i].offsetWidth;
+                            const width = Math.max(th.offsetWidth, bodyCells[i].offsetWidth);
                             th.style.width = `${width}px`;
+                            bodyCells[i].style.width = `${width}px`;
                         }
                     });
                 }
-            };
+            }
 
-            // 监听窗口大小变化
-            window.addEventListener('resize', adjustTableLayout);
-            
-            // 初始调整
-            setTimeout(adjustTableLayout, 100);
+            // 初始调整和窗口大小变化时调整
+            window.addEventListener('resize', adjustColumnWidths);
+            setTimeout(adjustColumnWidths, 100);
         });
     </script>
 </body>
