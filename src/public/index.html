@@ -179,7 +179,7 @@
 
         .token-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
             border-spacing: 0;
             font-size: 14px;
             background: #0f1011;
@@ -198,19 +198,22 @@
 
         .token-table td {
             padding: 8px 16px;
-            border: none !important;
             white-space: nowrap;
             height: 20px;
             line-height: 1.2;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
         }
 
         .token-table tr {
-            border: none !important;
-            transition: background-color 0.2s ease;
+            transition: all 0.2s ease;
         }
 
         .token-table tr:hover {
             background-color: #1a1b1f;
+            transform: translateZ(0);
+            box-shadow: 
+                0 1px 0 rgba(255, 255, 255, 0.05),
+                0 -1px 0 rgba(255, 255, 255, 0.05);
         }
 
         .token-table tr:last-child td {
@@ -226,9 +229,19 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        .token-table td, 
-        .token-table th {
-            vertical-align: middle;
+        .token-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .token-info,
+        .tx-count-cell,
+        .liq-mc-cell {
+            gap: 2px;
+        }
+
+        .token-name {
+            margin-bottom: 2px;
         }
 
         .positive { color: var(--green); }
@@ -792,7 +805,7 @@
         /* 更新表格样式 */
         .token-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
             border-spacing: 0;
             font-size: 14px;
             background: #0f1011;
@@ -811,19 +824,22 @@
 
         .token-table td {
             padding: 8px 16px;
-            border: none !important;
             white-space: nowrap;
             height: 20px;
             line-height: 1.2;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
         }
 
         .token-table tr {
-            border: none !important;
-            transition: background-color 0.2s ease;
+            transition: all 0.2s ease;
         }
 
         .token-table tr:hover {
             background-color: #1a1b1f;
+            transform: translateZ(0);
+            box-shadow: 
+                0 1px 0 rgba(255, 255, 255, 0.05),
+                0 -1px 0 rgba(255, 255, 255, 0.05);
         }
 
         .token-table tr:last-child td {
