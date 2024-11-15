@@ -72,8 +72,20 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// 静态文件服务
-app.use(express.static(path.join(__dirname, 'public')));
+// 修改静态文件服务配置
+app.use(express.static(path.join(__dirname, 'public'), {
+    etag: false,  // 禁用 ETag
+    maxAge: 0,    // 禁用客户端缓存
+    lastModified: false  // 禁用 Last-Modified
+}));
+
+// 添加缓存控制中间件
+app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    next();
+});
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
