@@ -227,8 +227,9 @@
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
-            overflow: visible;
-            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0 2px;
         }
 
         .token-icon {
@@ -836,13 +837,88 @@
             transition: all 0.2s ease;
         }
 
-        /* 鼠标悬停效果 */
         .token-table tr:hover {
             background-color: #1a1b1f;
             transform: translateZ(0);
             box-shadow: 
                 0 1px 0 rgba(255, 255, 255, 0.05),
                 0 -1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .token-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .token-table-container {
+            background: #0f1011;
+            border: 1px solid #3a3b42;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .token-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .token-info,
+        .tx-count-cell,
+        .liq-mc-cell {
+            gap: 2px;
+        }
+
+        .token-name {
+            margin-bottom: 2px;
+        }
+
+        /* 更新容器最大宽度 */
+        .container {
+            max-width: 1400px;  /* 调整容器最大宽度 */
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* 更新表格样式 */
+        .token-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+            background: #0f1011;
+        }
+
+        .token-table th {
+            padding: 10px 16px;
+            text-align: left;
+            color: var(--text-gray);
+            font-weight: normal;
+            border-bottom: 1px solid #3a3b42;
+            white-space: nowrap;
+            background: #0f1011;
+            height: 20px;
+        }
+
+        .token-table td {
+            padding: 8px 16px;
+            white-space: nowrap;
+            height: 20px;
+            line-height: 1.2;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);  /* 增加到 15% 不透明度 */
+        }
+
+        .token-table tr {
+            transition: all 0.2s ease;
+        }
+
+        /* 鼠标悬停效果 */
+        .token-table tr:hover {
+            background-color: #1a1b1f;
+            transform: translateZ(0);
+            box-shadow: 
+                0 1px 0 rgba(255, 255, 255, 0.07),
+                0 -1px 0 rgba(255, 255, 255, 0.07);
         }
 
         /* 最后一行不需要分隔线 */
@@ -853,107 +929,49 @@
         /* 表格容器样式 */
         .token-table-container {
             width: 100%;
-            max-width: 1400px;
-            margin: 24px auto;
-            background: #0f1011;
-            border: 2px solid #3a3b42;
-            border-radius: 12px;
-            overflow: visible;
-            position: relative;
-        }
-
-        /* 表格基础样式 */
-        .token-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 14px;
-        }
-
-        /* 表头样式 */
-        .token-table thead {
-            position: sticky;
-            top: 64px;
-            z-index: 1000;
-            transition: box-shadow 0.3s ease;
-            background: #0f1011;
-        }
-
-        .token-table thead.sticky {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .token-table thead th {
-            padding: 10px 16px;
-            text-align: left;
-            color: var(--text-gray);
-            font-weight: normal;
-            border-bottom: 1px solid #3a3b42;
-            white-space: nowrap;
-            height: 20px;
-            background: #0f1011;
-        }
-
-        /* 数据行样式 */
-        .token-table tbody td {
-            padding: 8px 16px;
-            white-space: nowrap;
-            height: 20px;
-            line-height: 1.2;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        /* 确保表头在固定时的圆角 */
-        .token-table thead.sticky th:first-child {
-            border-top-left-radius: 0;
-        }
-
-        .token-table thead.sticky th:last-child {
-            border-top-right-radius: 0;
-        }
-
-        /* 滚动条样式 */
-        .token-table-container::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        .token-table-container::-webkit-scrollbar-track {
-            background: #0f1011;
-        }
-
-        .token-table-container::-webkit-scrollbar-thumb {
-            background: #2c2d33;
-            border-radius: 4px;
-        }
-
-        /* 列宽设置 */
-        .col-token { width: 180px; }
-        .col-age { width: 80px; }
-        .col-liq-mc { width: 140px; }
-        .col-holders { width: 100px; }
-        .col-txs { width: 120px; }
-        .col-volume { width: 120px; }
-        .col-price { width: 100px; }
-        .col-change { width: 90px; }
-
-        /* 表格包装器 */
-        .token-table-wrapper {
-            width: 100%;
-            max-width: 1400px;
-            margin: 24px auto;
-            position: relative;
-        }
-
-        /* 表格容器 */
-        .token-table-container {
+            max-width: 1400px;  /* 与容器最大宽度一致 */
+            margin: 24px auto;  /* 居中对齐 */
             background: #0f1011;
             border: 2px solid #3a3b42;
             border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0 2px;
         }
 
-        /* 表格基础样式 */
+        /* 响应式布局 */
+        @media (max-width: 1440px) {
+            .container,
+            .token-table-container {
+                max-width: 95%;
+            }
+        }
+
+        /* 保持其他样式不变 */
+        .token-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .token-info,
+        .tx-count-cell,
+        .liq-mc-cell {
+            gap: 2px;
+        }
+
+        .token-name {
+            margin-bottom: 2px;
+        }
+
+        .table-container {
+            position: relative;
+            margin: 24px 0;
+            background: #0f1011;
+            border: 2px solid #3a3b42;
+            border-radius: 12px;
+            overflow: visible; /* 允许表头溢出 */
+        }
+
         .token-table {
             width: 100%;
             border-collapse: separate;
@@ -961,102 +979,48 @@
             font-size: 14px;
         }
 
-        /* 表头样式 */
+        /* 表头容器 */
         .token-table thead {
             position: sticky;
-            top: 64px; /* 顶部导航栏高度 */
+            top: 64px; /* 导航栏高度 */
             z-index: 100;
             background: #0f1011;
-            transition: box-shadow 0.3s ease;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            transform: translateY(0);
+            will-change: transform;
         }
 
+        /* 表头固定时的样式 */
         .token-table thead.sticky {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
+        /* 表头单元格样式 */
         .token-table th {
             padding: 10px 16px;
             text-align: left;
             color: var(--text-gray);
             font-weight: normal;
             border-bottom: 1px solid #3a3b42;
-            white-space: nowrap;
-            height: 20px;
             background: #0f1011;
+            white-space: nowrap;
         }
 
         /* 数据行样式 */
         .token-table td {
             padding: 8px 16px;
-            white-space: nowrap;
-            height: 20px;
-            line-height: 1.2;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            white-space: nowrap;
         }
 
-        /* 最后一行不需要边框 */
+        /* 确保最后一行没有边框 */
         .token-table tr:last-child td {
             border-bottom: none;
         }
 
-        /* 鼠标悬停效果 */
-        .token-table tbody tr:hover {
-            background-color: #1a1b1f;
-        }
-
-        .page-content {
-            width: 100%;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
+        /* 添加平滑滚动 */
         .table-container {
-            margin: 24px 0;
-            background: #0f1011;
-            border: 2px solid #3a3b42;
-            border-radius: 12px;
-            overflow: visible;
-            position: relative;
-        }
-
-        .token-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 14px;
-        }
-
-        /* 表头样式 */
-        .token-table thead {
-            position: relative; /* 初始状态 */
-            background: #0f1011;
-            transition: all 0.3s ease;
-        }
-
-        .token-table thead.sticky {
-            position: fixed;
-            top: 64px; /* 顶部导航栏高度 */
-            left: 50%;
-            transform: translateX(-50%);
-            width: inherit;
-            max-width: inherit;
-            background: #0f1011;
-            z-index: 100;
-            border-bottom: 1px solid #3a3b42;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        /* 表头占位符 */
-        .header-placeholder {
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .header-placeholder.active {
-            visibility: visible;
-            opacity: 1;
+            scroll-behavior: smooth;
         }
     </style>
 </head>
@@ -1088,112 +1052,724 @@
         </div>
     </nav>
 
-    <div class="main-content">
-        <div class="table-wrapper">
-            <table class="token-table">
-                <thead>
-                    <tr>
-                        <th>Token</th>
-                        <th>Age</th>
-                        <th>Liq $ / MC $</th>
-                        <th>Holders</th>
-                        <th>24h TXs</th>
-                        <th>24h Vol $</th>
-                        <th>Price</th>
-                        <th>1m%</th>
-                        <th>5m%</th>
-                        <th>1h%</th>
-                    </tr>
-                </thead>
-                <tbody id="tokenTableBody">
-                    <!-- 数据行由 JavaScript 动态生成 -->
-                </tbody>
-            </table>
+    <div class="content">
+        <div class="rankings-section">
+            <!-- 聪明钱排行榜 -->
+            <div class="ranking-card smart-money" onclick="navigateTo('/rankings/smart-money')">
+                <div class="ranking-title">
+                    <div class="ranking-icon">🦊</div>
+                    Smart Money Rankings
+                </div>
+                <p class="ranking-description">Top 100 profitable wallets with highest win rates</p>
+                <div class="ranking-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">94.5%</div>
+                        <div class="stat-label">Avg Win Rate</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">$2.1M</div>
+                        <div class="stat-label">Total Profit</div>
+                    </div>
+                </div>
+                <div class="ranking-footer">
+                    <div class="live-status">
+                        <span class="live-indicator"></span>
+                        Live Tracking
+                    </div>
+                    <span class="view-more">
+                        View Rankings
+                        <span class="arrow-icon">→</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- 快速上涨Token排行榜 -->
+            <div class="ranking-card rising-tokens" onclick="navigateTo('/rankings/rising-tokens')">
+                <div class="ranking-title">
+                    <div class="ranking-icon">📈</div>
+                    Rising Stars
+                </div>
+                <p class="ranking-description">Top 100 tokens with highest market cap growth</p>
+                <div class="ranking-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">+425%</div>
+                        <div class="stat-label">Avg Growth</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">24H</div>
+                        <div class="stat-label">Time Frame</div>
+                    </div>
+                </div>
+                <div class="ranking-footer">
+                    <div class="live-status">
+                        <span class="live-indicator"></span>
+                        Real-time Updates
+                    </div>
+                    <span class="view-more">
+                        View Rankings
+                        <span class="arrow-icon">→</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- 新Token排行榜 -->
+            <div class="ranking-card new-tokens" onclick="navigateTo('/rankings/new-tokens')">
+                <div class="ranking-title">
+                    <div class="ranking-icon">🆕</div>
+                    New Listings
+                </div>
+                <p class="ranking-description">Latest 100 tokens created on Solana</p>
+                <div class="ranking-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">156</div>
+                        <div class="stat-label">Today's New</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">$5.2M</div>
+                        <div class="stat-label">Total MCap</div>
+                    </div>
+                </div>
+                <div class="ranking-footer">
+                    <div class="live-status">
+                        <span class="live-indicator"></span>
+                        Auto Refresh
+                    </div>
+                    <span class="view-more">
+                        View Rankings
+                        <span class="arrow-icon">→</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="header">
+                <h1>Solana Smart Money</h1>
+                <div class="filters">
+                    <div class="filter-dropdown">
+                        <button class="filter-button" onclick="toggleDropdown()">
+                            <span id="current-filter">≥ $50K</span>
+                        </button>
+                        <div id="marketCapDropdown" class="dropdown-content">
+                            <a class="dropdown-item" onclick="changeMarketCap('10k')">≥ $10K</a>
+                            <a class="dropdown-item" onclick="changeMarketCap('50k')">≥ $50K</a>
+                            <a class="dropdown-item" onclick="changeMarketCap('150k')">≥ $150K</a>
+                            <a class="dropdown-item" onclick="changeMarketCap('500k')">≥ $500K</a>
+                            <a class="dropdown-item" onclick="changeMarketCap('1m')">≥ $1M</a>
+                        </div>
+                    </div>
+                    <div class="time-filters">
+                        <button onclick="changeTimeframe('1m')" class="active">1m</button>
+                        <button onclick="changeTimeframe('5m')">5m</button>
+                        <button onclick="changeTimeframe('1h')">1h</button>
+                        <button onclick="changeTimeframe('6h')">6h</button>
+                        <button onclick="changeTimeframe('24h')">24h</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="token-table-container">
+                <table class="token-table">
+                    <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th class="sortable" data-sort="age">
+                                Age
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable double-sort">
+                                <div class="sort-header">
+                                    <span class="sort-item" data-sort="liquidity">
+                                        Liq $
+                                        <div class="sort-icons">
+                                            <span class="sort-icon up">▲</span>
+                                            <span class="sort-icon down">▼</span>
+                                        </div>
+                                    </span>
+                                    /
+                                    <span class="sort-item" data-sort="marketCap">
+                                        MC $
+                                        <div class="sort-icons">
+                                            <span class="sort-icon up">▲</span>
+                                            <span class="sort-icon down">▼</span>
+                                        </div>
+                                    </span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="holders">
+                                Holders
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="txCount24h">
+                                24h TXs
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="volume24h" data-default-sort="desc">
+                                24h Vol $
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down active">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="price">
+                                Price
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="change1m">
+                                1m%
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="change5m">
+                                5m%
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                            <th class="sortable" data-sort="change1h">
+                                1h%
+                                <div class="sort-icons">
+                                    <span class="sort-icon up">▲</span>
+                                    <span class="sort-icon down">▼</span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="token-list">
+                        <!-- 动态填充数据 -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
+        let currentMarketCap = '50k';
+
+        function toggleDropdown() {
+            document.getElementById('marketCapDropdown').classList.toggle('show');
+        }
+
+        // 点击其他地方关闭下拉菜单
+        window.onclick = function(event) {
+            if (!event.target.matches('.filter-button')) {
+                const dropdowns = document.getElementsByClassName('dropdown-content');
+                for (const dropdown of dropdowns) {
+                    if (dropdown.classList.contains('show')) {
+                        dropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        async function changeMarketCap(value) {
+            currentMarketCap = value;
+            document.getElementById('current-filter').textContent = `≥ $${value.toUpperCase()}`;
+            document.getElementById('marketCapDropdown').classList.remove('show');
+            await fetchTokens();
+        }
+
+        async function fetchTokens() {
+            try {
+                // 显示加载状态
+                document.getElementById('token-list').innerHTML = '<tr><td colspan="9">Loading...</td></tr>';
+                
+                const response = await fetch(`/api/tokens/top?marketCap=${currentMarketCap}&limit=200`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                if (!data.tokens || !Array.isArray(data.tokens)) {
+                    throw new Error('Invalid data format');
+                }
+
+                console.log('Received tokens:', data.tokens.length); // 调试日志
+                updateTokenList(data.tokens);
+            } catch (error) {
+                console.error('Error fetching tokens:', error);
+                document.getElementById('token-list').innerHTML = 
+                    `<tr><td colspan="9">Error loading data: ${error.message}</td></tr>`;
+            }
+        }
+
+        function updateTokenList(tokens) {
+            const tokenList = document.getElementById('token-list');
+            tokenList.innerHTML = tokens.map(token => `
+                <tr>
+                    <td>
+                        <div class="token-cell">
+                            <div class="token-icon">
+                                <img src="${token.iconUrl || 'default-token-icon.png'}" 
+                                     alt="${token.symbol}"
+                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\'%3E%3Ccircle cx=\'12\' cy=\'12\' r=\'12\' fill=\'%232c2d33\'/%3E%3C/svg%3E'">
+                            </div>
+                            <div class="token-info">
+                                <div class="token-name">${token.symbol}</div>
+                                <div class="token-address" title="${token.address || ''}">
+                                    ${formatAddress(token.address)}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="age-value">${formatAge(token.createdAt)}</td>
+                    <td>
+                        <div class="liq-mc-cell">
+                            <div>${formatNumberWithTier(token.liquidity, { isDualPrimary: true })}</div>
+                            <div>${formatNumberWithTier(token.marketCap)}</div>
+                        </div>
+                    </td>
+                    <td>${formatNumber(token.holders)}</td>
+                    <td>
+                        <div class="tx-count-cell">
+                            <div class="dual-value-primary">${formatNumber(token.txCount24h.total)}</div>
+                            <div class="split-txs">
+                                <span class="${getValueTierClass(token.txCount24h.buy)}">
+                                    ${formatNumber(token.txCount24h.buy)}
+                                </span>
+                                <span class="tx-separator">/</span>
+                                <span class="${getValueTierClass(token.txCount24h.sell)}">
+                                    ${formatNumber(token.txCount24h.sell)}
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="${getValueTierClass(token.volume24h)}">
+                            $${formatNumber(token.volume24h)}
+                        </div>
+                    </td>
+                    <td class="price-value">${formatPrice(token.price)}</td>
+                    <td class="price-change ${token.change1m > 0 ? 'positive' : 'negative'}">
+                        ${formatPercent(token.change1m)}
+                    </td>
+                    <td class="price-change ${token.change5m > 0 ? 'positive' : 'negative'}">
+                        ${formatPercent(token.change5m)}
+                    </td>
+                    <td class="price-change ${token.change1h > 0 ? 'positive' : 'negative'}">
+                        ${formatPercent(token.change1h)}
+                    </td>
+                </tr>
+            `).join('');
+
+            // 添加调试日志
+            console.log('First token data:', tokens[0]);
+        }
+
+        function formatNumber(value) {
+            if (!value && value !== 0) return '-';
+            if (value >= 1_000_000) {
+                return `${(value / 1_000_000).toFixed(1)}M`;
+            }
+            if (value >= 1_000) {
+                return `${(value / 1_000).toFixed(1)}K`;
+            }
+            return value.toFixed(2);
+        }
+
+        function formatPrice(price) {
+            if (!price && price !== 0) return '-';
+            if (price < 0.00001) {
+                return '$' + price.toExponential(2);
+            }
+            if (price < 0.01) {
+                return '$' + price.toFixed(6);
+            }
+            return '$' + price.toFixed(2);
+        }
+
+        function formatAge(timestamp) {
+            if (!timestamp) return '-';
+            const now = new Date();
+            const diff = now - new Date(timestamp);
+            const hours = diff / (1000 * 60 * 60);
+            
+            if (hours < 24) {
+                return `${Math.floor(hours)}h`;
+            }
+            return `${Math.floor(hours / 24)}d`;
+        }
+
+        function changeTimeframe(timeframe) {
+            currentTimeframe = timeframe;
+            document.querySelectorAll('.time-filters button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`button[onclick="changeTimeframe('${timeframe}')"]`)
+                .classList.add('active');
+            fetchTokens();
+        }
+
+        // 添加键盘快捷键支持
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                document.querySelector('.search-input').focus();
+            }
+        });
+
+        // 初始加载
+        fetchTokens();
+        // 每分钟刷新一次
+        setInterval(fetchTokens, 60000);
+
+        function navigateTo(path) {
+            // 临时实现 - 后续替换为实际的路由逻辑
+            console.log(`Navigating to: ${path}`);
+        }
+
+        let currentSort = {
+            column: 'volume24h',
+            direction: 'desc'
+        };
+
+        let tokenData = []; // 存储原始数据
+
+        function initSorting() {
+            const headers = document.querySelectorAll('.sortable');
+            headers.forEach(header => {
+                if (header.classList.contains('double-sort')) {
+                    // 处理双排序列
+                    const sortItems = header.querySelectorAll('.sort-item');
+                    sortItems.forEach(item => {
+                        const icons = item.querySelectorAll('.sort-icon');
+                        icons.forEach(icon => {
+                            icon.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                const column = item.dataset.sort;
+                                const isUp = icon.classList.contains('up');
+                                const direction = isUp ? 'asc' : 'desc';
+                                
+                                // 重置所有图标
+                                document.querySelectorAll('.sort-icon').forEach(i => 
+                                    i.classList.remove('active'));
+                                
+                                // 激活当前图标
+                                icon.classList.add('active');
+                                
+                                // 更新排序状态
+                                currentSort = { column, direction };
+                                
+                                // 执行排序
+                                sortTokens();
+                            });
+                        });
+                    });
+                } else {
+                    // 处理普通排序列
+                    const icons = header.querySelectorAll('.sort-icon');
+                    icons.forEach(icon => {
+                        icon.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const column = header.dataset.sort;
+                            const isUp = icon.classList.contains('up');
+                            const direction = isUp ? 'asc' : 'desc';
+                            
+                            // 重置所有图标
+                            document.querySelectorAll('.sort-icon').forEach(i => i.classList.remove('active'));
+                            
+                            // 激活当前图标
+                            icon.classList.add('active');
+                            
+                            // 更新排序状态
+                            currentSort = { column, direction };
+                            
+                            // 执行排序
+                            sortTokens();
+                        });
+                    });
+
+                    // 设置默认排序
+                    if (header.dataset.defaultSort) {
+                        const direction = header.dataset.defaultSort;
+                        const icon = header.querySelector(`.sort-icon.${direction === 'asc' ? 'up' : 'down'}`);
+                        icon.classList.add('active');
+                    }
+                }
+            });
+        }
+
+        function sortTokens() {
+            const sortedTokens = [...tokenData].sort((a, b) => {
+                let aVal = a[currentSort.column];
+                let bVal = b[currentSort.column];
+                
+                // 特殊处理 age 字段
+                if (currentSort.column === 'age') {
+                    aVal = new Date(a.createdAt).getTime();
+                    bVal = new Date(b.createdAt).getTime();
+                }
+                
+                // 特殊处理 txCount24h 字段
+                if (currentSort.column === 'txCount24h') {
+                    aVal = aVal.total;
+                    bVal = bVal.total;
+                }
+                
+                if (aVal === bVal) return 0;
+                
+                const modifier = currentSort.direction === 'asc' ? 1 : -1;
+                return aVal > bVal ? modifier : -modifier;
+            });
+
+            updateTokenList(sortedTokens);
+        }
+
+        async function fetchTokens() {
+            try {
+                const response = await fetch('/api/tokens/top');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                
+                console.log('Fetched token data:', data);
+                
+                tokenData = data.tokens;
+                sortTokens();
+            } catch (error) {
+                console.error('Error fetching tokens:', error);
+                document.getElementById('token-list').innerHTML = 
+                    `<tr><td colspan="10">Error loading data: ${error.message}</td></tr>`;
+            }
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initSorting();
+            fetchTokens();
+            // 每分钟刷新一次
+            setInterval(fetchTokens, 60000);
+        });
+
+        // 添加数值等级判断函数
+        function getValueTierClass(value) {
+            if (!value && value !== 0) return 'value-tier-1';
+            if (value >= 1000000000) return 'value-tier-5';  // > 1B
+            if (value >= 20000000) return 'value-tier-4';    // > 20M
+            if (value >= 1000000) return 'value-tier-3';     // > 1M
+            if (value >= 50000) return 'value-tier-2';       // > 50K
+            return 'value-tier-1';                           // < 50K
+        }
+
+        // 修改数值格式化和显示函数
+        function formatNumberWithTier(value, options = {}) {
+            const {
+                ignoreColor = false,
+                isDualPrimary = false,
+                isSpecialField = false
+            } = options;
+
+            const formattedNumber = formatNumber(value);
+            
+            if (ignoreColor || isSpecialField) {
+                return formattedNumber;
+            }
+
+            const tierClass = isDualPrimary ? 'dual-value-primary' : getValueTierClass(value);
+            return `<span class="${tierClass}">${formattedNumber}</span>`;
+        }
+
+        function updateTokenList(tokens) {
+            const tokenList = document.getElementById('token-list');
+            tokenList.innerHTML = tokens.map(token => `
+                <tr>
+                    <td>
+                        <div class="token-cell">
+                            <div class="token-icon">
+                                <img src="${token.iconUrl || 'default-token-icon.png'}" 
+                                     alt="${token.symbol}"
+                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\'%3E%3Ccircle cx=\'12\' cy=\'12\' r=\'12\' fill=\'%232c2d33\'/%3E%3C/svg%3E'">
+                            </div>
+                            <div class="token-info">
+                                <div class="token-name">${token.symbol}</div>
+                                <div class="token-address" title="${token.address || ''}">
+                                    ${formatAddress(token.address)}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="age-value">${formatAge(token.createdAt)}</td>
+                    <td>
+                        <div class="liq-mc-cell">
+                            <div>${formatNumberWithTier(token.liquidity, { isDualPrimary: true })}</div>
+                            <div>${formatNumberWithTier(token.marketCap)}</div>
+                        </div>
+                    </td>
+                    <td>${formatNumber(token.holders)}</td>
+                    <td>
+                        <div class="tx-count-cell">
+                            <div class="dual-value-primary">${formatNumber(token.txCount24h.total)}</div>
+                            <div class="split-txs">
+                                <span class="${getValueTierClass(token.txCount24h.buy)}">
+                                    ${formatNumber(token.txCount24h.buy)}
+                                </span>
+                                <span class="tx-separator">/</span>
+                                <span class="${getValueTierClass(token.txCount24h.sell)}">
+                                    ${formatNumber(token.txCount24h.sell)}
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="${getValueTierClass(token.volume24h)}">
+                            $${formatNumber(token.volume24h)}
+                        </div>
+                    </td>
+                    <td class="price-value">${formatPrice(token.price)}</td>
+                    <td class="price-change ${token.change1m > 0 ? 'positive' : 'negative'}">
+                        ${formatPercent(token.change1m)}
+                    </td>
+                    <td class="price-change ${token.change5m > 0 ? 'positive' : 'negative'}">
+                        ${formatPercent(token.change5m)}
+                    </td>
+                    <td class="price-change ${token.change1h > 0 ? 'positive' : 'negative'}">
+                        ${formatPercent(token.change1h)}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 添加百分比格式化函数
+        function formatPercent(value) {
+            if (!value && value !== 0) return '-';
+            const sign = value > 0 ? '+' : '';
+            return `${sign}${value.toFixed(1)}%`;
+        }
+
+        // 修改数值格式化函数
+        function formatNumber(value) {
+            if (!value && value !== 0) return '-';
+            if (value >= 1_000_000_000) {
+                return `${(value / 1_000_000_000).toFixed(1)}B`;
+            }
+            if (value >= 1_000_000) {
+                return `${(value / 1_000_000).toFixed(1)}M`;
+            }
+            if (value >= 1_000) {
+                return `${(value / 1_000).toFixed(1)}K`;
+            }
+            return value.toFixed(2);
+        }
+
+        function formatPrice(price) {
+            if (!price && price !== 0) return '-';
+            if (price < 0.00001) {
+                return '$' + price.toExponential(2);
+            }
+            if (price < 0.01) {
+                return '$' + price.toFixed(6);
+            }
+            return '$' + price.toFixed(2);
+        }
+
+        // 修改地址格式化函数，添加错误处
+        function formatAddress(address) {
+            if (!address) return 'N/A';
+            try {
+                return `${address.slice(0, 5)}...${address.slice(-3)}`;
+            } catch (error) {
+                console.error('Error formatting address:', error);
+                return 'N/A';
+            }
+        }
+
+        // 更新样式，移除不需要的双行样式
+        const style = document.createElement('style');
+        style.textContent = `
+            /* ... 保留之前的样式 ... */
+
+            .tx-count-cell .split-txs span:not(.tx-separator) {
+                transition: color 0.2s ease;
+            }
+
+            /* 移除之前的 volume-cell 相关样式 */
+
+            /* 确保分隔符保持原有颜色 */
+            .tx-separator {
+                color: var(--text-gray) !important;
+            }
+
+            /* 双行显示时第一行保持白色 */
+            .dual-value-primary {
+                color: #ffffff !important;
+                font-size: 1.1em;
+                font-weight: 500;
+            }
+        `;
+        document.head.appendChild(style);
+
         document.addEventListener('DOMContentLoaded', () => {
             const thead = document.querySelector('.token-table thead');
-            const wrapper = document.querySelector('.table-wrapper');
-            const navHeight = 64;
+            const container = document.querySelector('.table-container');
+            const navHeight = 64; // 导航栏高度
 
-            // 加载数据
-            async function loadTokens() {
-                try {
-                    const response = await fetch('/api/tokens/top');
-                    const data = await response.json();
-                    renderTokens(data.tokens);
-                } catch (error) {
-                    console.error('Error loading tokens:', error);
+            let lastScrollY = window.scrollY;
+            let ticking = false;
+
+            function updateHeader() {
+                const containerRect = container.getBoundingClientRect();
+                const headerHeight = thead.offsetHeight;
+                
+                // 计算触发点
+                const triggerPoint = navHeight;
+                const releasePoint = containerRect.top + headerHeight;
+
+                if (containerRect.top <= triggerPoint && 
+                    containerRect.bottom >= headerHeight + triggerPoint) {
+                    // 表头应该固定
+                    if (!thead.classList.contains('sticky')) {
+                        thead.classList.add('sticky');
+                        // 添加微小的延迟以确保过渡效果
+                        requestAnimationFrame(() => {
+                            thead.style.transform = 'translateY(0)';
+                        });
+                    }
+                } else {
+                    // 表头应该返回原位
+                    if (thead.classList.contains('sticky')) {
+                        thead.classList.remove('sticky');
+                        thead.style.transform = '';
+                    }
+                }
+
+                // 处理滚动方向
+                const scrollingUp = lastScrollY > window.scrollY;
+                lastScrollY = window.scrollY;
+
+                if (scrollingUp && thead.classList.contains('sticky')) {
+                    thead.style.transform = 'translateY(0)';
                 }
             }
 
-            // 渲染数据
-            function renderTokens(tokens) {
-                const tbody = document.getElementById('tokenTableBody');
-                tbody.innerHTML = tokens.map(token => `
-                    <tr>
-                        <td>${token.symbol}</td>
-                        <td>${formatAge(token.createdAt)}</td>
-                        <td>
-                            <div class="dual-value">
-                                <span>$${formatNumber(token.liquidity)}</span>
-                                <span>$${formatNumber(token.marketCap)}</span>
-                            </div>
-                        </td>
-                        <td>${formatNumber(token.holders)}</td>
-                        <td>
-                            <div class="dual-value">
-                                <span>${formatNumber(token.txCount24h.total)}</span>
-                                <span>${formatNumber(token.txCount24h.buy)}/${formatNumber(token.txCount24h.sell)}</span>
-                            </div>
-                        </td>
-                        <td>$${formatNumber(token.volume24h)}</td>
-                        <td>$${formatPrice(token.price)}</td>
-                        <td class="${token.change1m >= 0 ? 'positive' : 'negative'}">${formatPercent(token.change1m)}</td>
-                        <td class="${token.change5m >= 0 ? 'positive' : 'negative'}">${formatPercent(token.change5m)}</td>
-                        <td class="${token.change1h >= 0 ? 'positive' : 'negative'}">${formatPercent(token.change1h)}</td>
-                    </tr>
-                `).join('');
-            }
-
-            // 监听滚动
+            // 使用 requestAnimationFrame 优化滚动性能
             window.addEventListener('scroll', () => {
-                const wrapperRect = wrapper.getBoundingClientRect();
-                if (wrapperRect.top <= navHeight) {
-                    thead.classList.add('sticky');
-                } else {
-                    thead.classList.remove('sticky');
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        updateHeader();
+                        ticking = false;
+                    });
+                    ticking = true;
                 }
             }, { passive: true });
 
-            // 格式化函数
-            function formatNumber(num) {
-                if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
-                if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
-                if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-                return num.toFixed(1);
-            }
-
-            function formatPrice(price) {
-                return price.toFixed(2);
-            }
-
-            function formatPercent(value) {
-                return (value >= 0 ? '+' : '') + value.toFixed(1) + '%';
-            }
-
-            function formatAge(date) {
-                const days = Math.floor((new Date() - new Date(date)) / (1000 * 60 * 60 * 24));
-                return days + 'd';
-            }
-
-            // 初始加载数据
-            loadTokens();
-            
-            // 定期刷新数据
-            setInterval(loadTokens, 60000);
+            // 处理窗口大小变化
+            window.addEventListener('resize', () => {
+                updateHeader();
+            }, { passive: true });
         });
     </script>
 </body>
