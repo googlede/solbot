@@ -186,19 +186,22 @@
         }
 
         .token-table th {
-            padding: 16px;
+            padding: 10px 16px;
             text-align: left;
             color: var(--text-gray);
             font-weight: normal;
             border-bottom: 1px solid #3a3b42;
             white-space: nowrap;
             background: #0f1011;
+            height: 20px;
         }
 
         .token-table td {
-            padding: 16px;
+            padding: 8px 16px;
             border-bottom: none;
             white-space: nowrap;
+            height: 20px;
+            line-height: 1.2;
         }
 
         .token-table tr {
@@ -237,8 +240,8 @@
         }
 
         .token-icon {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             background: var(--card-bg);
         }
@@ -823,6 +826,24 @@
             background: var(--bg-dark);
             border-radius: 8px;
             overflow: hidden;
+        }
+
+        /* 调整双行内容的容器 */
+        .token-info,
+        .tx-count-cell,
+        .liq-mc-cell {
+            gap: 2px;  /* 减小双行内容之间的间距 */
+        }
+
+        /* 调整图标大小 */
+        .token-icon {
+            width: 20px;  /* 减小图标大小 */
+            height: 20px;
+        }
+
+        /* 调整双行文本的间距 */
+        .token-name {
+            margin-bottom: 2px;
         }
     </style>
 </head>
