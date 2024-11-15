@@ -651,7 +651,7 @@
         }
 
         .sell-txs {
-            color: #ea3943;  /* 卖出使用��色 */
+            color: #ea3943;  /* 卖出使用红色 */
         }
 
         .tx-separator {
@@ -906,22 +906,22 @@
             font-size: 14px;
         }
 
-        /* 表头初始状态 */
+        /* 表头容器 */
         .token-table thead {
-            position: relative;
+            position: relative; /* 初始状态 */
             background: #0f1011;
             transition: all 0.3s ease;
         }
 
         /* 表头固定状态 */
-        .token-table thead.is-fixed {
-            position: sticky;
+        .token-table thead.is-sticky {
+            position: sticky; /* 切换到sticky */
             top: 64px;
             z-index: 100;
             background: #0f1011;
         }
 
-        /* 表头单元格样式 */
+        /* 表头单元格 */
         .token-table th {
             padding: 10px 16px;
             text-align: left;
@@ -932,16 +932,24 @@
             border-bottom: 1px solid #3a3b42;
         }
 
-        /* 数据行样式 */
+        /* 数据单元格 */
         .token-table td {
             padding: 8px 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
             white-space: nowrap;
         }
 
-        /* 确保最后一行没有边框 */
-        .token-table tr:last-child td {
-            border-bottom: none;
+        /* 视觉效果 */
+        .token-table thead.is-sticky::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 1px;
+            background: #3a3b42;
+            opacity: 1;
+            transition: opacity 0.3s ease;
         }
     </style>
 </head>
@@ -1637,41 +1645,45 @@
             const thead = document.querySelector('.token-table thead');
             const container = document.querySelector('.table-container');
             const navHeight = 64;
+            let lastScrollY = window.scrollY;
 
-            // 1. 精确的位置计算
+            // 1. 计算表头状态
             function calculateHeaderState() {
                 const containerRect = container.getBoundingClientRect();
                 const theadRect = thead.getBoundingClientRect();
+                const scrollingDown = window.scrollY > lastScrollY;
                 
                 return {
                     containerTop: containerRect.top,
                     containerBottom: containerRect.bottom,
                     headerHeight: theadRect.height,
-                    // 关键：计算表头是否应该固定
+                    scrollingDown,
+                    // 关键：计算触发点
                     shouldStick: containerRect.top <= navHeight && 
                                containerRect.bottom >= (theadRect.height + navHeight),
-                    // 计算滚动进度
+                    // 计算过渡进度
                     progress: Math.max(0, Math.min(1, 
                         (navHeight - containerRect.top) / theadRect.height
                     ))
                 };
             }
 
-            // 2. 状态更新逻辑
+            // 2. 更新表头状态
             function updateHeaderState() {
                 const state = calculateHeaderState();
-                
+                lastScrollY = window.scrollY;
+
                 if (state.shouldStick) {
-                    if (!thead.classList.contains('is-fixed')) {
-                        thead.classList.add('is-fixed');
-                        
-                        // 添加阴影效果
-                        const shadowOpacity = state.progress * 0.2;
-                        thead.style.boxShadow = `0 2px 8px rgba(0, 0, 0, ${shadowOpacity})`;
+                    if (!thead.classList.contains('is-sticky')) {
+                        thead.classList.add('is-sticky');
                     }
+                    
+                    // 添加阴影效果
+                    const shadowOpacity = state.progress * 0.2;
+                    thead.style.boxShadow = `0 2px 8px rgba(0, 0, 0, ${shadowOpacity})`;
                 } else {
-                    if (thead.classList.contains('is-fixed')) {
-                        thead.classList.remove('is-fixed');
+                    if (thead.classList.contains('is-sticky')) {
+                        thead.classList.remove('is-sticky');
                         thead.style.boxShadow = 'none';
                     }
                 }
@@ -1689,28 +1701,8 @@
                 }
             }, { passive: true });
 
-            // 4. 确保初始状态正确
-            function initializeTable() {
-                // 重置表头状态
-                thead.classList.remove('is-fixed');
-                thead.style.boxShadow = 'none';
-                
-                // 更新状态
-                updateHeaderState();
-            }
-
-            // 5. 监听 DOM 变化
-            const observer = new MutationObserver(() => {
-                initializeTable();
-            });
-
-            observer.observe(container, {
-                childList: true,
-                subtree: true
-            });
-
-            // 6. 初始化
-            initializeTable();
+            // 4. 初始化
+            updateHeaderState();
         });
     </script>
 </body>
