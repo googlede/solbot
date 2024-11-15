@@ -506,6 +506,46 @@
         .sort-icon:hover {
             opacity: 1;
         }
+
+        .double-sort {
+            padding: 8px 16px !important;
+        }
+
+        .sort-header {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sort-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 2px 0;
+        }
+
+        .liq-mc-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .liq-value {
+            color: #00D1FF;  /* 流动性使用蓝色 */
+            font-weight: 500;
+        }
+
+        .mc-value {
+            color: #FFB347;  /* 市值使用橙色 */
+            font-weight: 500;
+        }
+
+        .ratio {
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-left: 4px;
+        }
     </style>
 </head>
 <body>
@@ -664,11 +704,22 @@
                                     <span class="sort-icon down">▼</span>
                                 </div>
                             </th>
-                            <th class="sortable" data-sort="liqMc">
-                                Liq $/MC $
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
+                            <th class="sortable double-sort">
+                                <div class="sort-header">
+                                    <div class="sort-item" data-sort="liquidity">
+                                        Liq $
+                                        <div class="sort-icons">
+                                            <span class="sort-icon up">▲</span>
+                                            <span class="sort-icon down">▼</span>
+                                        </div>
+                                    </div>
+                                    <div class="sort-item" data-sort="marketCap">
+                                        MC $
+                                        <div class="sort-icons">
+                                            <span class="sort-icon up">▲</span>
+                                            <span class="sort-icon down">▼</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </th>
                             <th class="sortable" data-sort="holders">
@@ -792,9 +843,9 @@
                     </td>
                     <td class="age-value">${formatAge(token.createdAt)}</td>
                     <td>
-                        <div class="volume-value">
-                            ${formatNumber(token.liquidity)}/${formatNumber(token.marketCap)}
-                            <span class="ratio">(${token.liqMcRatio}%)</span>
+                        <div class="liq-mc-cell">
+                            <div class="liq-value">$${formatNumber(token.liquidity)}</div>
+                            <div class="mc-value">$${formatNumber(token.marketCap)}</div>
                         </div>
                     </td>
                     <td>${formatNumber(token.holders)}</td>
@@ -888,33 +939,63 @@
         function initSorting() {
             const headers = document.querySelectorAll('.sortable');
             headers.forEach(header => {
-                const icons = header.querySelectorAll('.sort-icon');
-                icons.forEach(icon => {
-                    icon.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const column = header.dataset.sort;
-                        const isUp = icon.classList.contains('up');
-                        const direction = isUp ? 'asc' : 'desc';
-                        
-                        // 重置所有图标
-                        document.querySelectorAll('.sort-icon').forEach(i => i.classList.remove('active'));
-                        
-                        // 激活当前图标
-                        icon.classList.add('active');
-                        
-                        // 更新排序状态
-                        currentSort = { column, direction };
-                        
-                        // 执行排序
-                        sortTokens();
+                if (header.classList.contains('double-sort')) {
+                    // 处理双排序列
+                    const sortItems = header.querySelectorAll('.sort-item');
+                    sortItems.forEach(item => {
+                        const icons = item.querySelectorAll('.sort-icon');
+                        icons.forEach(icon => {
+                            icon.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                const column = item.dataset.sort;
+                                const isUp = icon.classList.contains('up');
+                                const direction = isUp ? 'asc' : 'desc';
+                                
+                                // 重置所有图标
+                                document.querySelectorAll('.sort-icon').forEach(i => 
+                                    i.classList.remove('active'));
+                                
+                                // 激活当前图标
+                                icon.classList.add('active');
+                                
+                                // 更新排序状态
+                                currentSort = { column, direction };
+                                
+                                // 执行排序
+                                sortTokens();
+                            });
+                        });
                     });
-                });
+                } else {
+                    // 处理普通排序列
+                    const icons = header.querySelectorAll('.sort-icon');
+                    icons.forEach(icon => {
+                        icon.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const column = header.dataset.sort;
+                            const isUp = icon.classList.contains('up');
+                            const direction = isUp ? 'asc' : 'desc';
+                            
+                            // 重置所有图标
+                            document.querySelectorAll('.sort-icon').forEach(i => i.classList.remove('active'));
+                            
+                            // 激活当前图标
+                            icon.classList.add('active');
+                            
+                            // 更新排序状态
+                            currentSort = { column, direction };
+                            
+                            // 执行排序
+                            sortTokens();
+                        });
+                    });
 
-                // 设置默认排序
-                if (header.dataset.defaultSort) {
-                    const direction = header.dataset.defaultSort;
-                    const icon = header.querySelector(`.sort-icon.${direction === 'asc' ? 'up' : 'down'}`);
-                    icon.classList.add('active');
+                    // 设置默认排序
+                    if (header.dataset.defaultSort) {
+                        const direction = header.dataset.defaultSort;
+                        const icon = header.querySelector(`.sort-icon.${direction === 'asc' ? 'up' : 'down'}`);
+                        icon.classList.add('active');
+                    }
                 }
             });
         }
