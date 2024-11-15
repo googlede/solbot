@@ -692,7 +692,7 @@
             color: #7a7f8c !important;
         }
 
-        /* 双行数值显示时的样式保持不��� */
+        /* 双行数值显示时的样式保持不变 */
         .dual-value-primary {
             color: #ffffff !important;
             font-size: 1.1em;
@@ -1081,6 +1081,76 @@
         .token-table thead.shadow {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
+
+        .main-content {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            min-height: 200vh; /* 确保有足够的滚动空间 */
+        }
+
+        .table-section {
+            margin: 24px 0;
+        }
+
+        .table-container {
+            background: #0f1011;
+            border: 2px solid #3a3b42;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .token-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+        }
+
+        .token-table thead {
+            position: relative; /* 初始状态 */
+            background: #0f1011;
+        }
+
+        .token-table thead.sticky {
+            position: fixed;
+            top: 64px; /* 顶部导航栏高度 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 44px); /* 考虑内边距和边框 */
+            max-width: 1356px;
+            z-index: 100;
+            background: #0f1011;
+            border-bottom: 1px solid #3a3b42;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .token-table th {
+            padding: 10px 16px;
+            text-align: left;
+            color: var(--text-gray);
+            font-weight: normal;
+            white-space: nowrap;
+            background: #0f1011;
+        }
+
+        .token-table td {
+            padding: 8px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            white-space: nowrap;
+        }
+
+        /* 表头占位符 */
+        .header-placeholder {
+            display: none;
+            visibility: hidden;
+        }
+
+        .header-placeholder.active {
+            display: table-header-group;
+        }
     </style>
 </head>
 <body>
@@ -1111,7 +1181,7 @@
         </div>
     </nav>
 
-    <div class="content">
+    <div class="main-content">
         <div class="rankings-section">
             <!-- 聪明钱排行榜 -->
             <div class="ranking-card smart-money" onclick="navigateTo('/rankings/smart-money')">
@@ -1201,54 +1271,27 @@
             </div>
         </div>
 
-        <div class="container">
-            <div class="header">
-                <h1>Solana Smart Money</h1>
-                <div class="filters">
-                    <div class="filter-dropdown">
-                        <button class="filter-button" onclick="toggleDropdown()">
-                            <span id="current-filter">≥ $50K</span>
-                        </button>
-                        <div id="marketCapDropdown" class="dropdown-content">
-                            <a class="dropdown-item" onclick="changeMarketCap('10k')">≥ $10K</a>
-                            <a class="dropdown-item" onclick="changeMarketCap('50k')">≥ $50K</a>
-                            <a class="dropdown-item" onclick="changeMarketCap('150k')">≥ $150K</a>
-                            <a class="dropdown-item" onclick="changeMarketCap('500k')">≥ $500K</a>
-                            <a class="dropdown-item" onclick="changeMarketCap('1m')">≥ $1M</a>
-                        </div>
-                    </div>
-                    <div class="time-filters">
-                        <button onclick="changeTimeframe('1m')" class="active">1m</button>
-                        <button onclick="changeTimeframe('5m')">5m</button>
-                        <button onclick="changeTimeframe('1h')">1h</button>
-                        <button onclick="changeTimeframe('6h')">6h</button>
-                        <button onclick="changeTimeframe('24h')">24h</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="page-content">
-                <div class="table-container">
-                    <table class="token-table">
-                        <thead>
-                            <tr>
-                                <th>Token</th>
-                                <th>Age</th>
-                                <th>Liq $ / MC $</th>
-                                <th>Holders</th>
-                                <th>24h TXs</th>
-                                <th>24h Vol $</th>
-                                <th>Price</th>
-                                <th>1m%</th>
-                                <th>5m%</th>
-                                <th>1h%</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- 数据行由 JavaScript 生成 -->
-                        </tbody>
-                    </table>
-                </div>
+        <div class="table-section">
+            <div class="table-container">
+                <table class="token-table">
+                    <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>Age</th>
+                            <th>Liq $ / MC $</th>
+                            <th>Holders</th>
+                            <th>24h TXs</th>
+                            <th>24h Vol $</th>
+                            <th>Price</th>
+                            <th>1m%</th>
+                            <th>5m%</th>
+                            <th>1h%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 数据行由 JavaScript 生成 -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -1260,7 +1303,7 @@
             document.getElementById('marketCapDropdown').classList.toggle('show');
         }
 
-        // 点击��地方关闭下拉菜单
+        // 点击地方关闭下拉菜单
         window.onclick = function(event) {
             if (!event.target.matches('.filter-button')) {
                 const dropdowns = document.getElementsByClassName('dropdown-content');
@@ -1693,7 +1736,7 @@
 
             /* 移除之前的 volume-cell 相关样式 */
 
-            /* 确保分隔符保持原有颜色 */
+            /* 确保分隔符保持原有��色 */
             .tx-separator {
                 color: var(--text-gray) !important;
             }
@@ -1709,22 +1752,54 @@
 
         // 添加表头固定效果
         document.addEventListener('DOMContentLoaded', () => {
-            const thead = document.querySelector('.token-table thead');
-            const container = document.querySelector('.table-container');
+            const table = document.querySelector('.token-table');
+            const thead = table.querySelector('thead');
+            const tableContainer = document.querySelector('.table-container');
             const navHeight = 64;
 
-            window.addEventListener('scroll', () => {
-                const containerRect = container.getBoundingClientRect();
-                const headerHeight = thead.offsetHeight;
+            // 创建表头占位符
+            const placeholder = thead.cloneNode(true);
+            placeholder.classList.add('header-placeholder');
+            thead.parentNode.insertBefore(placeholder, thead.nextSibling);
 
-                // 当表格接近顶部导航栏时添加阴影
+            let isSticky = false;
+            let lastScrollY = window.scrollY;
+
+            window.addEventListener('scroll', () => {
+                const containerRect = tableContainer.getBoundingClientRect();
+                const currentScrollY = window.scrollY;
+                const scrollingDown = currentScrollY > lastScrollY;
+
+                // 检查表头是否应该固定
                 if (containerRect.top <= navHeight && 
-                    containerRect.bottom >= headerHeight + navHeight) {
-                    thead.classList.add('shadow');
+                    containerRect.bottom >= thead.offsetHeight + navHeight) {
+                    
+                    if (!isSticky) {
+                        isSticky = true;
+                        thead.classList.add('sticky');
+                        placeholder.classList.add('active');
+                        
+                        // 设置表头宽度
+                        thead.style.width = `${table.offsetWidth}px`;
+                    }
                 } else {
-                    thead.classList.remove('shadow');
+                    if (isSticky) {
+                        isSticky = false;
+                        thead.classList.remove('sticky');
+                        placeholder.classList.remove('active');
+                        thead.style.width = '';
+                    }
                 }
+
+                lastScrollY = currentScrollY;
             }, { passive: true });
+
+            // 处理窗口大小变化
+            window.addEventListener('resize', () => {
+                if (isSticky) {
+                    thead.style.width = `${table.offsetWidth}px`;
+                }
+            });
         });
     </script>
 </body>
