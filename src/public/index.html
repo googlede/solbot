@@ -1021,12 +1021,8 @@
                             </div>
                             <div class="token-info">
                                 <div class="token-name">${token.symbol}</div>
-                                <div class="token-address">
-                                    <a href="https://solscan.io/token/${token.address}" 
-                                       target="_blank" 
-                                       title="${token.address}">
-                                        ${formatAddress(token.address)}
-                                    </a>
+                                <div class="token-address" title="${token.address || ''}">
+                                    ${formatAddress(token.address)}
                                 </div>
                             </div>
                         </div>
@@ -1066,6 +1062,9 @@
                     </td>
                 </tr>
             `).join('');
+
+            // 添加调试日志
+            console.log('First token data:', tokens[0]);
         }
 
         function formatNumber(value) {
@@ -1233,14 +1232,9 @@
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
                 
-                // 存储原始数据
-                tokenData = data.tokens.map(token => ({
-                    ...token,
-                    // 如果后端没有提供图标URL，可以使用默认图标
-                    iconUrl: token.iconUrl || `https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/${token.address}/logo.png`
-                }));
+                console.log('Fetched token data:', data);
                 
-                // 应用默认排序
+                tokenData = data.tokens;
                 sortTokens();
             } catch (error) {
                 console.error('Error fetching tokens:', error);
@@ -1297,12 +1291,8 @@
                             </div>
                             <div class="token-info">
                                 <div class="token-name">${token.symbol}</div>
-                                <div class="token-address">
-                                    <a href="https://solscan.io/token/${token.address}" 
-                                       target="_blank" 
-                                       title="${token.address}">
-                                        ${formatAddress(token.address)}
-                                    </a>
+                                <div class="token-address" title="${token.address || ''}">
+                                    ${formatAddress(token.address)}
                                 </div>
                             </div>
                         </div>
@@ -1411,10 +1401,15 @@
             });
         });
 
-        // 添加地址格式化函数
+        // 修改地址格式化函数，添加错误处理
         function formatAddress(address) {
-            if (!address) return '';
-            return `${address.slice(0, 5)}...${address.slice(-3)}`;
+            if (!address) return 'N/A';
+            try {
+                return `${address.slice(0, 5)}...${address.slice(-3)}`;
+            } catch (error) {
+                console.error('Error formatting address:', error);
+                return 'N/A';
+            }
         }
     </script>
 </body>
