@@ -690,7 +690,7 @@
             filter: brightness(1.2);
         }
 
-        /* 特殊字段的默认颜色保不变 */
+        /* 特殊字段的默认颜色保���变 */
         .age-value, .price-value {
             color: #7a7f8c !important;
         }
@@ -904,7 +904,7 @@
             width: 120px;
         }
 
-        /* 更新筛选面板样式 */
+        /* 更新筛选面板样��� */
         .filter-panel {
             position: absolute;
             display: none;
@@ -915,152 +915,25 @@
             border-radius: 8px;
             padding: 12px;
             min-width: 180px;
-            z-index: 1001;
+            z-index: 1010;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
-        /* 预设选项样式 */
-        .filter-option {
-            width: 100%;
-            padding: 8px 12px;
-            margin-bottom: 8px;
-            background: #2c2d33;
-            border: 1px solid #3a3b3f;
-            border-radius: 6px;
-            color: #ffffff;
-            cursor: pointer;
-            font-size: 14px;
-            text-align: center;
-            transition: all 0.2s;
+        .filter-panel.show {
+            display: block;
         }
 
-        .filter-option:hover {
-            background: #3a3b3f;
-        }
-
-        .filter-option.selected {
-            background: #4a4b4f;
-            border-color: #5a5b5f;
-        }
-
-        /* 自定义范围样式 */
-        .custom-range {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        .range-input {
-            position: relative;
-            flex: 1;
-        }
-
-        .range-input input {
-            width: 100%;
-            padding: 6px 24px 6px 8px;
-            background: #2c2d33;
-            border: 1px solid #3a3b3f;
-            border-radius: 4px;
-            color: #ffffff;
-            font-size: 13px;
-        }
-
-        .range-input input::placeholder {
-            color: #7a7f8c;
-        }
-
-        .range-input .unit {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #7a7f8c;
-            font-size: 12px;
-            pointer-events: none;
-        }
-
-        /* 按钮样式 */
-        .filter-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #2c2d33;
-        }
-
-        .filter-actions button {
-            padding: 6px 16px;
-            border-radius: 4px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .reset-btn {
-            background: transparent;
-            border: 1px solid #2c2d33;
-            color: #7a7f8c;
-        }
-
-        .apply-btn {
-            background: #3a3b3f;
-            border: none;
-            color: #ffffff;
-        }
-
-        .filter-actions button:hover {
-            filter: brightness(1.2);
-        }
-
-        /* 错误提示样式 */
-        .filter-error {
-            margin-top: 8px;
-            padding: 8px;
-            background: rgba(255, 77, 79, 0.1);
-            border-radius: 4px;
-            color: #ff4d4f;
-            font-size: 12px;
-        }
-
-        /* 更新表格容器样式 */
-        .table-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 1400px;
-            margin: 24px auto;
-            background: #0f1011;
-            border: 1px solid rgba(58, 59, 66, 0.5);
-            border-radius: 12px;
-            overflow: visible; /* 改为 visible 以显��筛选面板 */
-        }
-
-        /* 更新表头容器样式 */
-        .table-header {
-            position: relative;
-            width: 100%;
-            background: #0f1011;
-            z-index: 1000;
-        }
-
-        /* 表头固定状态 */
-        .table-header.is-sticky {
-            position: fixed;
-            top: 64px;
-            background: #0f1011;
-            border-bottom: 1px solid rgba(58, 59, 66, 0.3);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        /* 筛选图标样式 */
+        /* 筛选图标容器样式 */
         .filter-trigger {
+            position: relative;
             display: inline-flex;
             align-items: center;
             margin-left: 4px;
             cursor: pointer;
-            padding: 2px;
+            z-index: 1011;
         }
 
+        /* 筛选图标样式 */
         .filter-trigger svg {
             width: 12px;
             height: 12px;
@@ -1076,19 +949,57 @@
             color: #00d1ff;
         }
 
-        /* 调整排序和筛选图标的布局 */
-        .sort-header {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            white-space: nowrap;
-        }
-
+        /* 更新筛选相关样式 */
         .sort-item {
+            position: relative;
             display: inline-flex;
             align-items: center;
             gap: 2px;
-            position: relative; /* 添加相对定位用于筛选面板定位 */
+        }
+
+        /* 更新筛选面板样式 */
+        .filter-panel {
+            position: absolute;
+            display: none;
+            top: calc(100% + 8px);
+            right: 0;
+            background: #1a1b1f;
+            border: 1px solid #2c2d33;
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 180px;
+            z-index: 1010;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .filter-panel.show {
+            display: block;
+        }
+
+        /* 筛选图标容器样式 */
+        .filter-trigger {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 4px;
+            cursor: pointer;
+            z-index: 1011;
+        }
+
+        /* 筛选图标样式 */
+        .filter-trigger svg {
+            width: 12px;
+            height: 12px;
+            color: #7a7f8c;
+            transition: color 0.2s;
+        }
+
+        .filter-trigger:hover svg {
+            color: #ffffff;
+        }
+
+        .filter-trigger.filter-active svg {
+            color: #00d1ff;
         }
     </style>
 </head>
@@ -1154,7 +1065,7 @@
             <!-- 速上涨Token排行榜 -->
             <div class="ranking-card rising-tokens" onclick="navigateTo('/rankings/rising-tokens')">
                 <div class="ranking-title">
-                    <div class="ranking-icon">📈</div>
+                    <div class="ranking-icon">��</div>
                     Rising Stars
                 </div>
                 <p class="ranking-description">Top 100 tokens with highest market cap growth</p>
@@ -2110,12 +2021,12 @@
             // 更新筛选图标点击处理
             document.querySelectorAll('.filter-trigger').forEach(trigger => {
                 const filterType = trigger.dataset.filterType;
-                const header = trigger.closest('th');
+                const sortItem = trigger.closest('.sort-item');
                 
                 // 创建并添加筛选面板
                 const config = filterPanels[filterType];
                 const panel = createFilterPanel(filterType, config);
-                header.appendChild(panel);
+                sortItem.appendChild(panel);
                 
                 // 设置点击事件
                 trigger.addEventListener('click', (e) => {
@@ -2128,12 +2039,9 @@
                         }
                     });
                     
-                    // 切换前筛选面板
+                    // 切换当前筛选面板
                     panel.classList.toggle('show');
                     trigger.classList.toggle('filter-active', panel.classList.contains('show'));
-                    
-                    // 阻止事件冒泡
-                    e.preventDefault();
                 });
                 
                 // 设置面板的输入验证
