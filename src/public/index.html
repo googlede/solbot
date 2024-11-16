@@ -920,14 +920,14 @@
         .filter-panel {
             display: none;
             position: absolute;
-            top: 100%;
-            left: 0;
+            top: calc(100% + 10px);
+            right: 0;
             background: #1a1b1f;
             border: 1px solid #2c2d33;
             border-radius: 8px;
             padding: 16px;
             min-width: 200px;
-            z-index: 1000;
+            z-index: 1001;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
@@ -1049,6 +1049,19 @@
             display: inline-flex;
             align-items: center;
             gap: 2px;
+        }
+
+        /* 添加相对定位到表头单元格 */
+        .token-table th {
+            position: relative;
+        }
+
+        /* 确保筛选图标容器可点击 */
+        .filter-trigger {
+            position: relative;
+            z-index: 1002;
+            padding: 4px;
+            margin-left: 4px;
         }
     </style>
 </head>
@@ -1851,14 +1864,13 @@
             };
 
             // 创建筛选面板 DOM
-            function createFilterPanel(type, options) {
+            function createFilterPanel(type, config) {
                 const panel = document.createElement('div');
                 panel.className = `filter-panel ${type}-filter`;
                 
-                // 构建面板 HTML 内容
                 const content = `
                     <div class="filter-section">
-                        ${options.map(opt => `
+                        ${config.options.map(opt => `
                             <div class="filter-option" data-value="${opt.value}">
                                 ${opt.label}
                             </div>
@@ -2033,22 +2045,19 @@
                 });
             }
 
-            // 初始化筛选面板
-            Object.entries(filterPanels).forEach(([type, config]) => {
-                const header = document.querySelector(`th[data-filter="${type}"]`);
-                const panel = createFilterPanel(type, config.options);
+            // 更新筛选图标点击处理
+            document.querySelectorAll('.filter-trigger').forEach(trigger => {
+                const filterType = trigger.dataset.filterType;
+                const header = trigger.closest('th');
+                
+                // 创建并添加筛选面板
+                const config = filterPanels[filterType];
+                const panel = createFilterPanel(filterType, config);
                 header.appendChild(panel);
                 
-                setupInputValidation(panel, type);
-            });
-
-            // 添加筛选图标点击处理
-            document.querySelectorAll('.filter-trigger').forEach(trigger => {
+                // 设置点击事件
                 trigger.addEventListener('click', (e) => {
-                    e.stopPropagation(); // 阻止事件冒泡
-                    const filterType = trigger.dataset.filterType;
-                    const header = trigger.closest('th');
-                    const panel = header.querySelector(`.filter-panel.${filterType}-filter`);
+                    e.stopPropagation();
                     
                     // 关闭其他筛选面板
                     document.querySelectorAll('.filter-panel.show').forEach(p => {
@@ -2059,10 +2068,14 @@
                     
                     // 切换当前筛选面板
                     panel.classList.toggle('show');
-                    
-                    // 更新图标状态
                     trigger.classList.toggle('filter-active', panel.classList.contains('show'));
+                    
+                    // 阻止事件冒泡
+                    e.preventDefault();
                 });
+                
+                // 设置面板的输入验证
+                setupInputValidation(panel, filterType);
             });
 
             // 点击外部关闭筛选面板
@@ -2093,10 +2106,9 @@
             }
         }
 
-        // 在 DOMContentLoaded 中初始化
+        // 确保在 DOM 加载完成后初始化
         document.addEventListener('DOMContentLoaded', () => {
             initializeFilters();
-            // ... 其他初始化代码 ...
         });
     </script>
 </body>
