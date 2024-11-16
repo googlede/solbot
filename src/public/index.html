@@ -1013,6 +1013,43 @@
         .filter-actions button:hover {
             filter: brightness(1.2);
         }
+
+        /* 添加筛选图标样式 */
+        .filter-trigger {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 4px;
+            color: #7a7f8c;
+            cursor: pointer;
+        }
+
+        .filter-trigger svg {
+            width: 12px;
+            height: 12px;
+            transition: color 0.2s;
+        }
+
+        .filter-trigger:hover svg {
+            color: #ffffff;
+        }
+
+        .filter-active svg {
+            color: #00d1ff;
+        }
+
+        /* 调整排序和筛选图标的布局 */
+        .sort-header {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .sort-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
     </style>
 </head>
 <body>
@@ -1180,6 +1217,11 @@
                                                 <span class="sort-icon up">▲</span>
                                                 <span class="sort-icon down">▼</span>
                                             </div>
+                                            <div class="filter-trigger" data-filter-type="liq">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M3 4h18M6 12h12M9 20h6"/>
+                                                </svg>
+                                            </div>
                                         </span>
                                         /
                                         <span class="sort-item" data-sort="marketCap" data-filter="mc">
@@ -1187,6 +1229,11 @@
                                             <div class="sort-icons">
                                                 <span class="sort-icon up">▲</span>
                                                 <span class="sort-icon down">▼</span>
+                                            </div>
+                                            <div class="filter-trigger" data-filter-type="mc">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M3 4h18M6 12h12M9 20h6"/>
+                                                </svg>
                                             </div>
                                         </span>
                                     </div>
@@ -1771,38 +1818,44 @@
             updateHeaderState();
         });
 
-        // 添加筛选功能相关代码
+        // 初始化筛选功能
         function initializeFilters() {
+            // 定义筛选面板配置
             const filterPanels = {
+                // 流动性筛选选项
                 liq: {
                     options: [
                         { value: '10k', label: '>$10K' },
                         { value: '100k', label: '>$100K' },
                         { value: '300k', label: '>$300K' }
                     ],
-                    customRange: true
+                    customRange: true // 允许自定义范围
                 },
+                // 市值筛选选项
                 mc: {
                     options: [
                         { value: '50k', label: '>$50K' },
                         { value: '100k', label: '>$100K' },
                         { value: '500k', label: '>$500K' }
                     ],
-                    customRange: true
+                    customRange: true // 允许自定义范围
                 }
             };
 
+            // 存储当前筛选状态
             let currentFilters = {
-                liq: null,
-                mc: null,
-                customLiq: { min: null, max: null },
-                customMc: { min: null, max: null }
+                liq: null, // 流动性筛选值
+                mc: null,  // 市值筛选值
+                customLiq: { min: null, max: null }, // 自定义流动性范围
+                customMc: { min: null, max: null }   // 自定义市值范围
             };
 
+            // 创建筛选面板 DOM
             function createFilterPanel(type, options) {
                 const panel = document.createElement('div');
                 panel.className = `filter-panel ${type}-filter`;
                 
+                // 构建面板 HTML 内容
                 const content = `
                     <div class="filter-section">
                         ${options.map(opt => `
@@ -1827,9 +1880,9 @@
                 return panel;
             }
 
-            // 添加数据验证函数
+            // 验证输入值
             function validateInput(value, type) {
-                // 移除非数字字符（保留小数点）
+                // 清理输入值,只保留数字和小数点
                 const cleanValue = value.replace(/[^\d.]/g, '');
                 
                 // 验证数字格式
@@ -1842,7 +1895,7 @@
 
                 const num = parseFloat(cleanValue);
 
-                // 验证范围
+                // 验证数值范围
                 if (num < 0) {
                     return {
                         isValid: false,
@@ -1863,11 +1916,12 @@
                 };
             }
 
-            // 验证范围逻辑
+            // 验证范围值
             function validateRange(min, max, type) {
                 const minVal = parseFloat(min);
                 const maxVal = parseFloat(max);
 
+                // 验证最小值不大于最大值
                 if (minVal && maxVal && minVal > maxVal) {
                     return {
                         isValid: false,
@@ -1892,7 +1946,7 @@
                 };
             }
 
-            // 添加输入处理和错误显示
+            // 设置输入验证
             function setupInputValidation(panel, type) {
                 const minInput = panel.querySelector('.min-value');
                 const maxInput = panel.querySelector('.max-value');
@@ -1900,24 +1954,26 @@
                 errorDisplay.className = 'filter-error';
                 panel.querySelector('.filter-section').appendChild(errorDisplay);
 
+                // 显示错误信息
                 function showError(message) {
                     errorDisplay.textContent = message;
                     errorDisplay.style.display = 'block';
-                    // 添加错误样式
                     minInput.classList.add('error');
                     maxInput.classList.add('error');
                 }
 
+                // 清除错误信息
                 function clearError() {
                     errorDisplay.style.display = 'none';
                     minInput.classList.remove('error');
                     maxInput.classList.remove('error');
                 }
 
-                // 实时输入验证
+                // 为输入框添加实时验证
                 [minInput, maxInput].forEach(input => {
                     input.addEventListener('input', (e) => {
                         clearError();
+                        // 验证输入值
                         const validation = validateInput(e.target.value, type);
                         if (!validation.isValid) {
                             showError(validation.error);
@@ -1936,7 +1992,7 @@
                     });
                 });
 
-                // Apply 按钮验证
+                // Apply 按钮点击验证
                 panel.querySelector('.apply-btn').addEventListener('click', () => {
                     clearError();
                     
@@ -1977,43 +2033,64 @@
                 });
             }
 
-            // 添加错误提示样式
-            const errorStyle = document.createElement('style');
-            errorStyle.textContent = `
-                .filter-error {
-                    display: none;
-                    color: #ff4d4f;
-                    font-size: 12px;
-                    margin-top: 8px;
-                    padding: 4px 8px;
-                    background: rgba(255, 77, 79, 0.1);
-                    border-radius: 4px;
-                }
-
-                .custom-range input.error {
-                    border-color: #ff4d4f;
-                }
-
-                .custom-range input.error:focus {
-                    box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
-                }
-            `;
-            document.head.appendChild(errorStyle);
-
-            // 初始化筛选面板时设置验证
+            // 初始化筛选面板
             Object.entries(filterPanels).forEach(([type, config]) => {
                 const header = document.querySelector(`th[data-filter="${type}"]`);
                 const panel = createFilterPanel(type, config.options);
                 header.appendChild(panel);
                 
                 setupInputValidation(panel, type);
-                
-                // 添加点击事件处理
-                header.addEventListener('click', (e) => {
-                    if (e.target.closest('.filter-panel')) return;
-                    toggleFilterPanel(type);
+            });
+
+            // 添加筛选图标点击处理
+            document.querySelectorAll('.filter-trigger').forEach(trigger => {
+                trigger.addEventListener('click', (e) => {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    const filterType = trigger.dataset.filterType;
+                    const header = trigger.closest('th');
+                    const panel = header.querySelector(`.filter-panel.${filterType}-filter`);
+                    
+                    // 关闭其他筛选面板
+                    document.querySelectorAll('.filter-panel.show').forEach(p => {
+                        if (p !== panel) {
+                            p.classList.remove('show');
+                        }
+                    });
+                    
+                    // 切换当前筛选面板
+                    panel.classList.toggle('show');
+                    
+                    // 更新图标状态
+                    trigger.classList.toggle('filter-active', panel.classList.contains('show'));
                 });
             });
+
+            // 点击外部关闭筛选面板
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.filter-trigger') && !e.target.closest('.filter-panel')) {
+                    document.querySelectorAll('.filter-panel.show').forEach(panel => {
+                        panel.classList.remove('show');
+                    });
+                    document.querySelectorAll('.filter-trigger.filter-active').forEach(trigger => {
+                        trigger.classList.remove('filter-active');
+                    });
+                }
+            });
+
+            // 更新筛选图标状态
+            function updateFilterIcon(type, hasFilter) {
+                const trigger = document.querySelector(`.filter-trigger[data-filter-type="${type}"]`);
+                if (trigger) {
+                    trigger.classList.toggle('filter-active', hasFilter);
+                }
+            }
+
+            // 应用筛选
+            function applyFilter(type, values) {
+                currentFilters[type] = values;
+                updateFilterIcon(type, values.min !== null || values.max !== null);
+                // ... 其他筛选逻辑 ...
+            }
         }
 
         // 在 DOMContentLoaded 中初始化
