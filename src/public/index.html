@@ -727,7 +727,7 @@
             border-radius: 2px;
         }
 
-        /* 更新图例颜�� */
+        /* 更新图例颜色 */
         .value-tiers-legend div:first-child .legend-color {
             background: #a64dff;  /* 更新图中的颜色 */
         }
@@ -873,32 +873,47 @@
             font-size: 14px;
         }
 
-        /* 表头样式 */
-        .token-table thead {
+        /* 表头容器 */
+        .table-header {
             position: relative;
+            width: 100%;
             background: #0f1011;
+            z-index: 100;
         }
 
-        /* 固定表头样式 */
-        .token-table thead.is-sticky {
+        /* 表头固定状态 */
+        .table-header.is-sticky {
             position: fixed;
             top: 64px;
-            left: auto;
-            right: auto;
-            z-index: 1000;
             background: #0f1011;
             border-bottom: 1px solid rgba(58, 59, 66, 0.3);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        /* 表头占位符 */
-        .thead-placeholder {
-            display: none;
+        /* 表格主体容器 */
+        .table-body {
             width: 100%;
+            overflow: auto;
         }
 
-        .thead-placeholder.active {
-            display: table-row;
+        /* 表格基础样式 */
+        .token-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+        }
+
+        /* 表头单元格样式 */
+        .token-table th {
+            padding: 10px 16px;
+            text-align: left;
+            color: var(--text-gray);
+            font-weight: normal;
+            white-space: nowrap;
+            background: #0f1011;
+            height: 20px;
+            border-bottom: 1px solid rgba(58, 59, 66, 0.3);
         }
     </style>
 </head>
@@ -1046,92 +1061,98 @@
                 </div>
             </div>
 
-            <div class="token-table-container">
-                <table class="token-table">
-                    <thead>
-                        <tr>
-                            <th>Token</th>
-                            <th class="sortable" data-sort="age">
-                                Age
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable double-sort">
-                                <div class="sort-header">
-                                    <span class="sort-item" data-sort="liquidity">
-                                        Liq $
-                                        <div class="sort-icons">
-                                            <span class="sort-icon up">▲</span>
-                                            <span class="sort-icon down">▼</span>
-                                        </div>
-                                    </span>
-                                    /
-                                    <span class="sort-item" data-sort="marketCap">
-                                        MC $
-                                        <div class="sort-icons">
-                                            <span class="sort-icon up">▲</span>
-                                            <span class="sort-icon down">▼</span>
-                                        </div>
-                                    </span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="holders">
-                                Holders
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="txCount24h">
-                                24h TXs
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="volume24h" data-default-sort="desc">
-                                24h Vol $
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down active">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="price">
-                                Price
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="change1m">
-                                1m%
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="change5m">
-                                5m%
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                            <th class="sortable" data-sort="change1h">
-                                1h%
-                                <div class="sort-icons">
-                                    <span class="sort-icon up">▲</span>
-                                    <span class="sort-icon down">▼</span>
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody id="token-list">
-                        <!-- 动态填充数据 -->
-                    </tbody>
-                </table>
+            <div class="table-wrapper">
+                <div class="table-header">
+                    <table class="token-table">
+                        <thead>
+                            <tr>
+                                <th>Token</th>
+                                <th class="sortable" data-sort="age">
+                                    Age
+                                    <div class="sort-icons">
+                                        <span class="sort-icon up">▲</span>
+                                        <span class="sort-icon down">▼</span>
+                                    </div>
+                                </th>
+                                <th class="sortable double-sort">
+                                    <div class="sort-header">
+                                        <span class="sort-item" data-sort="liquidity">
+                                            Liq $
+                                            <div class="sort-icons">
+                                                <span class="sort-icon up">▲</span>
+                                                <span class="sort-icon down">▼</span>
+                                            </div>
+                                        </span>
+                                        /
+                                        <span class="sort-item" data-sort="marketCap">
+                                            MC $
+                                            <div class="sort-icons">
+                                                <span class="sort-icon up">▲</span>
+                                                <span class="sort-icon down">▼</span>
+                                            </div>
+                                        </span>
+                                    </div>
+                                </th>
+                                <th class="sortable" data-sort="holders">
+                                    Holders
+                                    <div class="sort-icons">
+                                        <span class="sort-icon up">▲</span>
+                                        <span class="sort-icon down">▼</span>
+                                    </div>
+                                </th>
+                                <th class="sortable" data-sort="txCount24h">
+                                    24h TXs
+                                    <div class="sort-icons">
+                                        <span class="sort-icon up">▲</span>
+                                        <span class="sort-icon down">▼</span>
+                                    </div>
+                                </th>
+                                <th class="sortable" data-sort="volume24h" data-default-sort="desc">
+                                    24h Vol $
+                                    <div class="sort-icons">
+                                        <span class="sort-icon up">▲</span>
+                                        <span class="sort-icon down active">▼</span>
+                                    </div>
+                                </th>
+                                <th class="sortable" data-sort="price">
+                                    Price
+                                    <div class="sort-icons">
+                                        <span class="sort-icon up">▲</span>
+                                        <span class="sort-icon down">▼</span>
+                                    </div>
+                                </th>
+                                <th class="sortable" data-sort="change1m">
+                                    1m%
+                                    <div class="sort-icons">
+                                        <span class="sort-icon up">▲</span>
+                                        <span class="sort-icon down">▼</span>
+                                    </div>
+                                </th>
+                                <th class="sortable" data-sort="change5m">
+                                    5m%
+                                    <div class="sort-icons">
+                                        <span class="sort-icon up">▲</span>
+                                        <span class="sort-icon down">▼</span>
+                                    </div>
+                                </th>
+                                <th class="sortable" data-sort="change1h">
+                                    1h%
+                                    <div class="sort-icons">
+                                        <span class="sort-icon up">▲</span>
+                                        <span class="sort-icon down">▼</span>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+                <div class="table-body">
+                    <table class="token-table">
+                        <tbody id="token-list">
+                            <!-- 动态填充数据 -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -1591,65 +1612,37 @@
         document.head.appendChild(style);
 
         document.addEventListener('DOMContentLoaded', () => {
-            const thead = document.querySelector('.token-table thead');
-            const table = document.querySelector('.token-table');
-            const container = document.querySelector('.token-table-container');
+            const header = document.querySelector('.table-header');
+            const wrapper = document.querySelector('.table-wrapper');
             const navHeight = 64;
 
-            // 创建表头占位符
-            const placeholder = document.createElement('tr');
-            placeholder.className = 'thead-placeholder';
-            const headerCells = thead.querySelectorAll('th');
-            headerCells.forEach(() => {
-                const td = document.createElement('td');
-                placeholder.appendChild(td);
-            });
-            table.querySelector('tbody').insertBefore(placeholder, table.querySelector('tbody').firstChild);
-
             function updateHeaderState() {
-                const containerRect = container.getBoundingClientRect();
-                const tableRect = table.getBoundingClientRect();
-                const theadHeight = thead.offsetHeight;
+                const wrapperRect = wrapper.getBoundingClientRect();
+                const headerHeight = header.offsetHeight;
 
                 // 计算表头应该固定的条件
-                const shouldStick = containerRect.top <= navHeight && 
-                                  containerRect.bottom >= (theadHeight + navHeight);
+                const shouldStick = wrapperRect.top <= navHeight && 
+                                  wrapperRect.bottom >= (headerHeight + navHeight);
 
                 if (shouldStick) {
-                    if (!thead.classList.contains('is-sticky')) {
-                        // 设置表头宽度和位置
-                        thead.style.width = `${tableRect.width}px`;
-                        thead.style.left = `${tableRect.left}px`;
+                    if (!header.classList.contains('is-sticky')) {
+                        const wrapperWidth = wrapper.offsetWidth;
+                        const wrapperLeft = wrapper.getBoundingClientRect().left;
                         
-                        // 设置每个表头单元格的宽度
-                        const cells = thead.querySelectorAll('th');
-                        cells.forEach((cell, index) => {
-                            const width = headerCells[index].offsetWidth;
-                            cell.style.width = `${width}px`;
-                            placeholder.children[index].style.width = `${width}px`;
-                        });
-
-                        // 显示占位符并添加固定类
-                        placeholder.style.height = `${theadHeight}px`;
-                        placeholder.classList.add('active');
-                        thead.classList.add('is-sticky');
+                        // 设置表头宽度和位置
+                        header.style.width = `${wrapperWidth}px`;
+                        header.style.left = `${wrapperLeft}px`;
+                        header.classList.add('is-sticky');
+                        
+                        // 添加占位高度
+                        wrapper.style.paddingTop = `${headerHeight}px`;
                     }
                 } else {
-                    if (thead.classList.contains('is-sticky')) {
-                        // 移除固定状态
-                        thead.classList.remove('is-sticky');
-                        thead.style.width = '';
-                        thead.style.left = '';
-                        
-                        // 重置表头单元格宽度
-                        const cells = thead.querySelectorAll('th');
-                        cells.forEach(cell => {
-                            cell.style.width = '';
-                        });
-
-                        // 隐藏占位符
-                        placeholder.classList.remove('active');
-                        placeholder.style.height = '';
+                    if (header.classList.contains('is-sticky')) {
+                        header.classList.remove('is-sticky');
+                        header.style.width = '';
+                        header.style.left = '';
+                        wrapper.style.paddingTop = '';
                     }
                 }
             }
@@ -1668,10 +1661,11 @@
 
             // 监听窗口大小变化
             window.addEventListener('resize', () => {
-                if (thead.classList.contains('is-sticky')) {
-                    const tableRect = table.getBoundingClientRect();
-                    thead.style.width = `${tableRect.width}px`;
-                    thead.style.left = `${tableRect.left}px`;
+                if (header.classList.contains('is-sticky')) {
+                    const wrapperWidth = wrapper.offsetWidth;
+                    const wrapperLeft = wrapper.getBoundingClientRect().left;
+                    header.style.width = `${wrapperWidth}px`;
+                    header.style.left = `${wrapperLeft}px`;
                 }
             });
 
