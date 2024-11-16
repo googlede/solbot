@@ -915,10 +915,25 @@
 
         /* 表头固定状态 */
         .token-table thead.is-sticky {
-            position: sticky; /* 切换到sticky */
+            position: fixed;
             top: 64px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 48px);
+            max-width: 1400px;
             z-index: 100;
             background: #0f1011;
+            border-bottom: 1px solid #3a3b42;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 表头占位符 */
+        .token-table thead.is-sticky::before {
+            content: '';
+            display: block;
+            height: 100%;
+            width: 100%;
+            visibility: hidden;
         }
 
         /* 表头单元格 */
@@ -1643,53 +1658,55 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const thead = document.querySelector('.token-table thead');
-            const container = document.querySelector('.table-container');
+            const container = document.querySelector('.token-table-container');
             const navHeight = 64;
             let lastScrollY = window.scrollY;
-
-            // 1. 计算表头状态
-            function calculateHeaderState() {
-                const containerRect = container.getBoundingClientRect();
-                const theadRect = thead.getBoundingClientRect();
-                const scrollingDown = window.scrollY > lastScrollY;
-                
-                return {
-                    containerTop: containerRect.top,
-                    containerBottom: containerRect.bottom,
-                    headerHeight: theadRect.height,
-                    scrollingDown,
-                    // 关键：计算触发点
-                    shouldStick: containerRect.top <= navHeight && 
-                               containerRect.bottom >= (theadRect.height + navHeight),
-                    // 计算过渡进度
-                    progress: Math.max(0, Math.min(1, 
-                        (navHeight - containerRect.top) / theadRect.height
-                    ))
-                };
-            }
-
-            // 2. 更新表头状态
+            let headerHeight = thead.offsetHeight;
+            
             function updateHeaderState() {
-                const state = calculateHeaderState();
-                lastScrollY = window.scrollY;
-
-                if (state.shouldStick) {
+                const containerRect = container.getBoundingClientRect();
+                const scrollY = window.scrollY;
+                const containerTop = containerRect.top;
+                const containerBottom = containerRect.bottom;
+                
+                // 计算表头应该固定的条件
+                const shouldStick = containerTop <= navHeight && 
+                                  containerBottom >= (headerHeight + navHeight);
+                
+                if (shouldStick) {
                     if (!thead.classList.contains('is-sticky')) {
+                        // 添加占位符防止内容跳动
+                        container.style.paddingTop = `${headerHeight}px`;
                         thead.classList.add('is-sticky');
                     }
                     
-                    // 添加阴影效果
-                    const shadowOpacity = state.progress * 0.2;
-                    thead.style.boxShadow = `0 2px 8px rgba(0, 0, 0, ${shadowOpacity})`;
+                    // 处理到达容器底部的情况
+                    if (containerBottom <= (headerHeight + navHeight)) {
+                        const offset = containerBottom - (headerHeight + navHeight);
+                        thead.style.transform = `translateX(-50%) translateY(${offset}px)`;
+                    } else {
+                        thead.style.transform = 'translateX(-50%)';
+                    }
                 } else {
                     if (thead.classList.contains('is-sticky')) {
                         thead.classList.remove('is-sticky');
-                        thead.style.boxShadow = 'none';
+                        container.style.paddingTop = '0';
+                        thead.style.transform = '';
                     }
                 }
+                
+                lastScrollY = scrollY;
             }
-
-            // 3. 优化的滚动监听
+            
+            // 使用 ResizeObserver 监听容器大小变化
+            const resizeObserver = new ResizeObserver(() => {
+                headerHeight = thead.offsetHeight;
+                updateHeaderState();
+            });
+            
+            resizeObserver.observe(container);
+            
+            // 优化的滚动监听
             let ticking = false;
             window.addEventListener('scroll', () => {
                 if (!ticking) {
@@ -1700,8 +1717,8 @@
                     ticking = true;
                 }
             }, { passive: true });
-
-            // 4. 初始化
+            
+            // 初始化
             updateHeaderState();
         });
     </script>
