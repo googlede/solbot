@@ -908,58 +908,47 @@
         .filter-panel {
             position: absolute;
             display: none;
-            top: 100%;
+            top: calc(100% + 8px);
             right: 0;
             background: #1a1b1f;
             border: 1px solid #2c2d33;
             border-radius: 8px;
-            padding: 16px;
-            min-width: 240px;
+            padding: 12px;
+            min-width: 180px;
             z-index: 1001;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            margin-top: 8px;
         }
 
-        .filter-panel.show {
-            display: block;
-        }
-
-        .preset-options {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
+        /* 预设选项样式 */
         .filter-option {
+            width: 100%;
             padding: 8px 12px;
+            margin-bottom: 8px;
+            background: #2c2d33;
+            border: 1px solid #3a3b3f;
+            border-radius: 6px;
             color: #ffffff;
             cursor: pointer;
-            border-radius: 4px;
-            transition: background-color 0.2s;
             font-size: 14px;
+            text-align: center;
+            transition: all 0.2s;
         }
 
         .filter-option:hover {
-            background-color: #2c2d33;
+            background: #3a3b3f;
         }
 
         .filter-option.selected {
-            background-color: #3a3b3f;
+            background: #4a4b4f;
+            border-color: #5a5b5f;
         }
 
-        .range-divider {
-            margin: 16px 0 12px;
-            padding-top: 16px;
-            border-top: 1px solid #2c2d33;
-            color: #7a7f8c;
-            font-size: 12px;
-        }
-
+        /* 自定义范围样式 */
         .custom-range {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-top: 8px;
+            margin-top: 12px;
         }
 
         .range-input {
@@ -969,12 +958,16 @@
 
         .range-input input {
             width: 100%;
-            padding: 8px 24px 8px 8px;
+            padding: 6px 24px 6px 8px;
             background: #2c2d33;
             border: 1px solid #3a3b3f;
             border-radius: 4px;
             color: #ffffff;
-            font-size: 14px;
+            font-size: 13px;
+        }
+
+        .range-input input::placeholder {
+            color: #7a7f8c;
         }
 
         .range-input .unit {
@@ -984,36 +977,33 @@
             transform: translateY(-50%);
             color: #7a7f8c;
             font-size: 12px;
+            pointer-events: none;
         }
 
-        .range-separator {
-            color: #7a7f8c;
-            font-size: 14px;
-        }
-
+        /* 按钮样式 */
         .filter-actions {
             display: flex;
             justify-content: space-between;
-            margin-top: 16px;
-            padding-top: 16px;
+            margin-top: 12px;
+            padding-top: 12px;
             border-top: 1px solid #2c2d33;
         }
 
         .filter-actions button {
-            padding: 8px 16px;
+            padding: 6px 16px;
             border-radius: 4px;
             font-size: 13px;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .filter-actions .reset-btn {
+        .reset-btn {
             background: transparent;
             border: 1px solid #2c2d33;
             color: #7a7f8c;
         }
 
-        .filter-actions .apply-btn {
+        .apply-btn {
             background: #3a3b3f;
             border: none;
             color: #ffffff;
@@ -1042,7 +1032,7 @@
             background: #0f1011;
             border: 1px solid rgba(58, 59, 66, 0.5);
             border-radius: 12px;
-            overflow: visible; /* 改为 visible 以显示筛选面板 */
+            overflow: visible; /* 改为 visible 以显��筛选面板 */
         }
 
         /* 更新表头容器样式 */
@@ -1896,8 +1886,7 @@
                         { value: '10k', label: '>$10K' },
                         { value: '100k', label: '>$100K' },
                         { value: '300k', label: '>$300K' }
-                    ],
-                    customRange: true // 允许自定义范围
+                    ]
                 },
                 // 市值筛选选项
                 mc: {
@@ -1905,8 +1894,7 @@
                         { value: '50k', label: '>$50K' },
                         { value: '100k', label: '>$100K' },
                         { value: '500k', label: '>$500K' }
-                    ],
-                    customRange: true // 允许自定义范围
+                    ]
                 }
             };
 
@@ -1923,17 +1911,13 @@
                 const panel = document.createElement('div');
                 panel.className = `filter-panel ${type}-filter`;
                 
-                // 更新面板内容结构
                 const content = `
                     <div class="filter-section">
-                        <div class="preset-options">
-                            ${config.options.map(opt => `
-                                <div class="filter-option" data-value="${opt.value}">
-                                    ${opt.label}
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div class="range-divider">Custom Range</div>
+                        ${config.options.map(opt => `
+                            <div class="filter-option" data-value="${opt.value}">
+                                ${opt.label}
+                            </div>
+                        `).join('')}
                         <div class="custom-range">
                             <div class="range-input">
                                 <input type="text" placeholder="0" class="min-value">
@@ -1953,6 +1937,20 @@
                 `;
                 
                 panel.innerHTML = content;
+
+                // 添加预设选项点击事件
+                panel.querySelectorAll('.filter-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        // 移除其他选项的选中状态
+                        panel.querySelectorAll('.filter-option').forEach(opt => 
+                            opt.classList.remove('selected'));
+                        // 添加当前选项的选中状态
+                        option.classList.add('selected');
+                        // 清空自定义范围输入
+                        panel.querySelectorAll('input').forEach(input => input.value = '');
+                    });
+                });
+
                 return panel;
             }
 
@@ -2130,7 +2128,7 @@
                         }
                     });
                     
-                    // 切换��前筛选面板
+                    // 切换前筛选面板
                     panel.classList.toggle('show');
                     trigger.classList.toggle('filter-active', panel.classList.contains('show'));
                     
