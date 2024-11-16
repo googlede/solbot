@@ -804,6 +804,1635 @@
 ```
 </rewritten_file>
 
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Solana Smart Money</title>
+    <style>
+        :root {
+            --bg-dark: #0f1011;
+            --text-light: #ffffff;
+            --text-gray: #7a7f8c;
+            --border-color: #1c1e21;
+            --card-bg: #1a1b1f;
+            --search-bg: #1a1b1f;
+            --search-border: #2c2d33;
+            --search-focus: #3a3b3f;
+            --row-border: #1a1b1f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.5;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--bg-dark);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-right: 40px;
+            text-decoration: none;
+            color: var(--text-light);
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #FF6B6B, #FFB347);
+        }
+
+        .logo img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-light);
+            letter-spacing: 0.5px;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-gray);
+            display: flex;
+            align-items: center;
+        }
+
+        .keyboard-shortcut {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--search-border);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-gray);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 100px 12px 38px;
+            background: var(--search-bg);
+            border: 1px solid var(--search-border);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: var(--search-focus);
+            border-color: var(--text-gray);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-gray);
+        }
+
+        .content {
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+            padding: 0 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .time-filters {
+            display: flex;
+            gap: 8px;
+            padding: 10px 0;
+        }
+
+        .time-filters button {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-gray);
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .time-filters button.active {
+            background: var(--card-bg);
+            color: var(--text-light);
+            border-color: var(--text-gray);
+        }
+
+        .token-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+            background: #0f1011;
+        }
+
+        .token-table th {
+            padding: 10px 16px;
+            text-align: left;
+            color: var(--text-gray);
+            font-weight: normal;
+            border-bottom: 1px solid #3a3b42;
+            white-space: nowrap;
+            background: #0f1011;
+            height: 20px;
+        }
+
+        .token-table td {
+            padding: 8px 16px;
+            white-space: nowrap;
+            height: 20px;
+            line-height: 1.2;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .token-table tr {
+            transition: all 0.2s ease;
+        }
+
+        .token-table tr:hover {
+            background-color: #1a1b1f;
+            transform: translateZ(0);
+            box-shadow: 
+                0 1px 0 rgba(255, 255, 255, 0.07),
+                0 -1px 0 rgba(255, 255, 255, 0.07);
+        }
+
+        .token-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .token-table-container {
+            position: relative;
+            width: 100%;
+            max-width: 1400px;
+            margin: 24px auto;
+            background: #0f1011;
+            border: 1px solid rgba(58, 59, 66, 0.5);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transform: translateZ(0);
+        }
+
+        .token-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .token-info,
+        .tx-count-cell,
+        .liq-mc-cell {
+            gap: 2px;
+        }
+
+        .token-name {
+            margin-bottom: 2px;
+        }
+
+        .positive { color: var(--green); }
+        .negative { color: var(--red); }
+
+        .token-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .token-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--card-bg);
+        }
+
+        @media (max-width: 768px) {
+            .token-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        .filters {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .filter-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .filter-button {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            padding: 8px 32px 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            font-size: 14px;
+        }
+
+        .filter-button:after {
+            content: '▼';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: var(--text-gray);
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: var(--card-bg);
+            min-width: 120px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            z-index: 1;
+            margin-top: 4px;
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            color: var(--text-light);
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .dropdown-item:hover {
+            background: var(--border-color);
+        }
+
+        .rankings-section {
+            margin: 20px 0 40px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 0 20px;
+        }
+
+        .ranking-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ranking-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--text-gray);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .ranking-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FF6B6B, #FFB347);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .ranking-card:hover::before {
+            opacity: 1;
+        }
+
+        .ranking-card.smart-money::before {
+            background: linear-gradient(90deg, #00F5A0, #00D9F5);
+        }
+
+        .ranking-card.rising-tokens::before {
+            background: linear-gradient(90deg, #FF6B6B, #FFB347);
+        }
+
+        .ranking-card.new-tokens::before {
+            background: linear-gradient(90deg, #A770EF, #CF8BF3);
+        }
+
+        .ranking-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ranking-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+
+        .ranking-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 16px;
+        }
+
+        .stat-item {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+
+        .ranking-footer {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .view-more {
+            color: var(--text-gray);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .arrow-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .ranking-card:hover .arrow-icon {
+            transform: translateX(4px);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #00F5A0;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .token-table-container {
+            margin-top: 20px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow: auto;
+        }
+
+        .token-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .token-table th {
+            padding: 12px 16px;
+            text-align: left;
+            color: var(--text-gray);
+            font-weight: normal;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .token-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .sort-icon {
+            font-size: 10px;
+            margin-left: 4px;
+            color: var(--text-gray);
+        }
+
+        .token-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .token-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--border-color);
+        }
+
+        .price-change {
+            font-weight: 500;
+        }
+
+        .price-change.positive {
+            color: #16c784;
+        }
+
+        .price-change.negative {
+            color: #ea3943;
+        }
+
+        .volume-value {
+            color: var(--text-light);
+        }
+
+        .age-value {
+            color: var(--text-gray);
+        }
+
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        .sort-icons {
+            display: inline-flex;
+            flex-direction: column;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        .sort-icon {
+            font-size: 8px;
+            color: var(--text-gray);
+            opacity: 0.5;
+            transition: opacity 0.2s ease, color 0.2s ease;
+            line-height: 1;
+        }
+
+        .sort-icon.active {
+            opacity: 1;
+            color: var(--text-light);
+        }
+
+        .sort-icon:hover {
+            opacity: 1;
+        }
+
+        .double-sort {
+            padding: 8px 16px !important;
+        }
+
+        .sort-header {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .sort-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            color: var(--text-gray);
+        }
+
+        .sort-icons {
+            display: inline-flex;
+            flex-direction: column;
+            margin-left: 2px;
+            height: 16px;
+            justify-content: center;
+        }
+
+        .sort-icon {
+            font-size: 8px;
+            color: var(--text-gray);
+            opacity: 0.5;
+            transition: opacity 0.2s ease, color 0.2s ease;
+            line-height: 1;
+        }
+
+        .sort-icon.active {
+            opacity: 1;
+            color: var(--text-light);
+        }
+
+        .sort-icon:hover {
+            opacity: 1;
+        }
+
+        .liq-mc-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .liq-value {
+            color: #00D1FF;
+            font-weight: 500;
+        }
+
+        .mc-value {
+            color: #FFB347;
+            font-weight: 500;
+        }
+
+        .sort-header > span:not(.sort-item) {
+            color: var(--text-gray);
+            opacity: 0.5;
+            user-select: none;
+        }
+
+        .tx-count-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .total-txs {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .split-txs {
+            font-size: 0.9em;
+            color: var(--text-gray);
+        }
+
+        .buy-txs {
+            color: #16c784;  /* 买入使用绿色 */
+        }
+
+        .sell-txs {
+            color: #ea3943;  /* 卖出使用红色 */
+        }
+
+        .tx-separator {
+            margin: 0 4px;
+            color: var(--text-gray);
+        }
+
+        /* 更新数值等级颜色系统 */
+        .value-tier-1 {  /* < 50K */
+            color: #a64dff;  /* 亮紫色 - 最小值 */
+        }
+        
+        .value-tier-2 {  /* 50K - 1M */
+            color: #00d1ff;  /* 亮蓝色 */
+        }
+        
+        .value-tier-3 {  /* 1M - 20M */
+            color: #00ff88;  /* 翠绿色 */
+        }
+        
+        .value-tier-4 {  /* 20M - 1B */
+            color: #ff9f1a;  /* 橙色 */
+        }
+        
+        .value-tier-5 {  /* > 1B */
+            color: #ff47a1;  /* 粉红色 */
+        }
+
+        /* 数值等级的悬停效果 */
+        [class^="value-tier-"] {
+            transition: filter 0.2s ease;
+        }
+
+        [class^="value-tier-"]:hover {
+            filter: brightness(1.2);
+        }
+
+        /* 特殊字段的默认颜色保变 */
+        .age-value, .price-value {
+            color: #7a7f8c !important;
+        }
+
+        /* 双行数值显示时的样式保持不变 */
+        .dual-value-primary {
+            color: #ffffff !important;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        /* 添加图样 */
+        .value-tiers-legend {
+            display: none;
+            position: absolute;
+            background: #1a1b1f;
+            border: 1px solid #2c2d33;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        .value-tiers-legend div {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        /* 更新图例颜色 */
+        .value-tiers-legend div:first-child .legend-color {
+            background: #a64dff;  /* 更新图中的颜色 */
+        }
+
+        .token-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .token-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .token-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .token-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .token-name {
+            color: #ffffff;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .token-address {
+            color: #7a7f8c;
+            font-size: 0.85em;
+            font-family: monospace;
+        }
+
+        /* 添加链接样式 */
+        .token-address a {
+            color: inherit;
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .token-address a:hover {
+            opacity: 0.8;
+        }
+
+        .tx-count-cell .split-txs span:not(.tx-separator) {
+            transition: color 0.2s ease;
+        }
+
+        .volume-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .volume-cell > div:last-child {
+            font-size: 0.9em;
+        }
+
+        /* 确保分隔符保持原有颜色 */
+        .tx-separator {
+            color: var(--text-gray) !important;
+        }
+```
+</rewritten_file>
+```
+</rewritten_file>
+
+        .volume-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .volume-cell > div:last-child {
+            font-size: 0.9em;
+        }
+
+        /* 确保分隔符保持原有颜色 */
+        .tx-separator {
+            color: var(--text-gray) !important;
+        }
+```
+</rewritten_file>
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Solana Smart Money</title>
+    <style>
+        :root {
+            --bg-dark: #0f1011;
+            --text-light: #ffffff;
+            --text-gray: #7a7f8c;
+            --border-color: #1c1e21;
+            --card-bg: #1a1b1f;
+            --search-bg: #1a1b1f;
+            --search-border: #2c2d33;
+            --search-focus: #3a3b3f;
+            --row-border: #1a1b1f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.5;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--bg-dark);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-right: 40px;
+            text-decoration: none;
+            color: var(--text-light);
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #FF6B6B, #FFB347);
+        }
+
+        .logo img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-light);
+            letter-spacing: 0.5px;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-gray);
+            display: flex;
+            align-items: center;
+        }
+
+        .keyboard-shortcut {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--search-border);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-gray);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 100px 12px 38px;
+            background: var(--search-bg);
+            border: 1px solid var(--search-border);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: var(--search-focus);
+            border-color: var(--text-gray);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-gray);
+        }
+
+        .content {
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+            padding: 0 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .time-filters {
+            display: flex;
+            gap: 8px;
+            padding: 10px 0;
+        }
+
+        .time-filters button {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-gray);
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .time-filters button.active {
+            background: var(--card-bg);
+            color: var(--text-light);
+            border-color: var(--text-gray);
+        }
+
+        .token-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+            background: #0f1011;
+        }
+
+        .token-table th {
+            padding: 10px 16px;
+            text-align: left;
+            color: var(--text-gray);
+            font-weight: normal;
+            border-bottom: 1px solid #3a3b42;
+            white-space: nowrap;
+            background: #0f1011;
+            height: 20px;
+        }
+
+        .token-table td {
+            padding: 8px 16px;
+            white-space: nowrap;
+            height: 20px;
+            line-height: 1.2;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .token-table tr {
+            transition: all 0.2s ease;
+        }
+
+        .token-table tr:hover {
+            background-color: #1a1b1f;
+            transform: translateZ(0);
+            box-shadow: 
+                0 1px 0 rgba(255, 255, 255, 0.07),
+                0 -1px 0 rgba(255, 255, 255, 0.07);
+        }
+
+        .token-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .token-table-container {
+            position: relative;
+            width: 100%;
+            max-width: 1400px;
+            margin: 24px auto;
+            background: #0f1011;
+            border: 1px solid rgba(58, 59, 66, 0.5);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transform: translateZ(0);
+        }
+
+        .token-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .token-info,
+        .tx-count-cell,
+        .liq-mc-cell {
+            gap: 2px;
+        }
+
+        .token-name {
+            margin-bottom: 2px;
+        }
+
+        .positive { color: var(--green); }
+        .negative { color: var(--red); }
+
+        .token-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .token-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--card-bg);
+        }
+
+        @media (max-width: 768px) {
+            .token-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        .filters {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .filter-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .filter-button {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            padding: 8px 32px 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            font-size: 14px;
+        }
+
+        .filter-button:after {
+            content: '▼';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: var(--text-gray);
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: var(--card-bg);
+            min-width: 120px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            z-index: 1;
+            margin-top: 4px;
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            color: var(--text-light);
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .dropdown-item:hover {
+            background: var(--border-color);
+        }
+
+        .rankings-section {
+            margin: 20px 0 40px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 0 20px;
+        }
+
+        .ranking-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ranking-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--text-gray);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .ranking-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FF6B6B, #FFB347);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .ranking-card:hover::before {
+            opacity: 1;
+        }
+
+        .ranking-card.smart-money::before {
+            background: linear-gradient(90deg, #00F5A0, #00D9F5);
+        }
+
+        .ranking-card.rising-tokens::before {
+            background: linear-gradient(90deg, #FF6B6B, #FFB347);
+        }
+
+        .ranking-card.new-tokens::before {
+            background: linear-gradient(90deg, #A770EF, #CF8BF3);
+        }
+
+        .ranking-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ranking-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+
+        .ranking-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 16px;
+        }
+
+        .stat-item {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+
+        .ranking-footer {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .view-more {
+            color: var(--text-gray);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .arrow-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .ranking-card:hover .arrow-icon {
+            transform: translateX(4px);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #00F5A0;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .token-table-container {
+            margin-top: 20px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow: auto;
+        }
+
+        .token-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .token-table th {
+            padding: 12px 16px;
+            text-align: left;
+            color: var(--text-gray);
+            font-weight: normal;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .token-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .sort-icon {
+            font-size: 10px;
+            margin-left: 4px;
+            color: var(--text-gray);
+        }
+
+        .token-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .token-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--border-color);
+        }
+
+        .price-change {
+            font-weight: 500;
+        }
+
+        .price-change.positive {
+            color: #16c784;
+        }
+
+        .price-change.negative {
+            color: #ea3943;
+        }
+
+        .volume-value {
+            color: var(--text-light);
+        }
+
+        .age-value {
+            color: var(--text-gray);
+        }
+
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        .sort-icons {
+            display: inline-flex;
+            flex-direction: column;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        .sort-icon {
+            font-size: 8px;
+            color: var(--text-gray);
+            opacity: 0.5;
+            transition: opacity 0.2s ease, color 0.2s ease;
+            line-height: 1;
+        }
+
+        .sort-icon.active {
+            opacity: 1;
+            color: var(--text-light);
+        }
+
+        .sort-icon:hover {
+            opacity: 1;
+        }
+
+        .double-sort {
+            padding: 8px 16px !important;
+        }
+
+        .sort-header {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .sort-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            color: var(--text-gray);
+        }
+
+        .sort-icons {
+            display: inline-flex;
+            flex-direction: column;
+            margin-left: 2px;
+            height: 16px;
+            justify-content: center;
+        }
+
+        .sort-icon {
+            font-size: 8px;
+            color: var(--text-gray);
+            opacity: 0.5;
+            transition: opacity 0.2s ease, color 0.2s ease;
+            line-height: 1;
+        }
+
+        .sort-icon.active {
+            opacity: 1;
+            color: var(--text-light);
+        }
+
+        .sort-icon:hover {
+            opacity: 1;
+        }
+
+        .liq-mc-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .liq-value {
+            color: #00D1FF;
+            font-weight: 500;
+        }
+
+        .mc-value {
+            color: #FFB347;
+            font-weight: 500;
+        }
+
+        .sort-header > span:not(.sort-item) {
+            color: var(--text-gray);
+            opacity: 0.5;
+            user-select: none;
+        }
+
+        .tx-count-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .total-txs {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .split-txs {
+            font-size: 0.9em;
+            color: var(--text-gray);
+        }
+
+        .buy-txs {
+            color: #16c784;  /* 买入使用绿色 */
+        }
+
+        .sell-txs {
+            color: #ea3943;  /* 卖出使用红色 */
+        }
+
+        .tx-separator {
+            margin: 0 4px;
+            color: var(--text-gray);
+        }
+
+        /* 更新数值等级颜色系统 */
+        .value-tier-1 {  /* < 50K */
+            color: #a64dff;  /* 亮紫色 - 最小值 */
+        }
+        
+        .value-tier-2 {  /* 50K - 1M */
+            color: #00d1ff;  /* 亮蓝色 */
+        }
+        
+        .value-tier-3 {  /* 1M - 20M */
+            color: #00ff88;  /* 翠绿色 */
+        }
+        
+        .value-tier-4 {  /* 20M - 1B */
+            color: #ff9f1a;  /* 橙色 */
+        }
+        
+        .value-tier-5 {  /* > 1B */
+            color: #ff47a1;  /* 粉红色 */
+        }
+
+        /* 数值等级的悬停效果 */
+        [class^="value-tier-"] {
+            transition: filter 0.2s ease;
+        }
+
+        [class^="value-tier-"]:hover {
+            filter: brightness(1.2);
+        }
+
+        /* 特殊字段的默认颜色保变 */
+        .age-value, .price-value {
+            color: #7a7f8c !important;
+        }
+
+        /* 双行数值显示时的样式保持不变 */
+        .dual-value-primary {
+            color: #ffffff !important;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        /* 添加图样 */
+        .value-tiers-legend {
+            display: none;
+            position: absolute;
+            background: #1a1b1f;
+            border: 1px solid #2c2d33;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        .value-tiers-legend div {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        /* 更新图例颜色 */
+        .value-tiers-legend div:first-child .legend-color {
+            background: #a64dff;  /* 更新图中的颜色 */
+        }
+
+        .token-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .token-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .token-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .token-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .token-name {
+            color: #ffffff;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .token-address {
+            color: #7a7f8c;
+            font-size: 0.85em;
+            font-family: monospace;
+        }
+
+        /* 添加链接样式 */
+        .token-address a {
+            color: inherit;
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .token-address a:hover {
+            opacity: 0.8;
+        }
+
+        .tx-count-cell .split-txs span:not(.tx-separator) {
+            transition: color 0.2s ease;
+        }
+
+        .volume-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .volume-cell > div:last-child {
+            font-size: 0.9em;
+        }
+
+        /* 确保分隔符保持原有颜色 */
+        .tx-separator {
+            color: var(--text-gray) !important;
+        }
+```
+</rewritten_file>
+```
+</rewritten_file>
+
         .tx-count-cell .split-txs span:not(.tx-separator) {
             transition: color 0.2s ease;
         }
