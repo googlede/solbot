@@ -909,81 +909,25 @@
             position: absolute;
             display: none;
             top: 100%;
-            left: 50%; /* 居中对齐 */
-            transform: translateX(-50%); /* 水平居中 */
-            background: #1a1b1f;
-            border: 1px solid #2c2d33;
-            border-radius: 8px;
-            padding: 16px;
-            min-width: 200px;
-            z-index: 1001;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            margin-top: 8px; /* 与表头的间距 */
-        }
-
-        /* 添加筛选面板箭头 */
-        .filter-panel::before {
-            content: '';
-            position: absolute;
-            top: -6px;
-            left: 50%;
-            transform: translateX(-50%) rotate(45deg);
-            width: 12px;
-            height: 12px;
-            background: #1a1b1f;
-            border-left: 1px solid #2c2d33;
-            border-top: 1px solid #2c2d33;
-        }
-
-        /* 更新表头和表体容器样式 */
-        .table-header,
-        .table-body {
-            width: 100%;
-        }
-
-        .table-header.is-sticky {
-            position: fixed;
-            top: 64px;
-            background: #0f1011;
-            z-index: 1000;
-            border-bottom: 1px solid rgba(58, 59, 66, 0.3);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        /* 确保表头单元格样式一致 */
-        .table-header th,
-        .table-body td {
-            text-align: left;
-            padding: 10px 16px;
-            box-sizing: border-box;
-        }
-
-        .filter-panel {
-            display: none;
-            position: absolute;
-            top: calc(100% + 10px);
             right: 0;
             background: #1a1b1f;
             border: 1px solid #2c2d33;
             border-radius: 8px;
             padding: 16px;
-            min-width: 200px;
+            min-width: 240px;
             z-index: 1001;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            margin-top: 8px;
         }
 
         .filter-panel.show {
             display: block;
         }
 
-        .filter-section {
-            margin-bottom: 16px;
-        }
-
-        .filter-section-title {
-            color: #7a7f8c;
-            font-size: 12px;
-            margin-bottom: 8px;
+        .preset-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .filter-option {
@@ -992,6 +936,7 @@
             cursor: pointer;
             border-radius: 4px;
             transition: background-color 0.2s;
+            font-size: 14px;
         }
 
         .filter-option:hover {
@@ -1002,25 +947,48 @@
             background-color: #3a3b3f;
         }
 
+        .range-divider {
+            margin: 16px 0 12px;
+            padding-top: 16px;
+            border-top: 1px solid #2c2d33;
+            color: #7a7f8c;
+            font-size: 12px;
+        }
+
         .custom-range {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-top: 12px;
+            margin-top: 8px;
         }
 
-        .custom-range input {
-            width: 70px;
-            padding: 6px 8px;
+        .range-input {
+            position: relative;
+            flex: 1;
+        }
+
+        .range-input input {
+            width: 100%;
+            padding: 8px 24px 8px 8px;
             background: #2c2d33;
             border: 1px solid #3a3b3f;
             border-radius: 4px;
             color: #ffffff;
+            font-size: 14px;
+        }
+
+        .range-input .unit {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7a7f8c;
             font-size: 12px;
         }
 
-        .custom-range span {
+        .range-separator {
             color: #7a7f8c;
+            font-size: 14px;
         }
 
         .filter-actions {
@@ -1032,9 +1000,9 @@
         }
 
         .filter-actions button {
-            padding: 6px 16px;
+            padding: 8px 16px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -1055,54 +1023,14 @@
             filter: brightness(1.2);
         }
 
-        /* 添加筛选图标样式 */
-        .filter-trigger {
-            display: inline-flex;
-            align-items: center;
-            margin-left: 4px;
-            color: #7a7f8c;
-            cursor: pointer;
-        }
-
-        .filter-trigger svg {
-            width: 12px;
-            height: 12px;
-            transition: color 0.2s;
-        }
-
-        .filter-trigger:hover svg {
-            color: #ffffff;
-        }
-
-        .filter-active svg {
-            color: #00d1ff;
-        }
-
-        /* 调整排序和筛选图标的布局 */
-        .sort-header {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            white-space: nowrap;
-        }
-
-        .sort-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 2px;
-        }
-
-        /* 添加相对定位到表头单元格 */
-        .token-table th {
-            position: relative;
-        }
-
-        /* 确保筛选图标容器可点击 */
-        .filter-trigger {
-            position: relative;
-            z-index: 1002;
-            padding: 4px;
-            margin-left: 4px;
+        /* 错误提示样式 */
+        .filter-error {
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(255, 77, 79, 0.1);
+            border-radius: 4px;
+            color: #ff4d4f;
+            font-size: 12px;
         }
     </style>
 </head>
@@ -1927,18 +1855,27 @@
                 const panel = document.createElement('div');
                 panel.className = `filter-panel ${type}-filter`;
                 
+                // 更新面板内容结构
                 const content = `
                     <div class="filter-section">
-                        ${config.options.map(opt => `
-                            <div class="filter-option" data-value="${opt.value}">
-                                ${opt.label}
-                            </div>
-                        `).join('')}
+                        <div class="preset-options">
+                            ${config.options.map(opt => `
+                                <div class="filter-option" data-value="${opt.value}">
+                                    ${opt.label}
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="range-divider">Custom Range</div>
                         <div class="custom-range">
-                            <input type="text" placeholder="0" class="min-value">
-                            <span>to</span>
-                            <input type="text" placeholder="∞" class="max-value">
-                            <span>K</span>
+                            <div class="range-input">
+                                <input type="text" placeholder="0" class="min-value">
+                                <span class="unit">K</span>
+                            </div>
+                            <span class="range-separator">to</span>
+                            <div class="range-input">
+                                <input type="text" placeholder="∞" class="max-value">
+                                <span class="unit">K</span>
+                            </div>
                         </div>
                     </div>
                     <div class="filter-actions">
