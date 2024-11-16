@@ -862,7 +862,7 @@
             background: #0f1011;
             border: 1px solid rgba(58, 59, 66, 0.5);
             border-radius: 12px;
-            overflow: hidden;
+            overflow: visible; /* 改为 visible 以显示筛选面板 */
         }
 
         /* 表格基础样式 */
@@ -1032,6 +1032,74 @@
             color: #ff4d4f;
             font-size: 12px;
         }
+
+        /* 更新表格容器样式 */
+        .table-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1400px;
+            margin: 24px auto;
+            background: #0f1011;
+            border: 1px solid rgba(58, 59, 66, 0.5);
+            border-radius: 12px;
+            overflow: visible; /* 改为 visible 以显示筛选面板 */
+        }
+
+        /* 更新表头容器样式 */
+        .table-header {
+            position: relative;
+            width: 100%;
+            background: #0f1011;
+            z-index: 1000;
+        }
+
+        /* 表头固定状态 */
+        .table-header.is-sticky {
+            position: fixed;
+            top: 64px;
+            background: #0f1011;
+            border-bottom: 1px solid rgba(58, 59, 66, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 筛选图标样式 */
+        .filter-trigger {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 4px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .filter-trigger svg {
+            width: 12px;
+            height: 12px;
+            color: #7a7f8c;
+            transition: color 0.2s;
+        }
+
+        .filter-trigger:hover svg {
+            color: #ffffff;
+        }
+
+        .filter-trigger.filter-active svg {
+            color: #00d1ff;
+        }
+
+        /* 调整排序和筛选图标的布局 */
+        .sort-header {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .sort-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            position: relative; /* 添加相对定位用于筛选面板定位 */
+        }
     </style>
 </head>
 <body>
@@ -1191,9 +1259,9 @@
                                         <span class="sort-icon down">▼</span>
                                     </div>
                                 </th>
-                                <th class="sortable double-sort" data-filter="liq">
+                                <th class="sortable double-sort">
                                     <div class="sort-header">
-                                        <span class="sort-item" data-sort="liquidity">
+                                        <span class="sort-item" data-sort="liquidity" data-filter="liq">
                                             Liq $
                                             <div class="sort-icons">
                                                 <span class="sort-icon up">▲</span>
@@ -1977,7 +2045,7 @@
                     maxInput.classList.remove('error');
                 }
 
-                // 为输入框添加实时验证
+                // 输入框添加实时验证
                 [minInput, maxInput].forEach(input => {
                     input.addEventListener('input', (e) => {
                         clearError();
@@ -2062,7 +2130,7 @@
                         }
                     });
                     
-                    // 切换当前筛选面板
+                    // 切换��前筛选面板
                     panel.classList.toggle('show');
                     trigger.classList.toggle('filter-active', panel.classList.contains('show'));
                     
