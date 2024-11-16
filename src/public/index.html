@@ -222,6 +222,7 @@
         }
 
         .token-table-container {
+            position: relative;
             width: 100%;
             max-width: 1400px;
             margin: 24px auto;
@@ -230,7 +231,6 @@
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 0 2px;
         }
 
         .token-icon {
@@ -966,6 +966,32 @@
             opacity: 1;
             transition: opacity 0.3s ease;
         }
+
+        /* 更新表头样式 */
+        .token-table thead {
+            position: relative;
+            background: #0f1011;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        /* 更新固定表头样式 */
+        .token-table thead.is-sticky {
+            position: fixed;
+            top: 64px;
+            background: #0f1011;
+            z-index: 100;
+            border-bottom: 1px solid #3a3b42;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            width: inherit;
+            max-width: inherit;
+        }
+
+        /* 添加表头包装器 */
+        .thead-wrapper {
+            position: relative;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -1660,47 +1686,45 @@
             const thead = document.querySelector('.token-table thead');
             const container = document.querySelector('.token-table-container');
             const navHeight = 64;
-            let lastScrollY = window.scrollY;
             let headerHeight = thead.offsetHeight;
             
             function updateHeaderState() {
                 const containerRect = container.getBoundingClientRect();
-                const scrollY = window.scrollY;
-                const containerTop = containerRect.top;
-                const containerBottom = containerRect.bottom;
+                const tableRect = container.querySelector('.token-table').getBoundingClientRect();
                 
                 // 计算表头应该固定的条件
-                const shouldStick = containerTop <= navHeight && 
-                                  containerBottom >= (headerHeight + navHeight);
+                const shouldStick = containerRect.top <= navHeight && 
+                                  containerRect.bottom >= (headerHeight + navHeight);
                 
                 if (shouldStick) {
                     if (!thead.classList.contains('is-sticky')) {
                         // 添加占位符防止内容跳动
+                        thead.style.width = `${tableRect.width}px`;
                         container.style.paddingTop = `${headerHeight}px`;
                         thead.classList.add('is-sticky');
-                    }
-                    
-                    // 处理到达容器底部的情况
-                    if (containerBottom <= (headerHeight + navHeight)) {
-                        const offset = containerBottom - (headerHeight + navHeight);
-                        thead.style.transform = `translateX(-50%) translateY(${offset}px)`;
-                    } else {
-                        thead.style.transform = 'translateX(-50%)';
+                        
+                        // 设置左边距以对齐表格
+                        const leftOffset = tableRect.left;
+                        thead.style.left = `${leftOffset}px`;
                     }
                 } else {
                     if (thead.classList.contains('is-sticky')) {
                         thead.classList.remove('is-sticky');
                         container.style.paddingTop = '0';
-                        thead.style.transform = '';
+                        thead.style.width = '';
+                        thead.style.left = '';
                     }
                 }
-                
-                lastScrollY = scrollY;
             }
             
             // 使用 ResizeObserver 监听容器大小变化
             const resizeObserver = new ResizeObserver(() => {
                 headerHeight = thead.offsetHeight;
+                if (thead.classList.contains('is-sticky')) {
+                    const tableRect = container.querySelector('.token-table').getBoundingClientRect();
+                    thead.style.width = `${tableRect.width}px`;
+                    thead.style.left = `${tableRect.left}px`;
+                }
                 updateHeaderState();
             });
             
@@ -1717,6 +1741,15 @@
                     ticking = true;
                 }
             }, { passive: true });
+            
+            // 监听窗口大小变化
+            window.addEventListener('resize', () => {
+                if (thead.classList.contains('is-sticky')) {
+                    const tableRect = container.querySelector('.token-table').getBoundingClientRect();
+                    thead.style.width = `${tableRect.width}px`;
+                    thead.style.left = `${tableRect.left}px`;
+                }
+            });
             
             // 初始化
             updateHeaderState();
