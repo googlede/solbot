@@ -690,7 +690,7 @@
             filter: brightness(1.2);
         }
 
-        /* 特殊字段的默认颜色保���变 */
+        /* 特殊字段的默认颜色保变 */
         .age-value, .price-value {
             color: #7a7f8c !important;
         }
@@ -702,7 +702,7 @@
             font-weight: 500;
         }
 
-        /* 添加图例样式 */
+        /* 添加图��样式 */
         .value-tiers-legend {
             display: none;
             position: absolute;
@@ -904,7 +904,7 @@
             width: 120px;
         }
 
-        /* 更新筛选面板样��� */
+        /* 更新筛选面板样 */
         .filter-panel {
             position: absolute;
             display: none;
@@ -1001,6 +1001,106 @@
         .filter-trigger.filter-active svg {
             color: #00d1ff;
         }
+
+        /* 更新表格容器样式 */
+        .table-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1400px;
+            margin: 24px auto;
+            background: #0f1011;
+            border: 1px solid rgba(58, 59, 66, 0.5);
+            border-radius: 12px;
+            overflow: visible;
+        }
+
+        /* 表头容器样式 */
+        .table-header {
+            position: relative;
+            width: 100%;
+            background: #0f1011;
+            z-index: 1000;
+        }
+
+        /* 固定表头样式 */
+        .table-header.is-sticky {
+            position: fixed;
+            top: 64px;
+            left: auto;
+            background: #0f1011;
+            border-bottom: 1px solid rgba(58, 59, 66, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 筛选面板样式 */
+        .filter-panel {
+            position: absolute;
+            display: none;
+            top: calc(100% + 8px);
+            right: 0;
+            background: #1a1b1f;
+            border: 1px solid #2c2d33;
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 180px;
+            z-index: 1010;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 预设选项按钮样式 */
+        .filter-option {
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background: #2c2d33;
+            border: 1px solid #3a3b3f;
+            border-radius: 6px;
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .filter-option:hover {
+            background: #3a3b3f;
+        }
+
+        .filter-option.selected {
+            background: #4a4b4f;
+            border-color: #5a5b5f;
+        }
+
+        /* 自定义范围样式 */
+        .custom-range {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #2c2d33;
+        }
+
+        .range-input {
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .range-input input {
+            width: 100%;
+            padding: 6px 24px 6px 8px;
+            background: #2c2d33;
+            border: 1px solid #3a3b3f;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 13px;
+        }
+
+        .range-input .unit {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7a7f8c;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -1065,7 +1165,7 @@
             <!-- 速上涨Token排行榜 -->
             <div class="ranking-card rising-tokens" onclick="navigateTo('/rankings/rising-tokens')">
                 <div class="ranking-title">
-                    <div class="ranking-icon">��</div>
+                    <div class="ranking-icon"></div>
                     Rising Stars
                 </div>
                 <p class="ranking-description">Top 100 tokens with highest market cap growth</p>
@@ -1707,84 +1807,94 @@
         `;
         document.head.appendChild(style);
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // 更新表头固定和筛选面板处理
+        function updateHeaderState() {
             const header = document.querySelector('.table-header');
             const wrapper = document.querySelector('.table-wrapper');
+            const tableBody = document.querySelector('.table-body');
             const navHeight = 64;
 
-            function updateHeaderState() {
-                const header = document.querySelector('.table-header');
-                const wrapper = document.querySelector('.table-wrapper');
-                const tableBody = document.querySelector('.table-body');
-                const navHeight = 64;
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const headerHeight = header.offsetHeight;
 
-                const wrapperRect = wrapper.getBoundingClientRect();
-                const headerHeight = header.offsetHeight;
+            // 计算表头应该固定的条件
+            const shouldStick = wrapperRect.top <= navHeight && 
+                               wrapperRect.bottom >= (headerHeight + navHeight);
 
-                // 计算表头应该固定的条件
-                const shouldStick = wrapperRect.top <= navHeight && 
-                                   wrapperRect.bottom >= (headerHeight + navHeight);
+            if (shouldStick) {
+                if (!header.classList.contains('is-sticky')) {
+                    // 获取列宽
+                    const columnWidths = Array.from(header.querySelectorAll('th')).map(th => th.offsetWidth);
+                    
+                    // 设置表头宽度和位置
+                    header.style.width = `${wrapper.offsetWidth}px`;
+                    header.style.left = `${wrapperRect.left}px`;
+                    
+                    // 设置列宽
+                    header.querySelectorAll('th').forEach((th, index) => {
+                        th.style.width = `${columnWidths[index]}px`;
+                    });
+                    
+                    // 同步表体列宽
+                    tableBody.querySelectorAll('tr:first-child td').forEach((td, index) => {
+                        td.style.width = `${columnWidths[index]}px`;
+                    });
+                    
+                    header.classList.add('is-sticky');
+                    wrapper.style.paddingTop = `${headerHeight}px`;
 
-                if (shouldStick) {
-                    if (!header.classList.contains('is-sticky')) {
-                        // 获取每个列的宽度
-                        const columnWidths = Array.from(header.querySelectorAll('th')).map(th => th.offsetWidth);
-                        
-                        // 设置表头宽度和位置
-                        header.style.width = `${wrapper.offsetWidth}px`;
-                        header.style.left = `${wrapperRect.left}px`;
-                        
-                        // 设置每个表头单元格的宽度
-                        header.querySelectorAll('th').forEach((th, index) => {
-                            th.style.width = `${columnWidths[index]}px`;
-                        });
-                        
-                        // 设置表体单元格的宽度
-                        tableBody.querySelectorAll('tr:first-child td').forEach((td, index) => {
-                            td.style.width = `${columnWidths[index]}px`;
-                        });
-                        
-                        header.classList.add('is-sticky');
-                        wrapper.style.paddingTop = `${headerHeight}px`;
-                    }
-                } else {
-                    if (header.classList.contains('is-sticky')) {
-                        header.classList.remove('is-sticky');
-                        header.style.width = '';
-                        header.style.left = '';
-                        wrapper.style.paddingTop = '';
-                        
-                        // 重置所有列宽
-                        header.querySelectorAll('th').forEach(th => th.style.width = '');
-                        tableBody.querySelectorAll('td').forEach(td => td.style.width = '');
-                    }
+                    // 更新筛选面板位置
+                    updateFilterPanelsPosition();
+                }
+            } else {
+                if (header.classList.contains('is-sticky')) {
+                    header.classList.remove('is-sticky');
+                    header.style.width = '';
+                    header.style.left = '';
+                    wrapper.style.paddingTop = '';
+                    
+                    // 重置列宽
+                    header.querySelectorAll('th').forEach(th => th.style.width = '');
+                    tableBody.querySelectorAll('td').forEach(td => td.style.width = '');
+
+                    // 更新筛选面板位置
+                    updateFilterPanelsPosition();
                 }
             }
+        }
 
-            // 优化的滚动监听
-            let ticking = false;
-            window.addEventListener('scroll', () => {
-                if (!ticking) {
-                    requestAnimationFrame(() => {
-                        updateHeaderState();
-                        ticking = false;
-                    });
-                    ticking = true;
-                }
-            }, { passive: true });
-
-            // 监听窗口大小变化
-            window.addEventListener('resize', () => {
-                if (header.classList.contains('is-sticky')) {
-                    const wrapperWidth = wrapper.offsetWidth;
-                    const wrapperLeft = wrapper.getBoundingClientRect().left;
-                    header.style.width = `${wrapperWidth}px`;
-                    header.style.left = `${wrapperLeft}px`;
+        // 更新筛选面板位置
+        function updateFilterPanelsPosition() {
+            const header = document.querySelector('.table-header');
+            const isSticky = header.classList.contains('is-sticky');
+            
+            document.querySelectorAll('.filter-panel').forEach(panel => {
+                if (panel.classList.contains('show')) {
+                    const trigger = panel.closest('.sort-item').querySelector('.filter-trigger');
+                    const triggerRect = trigger.getBoundingClientRect();
+                    
+                    panel.style.position = isSticky ? 'fixed' : 'absolute';
+                    if (isSticky) {
+                        panel.style.top = `${triggerRect.bottom + 8}px`;
+                        panel.style.right = `${window.innerWidth - triggerRect.right}px`;
+                    } else {
+                        panel.style.top = '100%';
+                        panel.style.right = '0';
+                    }
                 }
             });
+        }
 
-            // 初始化
-            updateHeaderState();
+        // 监听滚动和调整大小事件
+        window.addEventListener('scroll', () => {
+            requestAnimationFrame(updateHeaderState);
+        });
+
+        window.addEventListener('resize', () => {
+            requestAnimationFrame(() => {
+                updateHeaderState();
+                updateFilterPanelsPosition();
+            });
         });
 
         // 初始化筛选功能
