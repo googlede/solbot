@@ -231,6 +231,7 @@
             border-radius: 12px;
             overflow: visible;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transform: translateZ(0);
         }
 
         .token-icon {
@@ -701,7 +702,7 @@
             font-weight: 500;
         }
 
-        /* 添加图例样式 */
+        /* 添���图例样式 */
         .value-tiers-legend {
             display: none;
             position: absolute;
@@ -911,10 +912,11 @@
         .token-table thead {
             position: relative;
             background: #0f1011;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* 使用更平滑的过渡曲线 */
             width: 100%;
-            will-change: transform, position; /* 优化性能 */
-            backface-visibility: hidden; /* 防止抖动 */
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
+            transition: none;
         }
 
         /* 表头固定状态 */
@@ -925,20 +927,21 @@
             z-index: 100;
             border-bottom: 1px solid rgba(58, 59, 66, 0.3);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transform: translateZ(0); /* 开启硬件加速 */
         }
 
         /* 添加表头占位空间 */
         .thead-spacer {
-            display: block; /* 始终显示，但高度为0 */
+            position: relative;
+            display: block;
             width: 100%;
             height: 0;
-            transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* 平滑过渡 */
-            visibility: hidden;
+            transition: none;
+            opacity: 0;
+            pointer-events: none;
         }
 
         .thead-spacer.active {
-            visibility: visible;
+            opacity: 1;
         }
     </style>
 </head>
@@ -1373,7 +1376,7 @@
                                 const isUp = icon.classList.contains('up');
                                 const direction = isUp ? 'asc' : 'desc';
                                 
-                                // 重置所有图标
+                                // 重置所有图���
                                 document.querySelectorAll('.sort-icon').forEach(i => 
                                     i.classList.remove('active'));
                                 
@@ -1653,58 +1656,12 @@
                 const shouldStick = containerRect.top <= navHeight && 
                                        containerRect.bottom >= (headerHeight + navHeight);
                 
-                // 提前设置占位空间高度，但不显示
-                theadSpacer.style.height = `${headerHeight}px`;
-                
-                if (shouldStick) {
-                    if (!thead.classList.contains('is-sticky')) {
-                        // 在添加固定定位之前先设置宽度和位置
-                        const targetWidth = tableRect.width;
-                        const targetLeft = tableRect.left;
-                        
-                        // 预先设置列宽
-                        const ths = thead.querySelectorAll('th');
-                        const firstRowTds = table.querySelector('tbody tr')?.querySelectorAll('td');
-                        if (firstRowTds) {
-                            ths.forEach((th, index) => {
-                                th.style.width = `${firstRowTds[index].offsetWidth}px`;
-                            });
-                        }
-                        
-                        // 使用 requestAnimationFrame 确保样式在下一帧应用
-                        requestAnimationFrame(() => {
-                            thead.style.width = `${targetWidth}px`;
-                            thead.style.left = `${targetLeft}px`;
-                            thead.classList.add('is-sticky');
-                            theadSpacer.classList.add('active');
-                        });
-                    }
-                } else {
-                    if (thead.classList.contains('is-sticky')) {
-                        // 移除固定定位时也使用 requestAnimationFrame
-                        requestAnimationFrame(() => {
-                            theadSpacer.classList.remove('active');
-                            thead.classList.remove('is-sticky');
-                            thead.style.width = '';
-                            thead.style.left = '';
-                            
-                            // 重置列宽
-                            thead.querySelectorAll('th').forEach(th => {
-                                th.style.width = '';
-                            });
-                        });
-                    }
-                }
-            }
-            
-            // 使用 ResizeObserver 监听容器大小变化
-            const resizeObserver = new ResizeObserver(() => {
-                if (thead.classList.contains('is-sticky')) {
-                    const tableRect = table.getBoundingClientRect();
-                    thead.style.width = `${tableRect.width}px`;
-                    thead.style.left = `${tableRect.left}px`;
+                // 提前设置所有必要的样式
+                if (shouldStick && !thead.classList.contains('is-sticky')) {
+                    // 1. 先设置占位符高度
+                    theadSpacer.style.height = `${headerHeight}px`;
                     
-                    // 更新列宽
+                    // 2. 预先计算并设置所有列宽
                     const ths = thead.querySelectorAll('th');
                     const firstRowTds = table.querySelector('tbody tr')?.querySelectorAll('td');
                     if (firstRowTds) {
@@ -1713,31 +1670,52 @@
                             th.style.width = `${width}px`;
                         });
                     }
-                }
-                updateHeaderState();
-            });
-            
-            resizeObserver.observe(container);
-            
-            // 优化的滚动监听
-            let ticking = false;
-            window.addEventListener('scroll', () => {
-                if (!ticking) {
+                    
+                    // 3. 预先设置表头宽度和位置
+                    thead.style.width = `${tableRect.width}px`;
+                    thead.style.left = `${tableRect.left}px`;
+                    
+                    // 4. 强制重排以确保上述样式已应用
+                    void thead.offsetHeight;
+                    
+                    // 5. 一次性添加所有类和状态
                     requestAnimationFrame(() => {
-                        updateHeaderState();
-                        ticking = false;
+                        theadSpacer.classList.add('active');
+                        thead.classList.add('is-sticky');
                     });
-                    ticking = true;
+                } else if (!shouldStick && thead.classList.contains('is-sticky')) {
+                    // 移除固定状态时的处理
+                    requestAnimationFrame(() => {
+                        // 1. 先移除固定定位类
+                        thead.classList.remove('is-sticky');
+                        theadSpacer.classList.remove('active');
+                        
+                        // 2. 强制重排
+                        void thead.offsetHeight;
+                        
+                        // 3. 清除样式
+                        thead.style.width = '';
+                        thead.style.left = '';
+                        theadSpacer.style.height = '0';
+                        
+                        // 4. 重置列宽
+                        thead.querySelectorAll('th').forEach(th => {
+                            th.style.width = '';
+                        });
+                    });
+                }
+            }
+            
+            // 优化滚动处理
+            let scrollTimeout;
+            window.addEventListener('scroll', () => {
+                if (!scrollTimeout) {
+                    scrollTimeout = requestAnimationFrame(() => {
+                        updateHeaderState();
+                        scrollTimeout = null;
+                    });
                 }
             }, { passive: true });
-            
-            // 监听窗口大小变化
-            window.addEventListener('resize', () => {
-                updateHeaderState();
-            });
-            
-            // 初始化
-            updateHeaderState();
         });
     </script>
 </body>
