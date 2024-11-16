@@ -33,7 +33,7 @@ body {
     background: #0f1011;
     border: 1px solid rgba(58, 59, 66, 0.5);
     border-radius: 12px;
-    overflow: visible;
+    overflow: hidden;
 }
 
 .table-header {
@@ -50,6 +50,28 @@ body {
     border-collapse: separate;
     border-spacing: 0;
     font-size: 14px;
+    table-layout: fixed;
+}
+
+/* 确保表头和表体单元格样式一致 */
+.token-table th,
+.token-table td {
+    padding: 12px 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 表体容器样式 */
+.table-body {
+    position: relative;
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+/* 确保表格行高一致 */
+.token-table tr {
+    height: 48px;
 }
 
 /* 其他样式... */ 
