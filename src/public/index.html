@@ -702,7 +702,7 @@
             font-weight: 500;
         }
 
-        /* 添���图例样式 */
+        /* 添加图例样式 */
         .value-tiers-legend {
             display: none;
             position: absolute;
@@ -855,48 +855,14 @@
 
         /* 表格容器样式 */
         .token-table-container {
+            position: relative;
             width: 100%;
-            max-width: 1400px;  /* 与容器最大宽度一致 */
-            margin: 24px auto;  /* 居中对齐 */
+            max-width: 1400px;
+            margin: 24px auto;
             background: #0f1011;
             border: 1px solid rgba(58, 59, 66, 0.5);
             border-radius: 12px;
             overflow: visible;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            padding: 0 2px;
-        }
-
-        /* 响应式布局 */
-        @media (max-width: 1440px) {
-            .container,
-            .token-table-container {
-                max-width: 95%;
-            }
-        }
-
-        /* 保持其他样式不变 */
-        .token-icon {
-            width: 20px;
-            height: 20px;
-        }
-
-        .token-info,
-        .tx-count-cell,
-        .liq-mc-cell {
-            gap: 2px;
-        }
-
-        .token-name {
-            margin-bottom: 2px;
-        }
-
-        /* 表格容器样式 */
-        .table-container {
-            position: relative;
-            margin: 24px 0;
-            background: #0f1011;
-            border: 1px solid rgba(58, 59, 66, 0.5);
-            border-radius: 12px;
         }
 
         /* 表格基础样式 */
@@ -905,26 +871,23 @@
             border-collapse: separate;
             border-spacing: 0;
             font-size: 14px;
-            table-layout: fixed;
+            background: #0f1011;
         }
 
-        /* 表头容器 */
+        /* 表头样式 */
         .token-table thead {
             position: relative;
             background: #0f1011;
             width: 100%;
-            transform: translateZ(0);
-            backface-visibility: hidden;
-            -webkit-font-smoothing: antialiased;
-            transition: none;
         }
 
-        /* 表头固定状态 */
+        /* 固定表头样式 */
         .token-table thead.is-sticky {
             position: fixed;
             top: 64px;
+            z-index: 1000;
             background: #0f1011;
-            z-index: 100;
+            margin: 0 auto;
             border-bottom: 1px solid rgba(58, 59, 66, 0.3);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
@@ -1004,7 +967,7 @@
                 </div>
             </div>
 
-            <!-- 快速上涨Token排行榜 -->
+            <!-- ��速上涨Token排行榜 -->
             <div class="ranking-card rising-tokens" onclick="navigateTo('/rankings/rising-tokens')">
                 <div class="ranking-title">
                     <div class="ranking-icon">📈</div>
@@ -1376,7 +1339,7 @@
                                 const isUp = icon.classList.contains('up');
                                 const direction = isUp ? 'asc' : 'desc';
                                 
-                                // 重置所有图���
+                                // 重置所有图标
                                 document.querySelectorAll('.sort-icon').forEach(i => 
                                     i.classList.remove('active'));
                                 
@@ -1636,86 +1599,60 @@
         document.addEventListener('DOMContentLoaded', () => {
             const thead = document.querySelector('.token-table thead');
             const container = document.querySelector('.token-table-container');
-            const table = container.querySelector('.token-table');
+            const table = document.querySelector('.token-table');
             const navHeight = 64;
-            
-            // 创建表头占位元素
-            const theadSpacer = document.createElement('div');
-            theadSpacer.className = 'thead-spacer';
-            table.parentNode.insertBefore(theadSpacer, table);
             
             function updateHeaderState() {
                 const containerRect = container.getBoundingClientRect();
                 const tableRect = table.getBoundingClientRect();
                 const theadRect = thead.getBoundingClientRect();
                 
-                // 提前计算表头高度
-                const headerHeight = theadRect.height;
-                
                 // 计算表头应该固定的条件
                 const shouldStick = containerRect.top <= navHeight && 
-                                       containerRect.bottom >= (headerHeight + navHeight);
-                
-                // 提前设置所有必要的样式
-                if (shouldStick && !thead.classList.contains('is-sticky')) {
-                    // 1. 先设置占位符高度
-                    theadSpacer.style.height = `${headerHeight}px`;
-                    
-                    // 2. 预先计算并设置所有列宽
-                    const ths = thead.querySelectorAll('th');
-                    const firstRowTds = table.querySelector('tbody tr')?.querySelectorAll('td');
-                    if (firstRowTds) {
-                        ths.forEach((th, index) => {
-                            const width = firstRowTds[index].offsetWidth;
-                            th.style.width = `${width}px`;
-                        });
-                    }
-                    
-                    // 3. 预先设置表头宽度和位置
-                    thead.style.width = `${tableRect.width}px`;
-                    thead.style.left = `${tableRect.left}px`;
-                    
-                    // 4. 强制重排以确保上述样式已应用
-                    void thead.offsetHeight;
-                    
-                    // 5. 一次性添加所有类和状态
-                    requestAnimationFrame(() => {
-                        theadSpacer.classList.add('active');
+                                   containerRect.bottom >= (theadRect.height + navHeight);
+
+                if (shouldStick) {
+                    if (!thead.classList.contains('is-sticky')) {
+                        // 设置表头宽度和位置
+                        thead.style.width = `${tableRect.width}px`;
+                        thead.style.left = `${tableRect.left}px`;
+                        
+                        // 添加占位高度防止跳动
+                        table.style.paddingTop = `${theadRect.height}px`;
+                        
+                        // 添加固定类
                         thead.classList.add('is-sticky');
-                    });
-                } else if (!shouldStick && thead.classList.contains('is-sticky')) {
-                    // 移除固定状态时的处理
-                    requestAnimationFrame(() => {
-                        // 1. 先移除固定定位类
+                    }
+                } else {
+                    if (thead.classList.contains('is-sticky')) {
+                        // 移除固定状态
                         thead.classList.remove('is-sticky');
-                        theadSpacer.classList.remove('active');
-                        
-                        // 2. 强制重排
-                        void thead.offsetHeight;
-                        
-                        // 3. 清除样式
                         thead.style.width = '';
                         thead.style.left = '';
-                        theadSpacer.style.height = '0';
-                        
-                        // 4. 重置列宽
-                        thead.querySelectorAll('th').forEach(th => {
-                            th.style.width = '';
-                        });
-                    });
+                        table.style.paddingTop = '';
+                    }
                 }
             }
-            
-            // 优化滚动处理
-            let scrollTimeout;
+
+            // 优化的滚动监听
+            let ticking = false;
             window.addEventListener('scroll', () => {
-                if (!scrollTimeout) {
-                    scrollTimeout = requestAnimationFrame(() => {
+                if (!ticking) {
+                    requestAnimationFrame(() => {
                         updateHeaderState();
-                        scrollTimeout = null;
+                        ticking = false;
                     });
+                    ticking = true;
                 }
             }, { passive: true });
+
+            // 监听窗口大小变化
+            window.addEventListener('resize', () => {
+                updateHeaderState();
+            });
+
+            // 初始化
+            updateHeaderState();
         });
     </script>
 </body>
